@@ -16,18 +16,29 @@ export type GuestPersona = {
   nationality: string;
   mood: GuestMood;
   speakingSpeed: SpeakingSpeed;
+  /** Short description shown in the scenario picker card. */
+  description: string;
+};
+
+/** A trackable objective with a stable ID used by the edge function. */
+export type ScenarioObjective = {
+  id: string;
+  label: string;
 };
 
 export type Scenario = {
   id: string;
   title: string;
   titleEs: string;
+  description: string;
   department: Department;
   difficulty: Difficulty;
   examFormats: ExamFormat[];
   guestPersona: GuestPersona;
-  /** What the student must accomplish to achieve full task completion marks. */
-  objectives: string[];
+  /** What the student must accomplish. IDs are used by the edge function for tracking. */
+  objectives: ScenarioObjective[];
+  /** Situation context given to Claude in the system prompt. */
+  systemContext: string;
   /** The AI guest's opening utterance in Spanish — sets register and context. */
   openingLine: string;
   rubricWeights: RubricWeights;

@@ -1,72 +1,91 @@
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
+import { SCENARIO_CATALOG, DEPT_LABELS, MOOD_ICONS, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { DECK_CATALOG, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
-import type { Department } from '@/types';
 
-// ── Department colour accents ─────────────────────────────────────────────────
+// ── Difficulty dots ───────────────────────────────────────────────────────────
 
-const DEPT_COLORS: Record<Department, { bg: string; accent: string }> = {
-  front_office: { bg: '#EBF3FB', accent: Colors.info },
-  fnb:          { bg: '#FEF9EC', accent: Colors.warning },
-  housekeeping: { bg: '#F0FDF4', accent: Colors.success },
-  concierge:    { bg: '#FDF4FF', accent: '#8B5CF6' },
-  events:       { bg: '#FFF7ED', accent: '#EA580C' },
-  management:   { bg: '#F1F5F9', accent: '#475569' },
+function DifficultyDots({ level }: { level: 1 | 2 | 3 }) {
+  return (
+    <View style={{ flexDirection: 'row', gap: 3 }}>
+      {([1, 2, 3] as const).map(n => (
+        <View key={n} style={[styles.dot, n <= level && styles.dotFilled]} />
+      ))}
+    </View>
+  );
+}
+
+// ── Scenario card ─────────────────────────────────────────────────────────────
+
+function ScenarioCard({ s, isPremium, onPress }: { s: ScenarioMeta; isPremium: boolean; onPress: () => void }) {
+  const locked = !s.isFree && !isPremium;
+  const moodKey = s.personaPreview.split(' · ')[2]?.split(' ')[0] ?? 'neutral';
+
+  return (
+    <TouchableOpacity
+      style={[styles.scenarioCard, locked && { opacity: 0.55 }]}
+      onPress={locked ? undefined : onPress}
+      activeOpacity={locked ? 1 : 0.8}
+    >
+      <View style={styles.row}>
+        <Text style={styles.scenarioTitle} numberOfLines={1}>{s.title}</Text>
+        {locked
+          ? <Text style={styles.lockIcon}>🔒</Text>
+          : s.isFree
+          ? <View style={styles.freeBadge}><Text style={styles.freeBadgeText}>Free</Text></View>
+          : null}
+      </View>
+      <Text style={styles.scenarioDesc} numberOfLines={2}>{s.description}</Text>
+      <View style={styles.metaRow}>
+        <Text style={styles.deptLabel}>{DEPT_LABELS[s.department] ?? s.department}</Text>
+        <Text style={styles.sep}>·</Text>
+        <DifficultyDots level={s.difficulty} />
+        <Text style={styles.sep}>·</Text>
+        <Text style={styles.personaText} numberOfLines={1}>
+          {MOOD_ICONS[moodKey]} {s.personaPreview}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+// ── Deck row ──────────────────────────────────────────────────────────────────
+
+const DEPT_COLORS: Record<string, string> = {
+  front_office: '#EBF3FB', fnb: '#FEF9EC', housekeeping: '#F0FDF4',
+  concierge: '#FDF4FF', events: '#FFF7ED', management: '#F1F5F9',
 };
-
-const DEPT_ICONS: Record<Department, string> = {
+const DEPT_ICONS: Record<string, string> = {
   front_office: '🏨', fnb: '🍽️', housekeeping: '🛏️',
   concierge: '🗝️', events: '🎊', management: '📋',
 };
 
-// ── Per-deck row ──────────────────────────────────────────────────────────────
-
-type DeckRowProps = {
-  deck: DeckMeta;
-  dueCount: number | null;
-  isPremium: boolean;
-  onPress: () => void;
-};
-
-function DeckRow({ deck, dueCount, isPremium, onPress }: DeckRowProps) {
-  const locked = !deck.isFree && !isPremium;
-  const { bg, accent } = DEPT_COLORS[deck.department];
-
+function DeckRow({ d, dueCount, isPremium, onPress }: { d: DeckMeta; dueCount: number | null; isPremium: boolean; onPress: () => void }) {
+  const locked = !d.isFree && !isPremium;
   return (
     <TouchableOpacity
-      style={[styles.row, { opacity: locked ? 0.55 : 1 }]}
+      style={[styles.deckRow, locked && { opacity: 0.55 }]}
       onPress={locked ? undefined : onPress}
       activeOpacity={locked ? 1 : 0.8}
     >
-      <View style={[styles.iconBox, { backgroundColor: bg }]}>
-        <Text style={styles.icon}>{DEPT_ICONS[deck.department]}</Text>
+      <View style={[styles.deckIcon, { backgroundColor: DEPT_COLORS[d.department] ?? '#F0EDE8' }]}>
+        <Text style={{ fontSize: 20 }}>{DEPT_ICONS[d.department] ?? '📚'}</Text>
       </View>
-
-      <View style={styles.meta}>
-        <Text style={styles.title}>{deck.title}</Text>
-        <Text style={[styles.dept, { color: accent }]}>
-          {DEPARTMENT_LABELS[deck.department]}
-        </Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.deckTitle}>{d.title}</Text>
+        <Text style={styles.deckDept}>{DEPARTMENT_LABELS[d.department]}</Text>
       </View>
-
-      <View style={styles.right}>
-        {locked ? (
-          <Text style={styles.lock}>🔒</Text>
-        ) : dueCount === null ? (
-          <ActivityIndicator size="small" color={Colors.textMuted} />
-        ) : dueCount > 0 ? (
-          <View style={styles.dueBadge}>
-            <Text style={styles.dueText}>{dueCount}</Text>
-          </View>
-        ) : (
-          <Text style={styles.done}>✓</Text>
-        )}
-        <Text style={styles.cardCount}>{deck.cardCount} cards</Text>
-      </View>
+      {locked ? <Text style={styles.lockIcon}>🔒</Text>
+        : dueCount === null ? <ActivityIndicator size="small" color={Colors.textMuted} />
+        : dueCount > 0 ? (
+          <View style={styles.dueBadge}><Text style={styles.dueText}>{dueCount}</Text></View>
+        ) : <Text style={{ fontSize: 18, color: Colors.success }}>✓</Text>}
     </TouchableOpacity>
   );
 }
@@ -80,79 +99,91 @@ export default function PracticeScreen() {
 
   useEffect(() => {
     if (!user) return;
-    async function loadDueCounts() {
+    async function loadCounts() {
       for (const deck of DECK_CATALOG) {
         if (!deck.isFree && !user!.isPremium) continue;
-        const cardIds = loadDeckCards(deck.id).map(c => c.id);
-        const count = await getDueCount(user!.id, cardIds);
+        const ids = loadDeckCards(deck.id).map(c => c.id);
+        const count = await getDueCount(user!.id, ids);
         setDueCounts(prev => ({ ...prev, [deck.id]: count }));
       }
     }
-    loadDueCounts();
+    loadCounts();
   }, [user?.id]);
-
-  function handleDeckPress(deck: DeckMeta) {
-    router.push(`/vocab/${deck.id}` as any);
-  }
 
   const totalDue = Object.values(dueCounts).reduce<number>((s, n) => s + (n ?? 0), 0);
 
   return (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Vocabulary</Text>
-        {totalDue > 0 && (
-          <Text style={styles.sub}>{totalDue} card{totalDue !== 1 ? 's' : ''} due today</Text>
-        )}
+        <Text style={styles.heading}>Practice</Text>
       </View>
 
-      <FlatList
-        data={DECK_CATALOG}
-        keyExtractor={d => d.id}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <DeckRow
-            deck={item}
-            dueCount={dueCounts[item.id] ?? (item.isFree || user?.isPremium ? null : -1)}
-            isPremium={user?.isPremium ?? false}
-            onPress={() => handleDeckPress(item)}
-          />
-        )}
-      />
-    </View>
+      {/* Role-play scenarios */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Role-Play Scenarios</Text>
+      </View>
+      {SCENARIO_CATALOG.map(s => (
+        <ScenarioCard
+          key={s.id}
+          s={s}
+          isPremium={user?.isPremium ?? false}
+          onPress={() => router.push(`/roleplay/${s.id}` as any)}
+        />
+      ))}
+
+      {/* Vocabulary decks */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>
+          Vocabulary{totalDue > 0 ? ` · ${totalDue} due today` : ''}
+        </Text>
+      </View>
+      {DECK_CATALOG.map(d => (
+        <DeckRow
+          key={d.id}
+          d={d}
+          dueCount={dueCounts[d.id] ?? (d.isFree || user?.isPremium ? null : -1)}
+          isPremium={user?.isPremium ?? false}
+          onPress={() => router.push(`/vocab/${d.id}` as any)}
+        />
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
-  header: { padding: Spacing.xl, paddingBottom: Spacing.md },
+  header: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.xl, paddingBottom: Spacing.sm },
   heading: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy },
-  sub: { fontSize: Typography.body, color: Colors.gold, marginTop: 4, fontWeight: Typography.semibold },
-  list: { paddingHorizontal: Spacing.lg, paddingBottom: Spacing.xl, gap: Spacing.md },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: Radii.lg,
-    padding: Spacing.md,
-    gap: Spacing.md,
-    ...Shadows.sm,
+  sectionHeader: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.sm },
+  sectionTitle: { fontSize: Typography.caption, fontWeight: Typography.bold, color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 1 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  // Scenario
+  scenarioCard: {
+    marginHorizontal: Spacing.lg, marginBottom: Spacing.md,
+    backgroundColor: Colors.surface, borderRadius: Radii.lg,
+    padding: Spacing.md, gap: Spacing.xs, ...Shadows.sm,
   },
-  iconBox: {
-    width: 52, height: 52, borderRadius: Radii.md,
-    justifyContent: 'center', alignItems: 'center',
+  scenarioTitle: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.navy, flex: 1 },
+  scenarioDesc: { fontSize: Typography.caption, color: Colors.textSecondary, lineHeight: 18 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  deptLabel: { fontSize: Typography.caption, color: Colors.info, fontWeight: Typography.semibold },
+  sep: { color: Colors.textMuted, fontSize: Typography.caption },
+  personaText: { fontSize: Typography.caption, color: Colors.textSecondary, flexShrink: 1 },
+  freeBadge: { backgroundColor: Colors.gold, borderRadius: Radii.sm, paddingHorizontal: 6, paddingVertical: 2 },
+  freeBadgeText: { color: '#fff', fontSize: 10, fontWeight: Typography.bold },
+  lockIcon: { fontSize: 18 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0D8CE' },
+  dotFilled: { backgroundColor: Colors.gold },
+  // Deck
+  deckRow: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.md,
+    marginHorizontal: Spacing.lg, marginBottom: Spacing.sm,
+    backgroundColor: Colors.surface, borderRadius: Radii.lg,
+    padding: Spacing.md, ...Shadows.sm,
   },
-  icon: { fontSize: 26 },
-  meta: { flex: 1, gap: 2 },
-  title: { fontSize: Typography.body, fontWeight: Typography.semibold, color: Colors.textPrimary },
-  dept: { fontSize: Typography.caption, fontWeight: Typography.semibold },
-  right: { alignItems: 'center', gap: 4 },
-  lock: { fontSize: 20 },
-  done: { fontSize: 20, color: Colors.success },
-  dueBadge: {
-    backgroundColor: Colors.gold, borderRadius: 12,
-    minWidth: 24, paddingHorizontal: 6, paddingVertical: 2, alignItems: 'center',
-  },
-  dueText: { color: '#fff', fontSize: Typography.caption, fontWeight: Typography.bold },
-  cardCount: { fontSize: Typography.caption, color: Colors.textMuted },
+  deckIcon: { width: 44, height: 44, borderRadius: Radii.md, justifyContent: 'center', alignItems: 'center' },
+  deckTitle: { fontSize: Typography.body, fontWeight: Typography.semibold, color: Colors.textPrimary },
+  deckDept: { fontSize: Typography.caption, color: Colors.textMuted },
+  dueBadge: { backgroundColor: Colors.gold, borderRadius: 10, minWidth: 22, paddingHorizontal: 5, paddingVertical: 2, alignItems: 'center' },
+  dueText: { color: '#fff', fontSize: 11, fontWeight: Typography.bold },
 });

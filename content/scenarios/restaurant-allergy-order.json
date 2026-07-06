@@ -1,0 +1,34 @@
+{
+  "id": "restaurant-allergy-order",
+  "title": "Restaurant Allergy Order",
+  "titleEs": "Pedido con alergia",
+  "description": "A guest with a nut allergy needs safe menu guidance before ordering.",
+  "department": "fnb",
+  "difficulty": 2,
+  "isFree": true,
+  "durationMinutes": 6,
+  "examFormats": ["roleplay"],
+  "guestPersona": {
+    "name": "Madame Dupont",
+    "nationality": "French",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Composed French guest; precise and expects thoroughness"
+  },
+  "objectives": [
+    { "id": "ask_allergy_details",   "label": "Ask about the specific allergy" },
+    { "id": "check_ingredients",     "label": "Check or offer to check ingredients" },
+    { "id": "suggest_safe_option",   "label": "Recommend a confirmed safe dish" },
+    { "id": "reassure_guest",        "label": "Reassure the guest it will be flagged in the kitchen" },
+    { "id": "confirm_order",         "label": "Confirm the order correctly" }
+  ],
+  "systemContext": "You have a severe anaphylactic allergy to all tree nuts (almonds, walnuts, cashews, pistachios, etc.). You are dining alone for a business lunch. You are friendly but precise — you ask detailed questions about ingredients and preparation methods because cross-contamination is a serious risk. You will order if and only if the staff member demonstrates that they understand the severity and has properly noted the allergy for the kitchen. You speak Spanish fluently but with a slight French accent. If the staff member seems unsure or dismissive, you will politely but firmly push back.",
+  "openingLine": "Buenos días. He hecho una reserva para el almuerzo. Antes de pedir, necesito hablar con usted sobre un asunto importante: tengo una alergia grave a los frutos secos.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.25,
+    "grammar": 0.15,
+    "taskCompletion": 0.3,
+    "register": 0.1
+  }
+}

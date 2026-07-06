@@ -18,6 +18,7 @@ export type {
   GuestMood,
   SpeakingSpeed,
   GuestPersona,
+  ScenarioObjective,
   Scenario,
 } from './scenario';
 

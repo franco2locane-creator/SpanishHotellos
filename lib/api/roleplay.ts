@@ -1,20 +1,21 @@
 import { supabase } from '@/lib/supabase';
-import type { Scenario, ExamAttempt, RubricScore } from '@/types';
+import type { Scenario, ExamAttempt } from '@/types';
 
-// ── Shared request shape ──────────────────────────────────────────────────────
+// ── Shared types ──────────────────────────────────────────────────────────────
 
-type WireMessage = { role: 'user' | 'assistant'; content: string };
+export type WireMessage = { role: 'user' | 'assistant'; content: string };
 
 // ── roleplay — single conversation turn ───────────────────────────────────────
 
 type RolePlayTurnArgs = {
   scenario: Scenario;
-  /** Full conversation so far, oldest first. Must start with a user message. */
   messages: WireMessage[];
 };
 
-type RolePlayTurnResult = {
-  reply: string;
+export type RolePlayTurnResult = {
+  guestReply: string;
+  objectivesCompleted: string[];
+  sessionShouldEnd: boolean;
 };
 
 export async function sendRolePlayTurn(
@@ -28,8 +29,10 @@ export async function sendRolePlayTurn(
           id:            args.scenario.id,
           title:         args.scenario.title,
           isFree:        args.scenario.isFree,
+          difficulty:    args.scenario.difficulty,
           guestPersona:  args.scenario.guestPersona,
           objectives:    args.scenario.objectives,
+          systemContext: args.scenario.systemContext,
           openingLine:   args.scenario.openingLine,
           rubricWeights: args.scenario.rubricWeights,
         },

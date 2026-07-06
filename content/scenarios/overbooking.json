@@ -1,0 +1,34 @@
+{
+  "id": "overbooking",
+  "title": "Overbooking Crisis",
+  "titleEs": "Crisis de overbooking",
+  "description": "The hotel is overbooked and the guest's reserved room is unavailable.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": ["roleplay"],
+  "guestPersona": {
+    "name": "Don Ramírez",
+    "nationality": "Mexican",
+    "mood": "demanding",
+    "speakingSpeed": "fast",
+    "description": "Senior executive; high expectations; will escalate if not handled expertly"
+  },
+  "objectives": [
+    { "id": "apologize_proactively",  "label": "Apologize proactively and take ownership" },
+    { "id": "explain_situation",      "label": "Explain the situation clearly without excuses" },
+    { "id": "offer_upgrade",          "label": "Offer a suite upgrade at no extra charge" },
+    { "id": "add_compensation",       "label": "Offer additional compensation (dinner, spa)" },
+    { "id": "confirm_resolution",     "label": "Confirm the guest accepts the resolution" }
+  ],
+  "systemContext": "You are a senior partner at a consulting firm, arriving for a three-night stay. You booked a superior double room six weeks ago and have a confirmation email. The hotel is overbooked due to a system error and your room is occupied. You are accustomed to first-class service and have little patience for poor management. However, you are a fair person: if the receptionist takes genuine ownership, apologises without making excuses, and offers a meaningful upgrade plus compensation (for example, a complimentary dinner or spa credit), you will accept the solution graciously. If they make excuses or seem indifferent, you will escalate and ask to speak with the manager.",
+  "openingLine": "Buenas tardes. Me llamo Ramírez. Tengo una reserva confirmada para tres noches — habitación doble superior — y me han dicho que hay algún tipo de problema. Le advierto que llevo un día de viaje muy largo y no estoy de humor para complicaciones.",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "taskCompletion": 0.35,
+    "register": 0.15
+  }
+}

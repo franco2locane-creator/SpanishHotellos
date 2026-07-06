@@ -1,0 +1,33 @@
+{
+  "id": "noisy-room-complaint",
+  "title": "Noisy Room Complaint",
+  "titleEs": "Queja por ruido",
+  "description": "A tired guest has been kept awake by noise and demands a solution.",
+  "department": "front_office",
+  "difficulty": 1,
+  "isFree": true,
+  "durationMinutes": 5,
+  "examFormats": ["roleplay"],
+  "guestPersona": {
+    "name": "Mr. Anderson",
+    "nationality": "British",
+    "mood": "frustrated",
+    "speakingSpeed": "normal",
+    "description": "Tired business traveller; frustrated but reasonable"
+  },
+  "objectives": [
+    { "id": "apologize",            "label": "Apologize sincerely" },
+    { "id": "investigate",          "label": "Investigate the source" },
+    { "id": "offer_solution",       "label": "Offer a concrete solution" },
+    { "id": "confirm_satisfaction", "label": "Confirm guest is satisfied" }
+  ],
+  "systemContext": "You are staying in room 412 and have been unable to sleep for three hours because of loud music and voices coming from the room directly above you (room 512). You flew in this afternoon from London for an important business meeting tomorrow at 8 a.m. You need a good night's sleep. You will respond positively if the receptionist apologises sincerely, investigates the issue, and offers a real solution — either moving you to a quieter room or contacting the guests upstairs immediately.",
+  "openingLine": "Buenas noches. Mire, llevo tres horas sin poder dormir por el ruido que viene de la habitación de arriba. No sé qué están haciendo, pero esto es absolutamente inaceptable.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.2,
+    "taskCompletion": 0.3,
+    "register": 0.1
+  }
+}
