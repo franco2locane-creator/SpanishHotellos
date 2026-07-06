@@ -32,9 +32,10 @@
       "expo-web-browser",
       "expo-sqlite",
       [
-        "@react-native-voice/voice",
+        "expo-speech-recognition",
         {
-          "microphonePermission": "Allow Spanish4Hoteleros to access the microphone for speaking practice."
+          "microphonePermission": "Allow Spanish4Hoteleros to access the microphone for speaking practice.",
+          "speechRecognitionPermission": "Allow Spanish4Hoteleros to use speech recognition for speaking practice."
         }
       ]
     ],
