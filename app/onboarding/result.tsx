@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useAuthStore } from '@/stores/authStore';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ function weeksUntil(isoDate: string): number {
 
 export default function Result() {
   const router = useRouter();
+  const { setOnboardingComplete } = useAuthStore();
   const { level, justification, examDate } = useLocalSearchParams<Params>();
 
   const meta = LEVEL_META[level] ?? LEVEL_META.B1;
@@ -81,7 +83,7 @@ export default function Result() {
         {/* CTA */}
         <TouchableOpacity
           style={styles.ctaBtn}
-          onPress={() => router.replace('/(tabs)')}
+          onPress={() => { setOnboardingComplete(); router.replace('/(tabs)'); }}
         >
           <Text style={styles.ctaText}>Start practising</Text>
         </TouchableOpacity>

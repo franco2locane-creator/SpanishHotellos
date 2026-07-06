@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
   KeyboardAvoidingView, Platform, TouchableOpacity,
@@ -16,7 +16,17 @@ type FormErrors = { email?: string; password?: string; confirm?: string; general
 
 export default function OnboardingAuth() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { user, setUser } = useAuthStore();
+
+  // Advance to the right step when auth completes (e.g., after Google OAuth redirect).
+  useEffect(() => {
+    if (!user) return;
+    if (user.onboardingStep === 'complete') {
+      router.replace('/(tabs)');
+    } else {
+      router.replace(`/onboarding/${user.onboardingStep}` as any);
+    }
+  }, [user?.id]);
 
   const [mode, setMode] = useState<Mode>('signup');
   const [email, setEmail] = useState('');

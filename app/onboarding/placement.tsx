@@ -25,7 +25,7 @@ const QUESTIONS = [
 
 export default function Placement() {
   const router = useRouter();
-  const { user, setOnboardingComplete } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [qIdx, setQIdx] = useState(0);
   const [transcripts, setTranscripts] = useState(['', '', '']);
@@ -129,8 +129,9 @@ export default function Placement() {
         })
         .eq('id', user.id);
 
-      setOnboardingComplete();
-
+      // Do NOT call setOnboardingComplete() here — it would trigger the routing
+      // effect to redirect to tabs before we can show the result screen.
+      // The result screen's CTA calls it right before replacing to tabs.
       router.replace({
         pathname: '/onboarding/result',
         params: { level, justification, examDate: profile?.exam_date ?? '' },
