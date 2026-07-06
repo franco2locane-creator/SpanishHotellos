@@ -10,12 +10,13 @@ import {
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 import { useAuthStore } from '@/stores/authStore';
+import { useFeedbackStore } from '@/stores/feedbackStore';
 import { loadScenario } from '@/lib/scenarios/catalog';
 import { sendRolePlayTurn, type WireMessage } from '@/lib/api/roleplay';
+import { gradeSession } from '@/lib/api/grade';
 import ChatBubble from '@/components/roleplay/ChatBubble';
 import ObjectivesChecklist from '@/components/roleplay/ObjectivesChecklist';
 import MicButton from '@/components/roleplay/MicButton';
-import SessionSummary from '@/components/roleplay/SessionSummary';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 
 const MAX_TURNS = 12;
@@ -24,21 +25,21 @@ const SPEED_RATE: Record<string, number> = { slow: 0.7, normal: 0.9, fast: 1.1 }
 
 type Turn = { role: 'guest' | 'student'; text: string };
 
-// ── State machine ─────────────────────────────────────────────────────────────
-
 type Phase =
-  | 'idle'          // before session starts
-  | 'guest_speaking'// TTS playing
-  | 'student_turn'  // waiting for mic
-  | 'recording'     // STT active
-  | 'sending'       // API call in flight
-  | 'error'         // network error
-  | 'done';         // session complete
+  | 'idle'
+  | 'guest_speaking'
+  | 'student_turn'
+  | 'recording'
+  | 'sending'
+  | 'error'
+  | 'grading'
+  | 'done';
 
 export default function RoleplayScreen() {
   const { scenarioId } = useLocalSearchParams<{ scenarioId: string }>();
   const router = useRouter();
   const { user } = useAuthStore();
+  const { setResult } = useFeedbackStore();
 
   const scenario = loadScenario(scenarioId ?? '');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -46,10 +47,10 @@ export default function RoleplayScreen() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [errorMsg, setErrorMsg] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
+  const sessionStartRef = useRef<number>(Date.now());
   const liveRef = useRef('');
+  const wireHistoryRef = useRef<WireMessage[]>([]);
   const scrollRef = useRef<ScrollView>(null);
-
-  // ── Speech recognition events ─────────────────────────────────────────────
 
   useSpeechRecognitionEvent('result', e => {
     const text = e.results?.[0]?.transcript ?? '';
@@ -60,8 +61,6 @@ export default function RoleplayScreen() {
   useSpeechRecognitionEvent('end', () => {
     if (phase === 'recording') handleStudentFinished(liveRef.current);
   });
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   function speakGuest(text: string) {
     setPhase('guest_speaking');
@@ -79,15 +78,13 @@ export default function RoleplayScreen() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
   }
 
-  // ── Session start ─────────────────────────────────────────────────────────
-
   function startSession() {
     if (!scenario) return;
+    sessionStartRef.current = Date.now();
+    wireHistoryRef.current = [];
     appendTurn({ role: 'guest', text: scenario.openingLine });
     speakGuest(scenario.openingLine);
   }
-
-  // ── Mic press / release ───────────────────────────────────────────────────
 
   async function handleMicPressIn() {
     if (phase !== 'student_turn') return;
@@ -102,16 +99,11 @@ export default function RoleplayScreen() {
   function handleMicPressOut() {
     if (phase !== 'recording') return;
     ExpoSpeechRecognitionModule.stop();
-    // 'end' event fires → handleStudentFinished
   }
-
-  // ── Process student utterance ─────────────────────────────────────────────
 
   const handleStudentFinished = useCallback(async (raw: string) => {
     if (!scenario || !user) return;
     const text = raw.trim();
-
-    // Graceful garbage recovery — treat as empty and let the guest ask to repeat.
     const isGarbage = text.length < 3;
 
     appendTurn({ role: 'student', text: isGarbage ? '(unclear)' : text });
@@ -124,8 +116,9 @@ export default function RoleplayScreen() {
 
     setPhase('sending');
 
-    // Build wire history: guest=assistant, student=user.
-    // Opening line is in the system prompt; add turns from index 1 onward.
+    // Maintain wire history for grading.
+    wireHistoryRef.current.push({ role: 'user', content: text });
+
     const wireHistory: WireMessage[] = [];
     for (const t of turns) {
       wireHistory.push({ role: t.role === 'student' ? 'user' : 'assistant', content: t.text });
@@ -142,10 +135,11 @@ export default function RoleplayScreen() {
       });
 
       appendTurn({ role: 'guest', text: result.guestReply });
+      wireHistoryRef.current.push({ role: 'assistant', content: result.guestReply });
 
-      const totalTurns = turns.length + 2; // +student +guest just added
+      const totalTurns = turns.length + 2;
       if (result.sessionShouldEnd || totalTurns >= MAX_TURNS) {
-        setPhase('done');
+        await triggerGrading([...wireHistoryRef.current]);
       } else {
         speakGuest(result.guestReply);
       }
@@ -155,7 +149,21 @@ export default function RoleplayScreen() {
     }
   }, [scenario, turns, user]);
 
-  // ── Early returns ─────────────────────────────────────────────────────────
+  async function triggerGrading(messages: WireMessage[]) {
+    if (!scenario || !user) { setPhase('done'); return; }
+    setPhase('grading');
+
+    const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+
+    try {
+      const gradeResult = await gradeSession({ scenario, messages, durationSeconds });
+      setResult(gradeResult);
+      router.replace(`/feedback/${gradeResult.attemptId}` as any);
+    } catch {
+      // Grading failed — navigate to a simple done screen.
+      setPhase('done');
+    }
+  }
 
   if (!scenario) {
     return (
@@ -165,21 +173,31 @@ export default function RoleplayScreen() {
     );
   }
 
-  if (phase === 'done') {
+  if (phase === 'grading') {
     return (
       <SafeAreaView style={styles.screen}>
-        <SessionSummary
-          scenarioTitle={scenario.title}
-          objectives={scenario.objectives}
-          completedIds={completedIds}
-          turnCount={Math.ceil(turns.filter(t => t.role === 'student').length)}
-          onDone={() => router.back()}
-        />
+        <View style={styles.gradingWrap}>
+          <ActivityIndicator size="large" color={Colors.gold} />
+          <Text style={styles.gradingTitle}>Grading your session…</Text>
+          <Text style={styles.gradingText}>Analysing fluency, vocabulary, grammar, task completion and register.</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  if (phase === 'done') {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.gradingWrap}>
+          <Text style={{ fontSize: 48 }}>✓</Text>
+          <Text style={styles.gradingTitle}>Session complete!</Text>
+          <TouchableOpacity style={styles.startBtn} onPress={() => router.back()}>
+            <Text style={styles.startBtnText}>Back to Practice</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -189,15 +207,18 @@ export default function RoleplayScreen() {
           <Text style={styles.back}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{scenario.title}</Text>
-        <Text style={styles.turnCount}>
-          {turns.filter(t => t.role === 'student').length}/{MAX_TURNS / 2}
-        </Text>
+        <View style={styles.headerRight}>
+          <Text style={styles.turnCount}>
+            {turns.filter(t => t.role === 'student').length}/{MAX_TURNS / 2}
+          </Text>
+          <TouchableOpacity onPress={() => router.push('/phrases' as any)} hitSlop={12}>
+            <Text style={styles.lifebuoy}>⛟</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Objectives */}
       <ObjectivesChecklist objectives={scenario.objectives} completedIds={completedIds} />
 
-      {/* Chat */}
       <ScrollView
         ref={scrollRef}
         style={styles.chat}
@@ -220,7 +241,6 @@ export default function RoleplayScreen() {
         )}
       </ScrollView>
 
-      {/* Error banner */}
       {phase === 'error' && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{errorMsg}</Text>
@@ -230,7 +250,6 @@ export default function RoleplayScreen() {
         </View>
       )}
 
-      {/* Start / Mic area */}
       <View style={styles.footer}>
         {phase === 'idle' ? (
           <TouchableOpacity style={styles.startBtn} onPress={startSession}>
@@ -258,7 +277,9 @@ const styles = StyleSheet.create({
   },
   back: { fontSize: 20, color: '#fff' },
   headerTitle: { flex: 1, textAlign: 'center', color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body, marginHorizontal: Spacing.sm },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   turnCount: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.7)' },
+  lifebuoy: { fontSize: 20, color: '#fff' },
   chat: { flex: 1 },
   chatContent: { paddingVertical: Spacing.md },
   typingRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },
@@ -277,4 +298,7 @@ const styles = StyleSheet.create({
   },
   startBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   errText: { padding: Spacing.xl, color: Colors.error },
+  gradingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.lg, padding: Spacing.xl },
+  gradingTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
+  gradingText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
 });

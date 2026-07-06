@@ -70,6 +70,9 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="vocab" />
         <Stack.Screen name="roleplay" />
+        <Stack.Screen name="feedback" />
+        <Stack.Screen name="drill" />
+        <Stack.Screen name="phrases" options={{ presentation: 'modal' }} />
       </Stack>
     </>
   );

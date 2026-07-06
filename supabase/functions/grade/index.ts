@@ -1,17 +1,11 @@
 import Anthropic from 'npm:@anthropic-ai/sdk';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import {
-  handleCors,
-  json,
-  err,
-} from '../_shared/cors.ts';
+import { handleCors, json, err } from '../_shared/cors.ts';
 import {
   buildGradingSystemPrompt,
   buildGradingUserPrompt,
   type RubricWeights,
 } from '../_shared/prompts.ts';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -19,7 +13,7 @@ type GradeRequest = {
   scenario: {
     id: string;
     title: string;
-    objectives: string[];
+    objectives: { id: string; label: string }[];
     rubricWeights: RubricWeights;
     format: string;
   };
@@ -27,41 +21,89 @@ type GradeRequest = {
   durationSeconds: number;
 };
 
-type RubricScores = {
-  fluency: number;
-  vocabulary: number;
-  grammar: number;
-  taskCompletion: number;
-  register: number;
+type CriterionDetail = {
+  score: number;
+  examples: string[];
+  note: string;
 };
 
-// Anthropic tool use schema for structured grading output.
+type GradeInput = {
+  scores: {
+    fluency: CriterionDetail;
+    vocabulary: CriterionDetail;
+    grammar: CriterionDetail;
+    taskCompletion: CriterionDetail;
+    register: CriterionDetail & { tuForms: string[] };
+  };
+  topThingsFix: { label: string; drillType: string }[];
+  feedback: string;
+};
+
+const criterionSchema = {
+  type: 'object' as const,
+  required: ['score', 'examples', 'note'],
+  properties: {
+    score: { type: 'number' as const, minimum: 0, maximum: 20 },
+    examples: {
+      type: 'array' as const,
+      items: { type: 'string' as const },
+      description: '2-3 exact quoted student phrases from the transcript.',
+    },
+    note: { type: 'string' as const, description: 'One sentence explaining the score.' },
+  },
+};
+
 const submitGradeTool: Anthropic.Tool = {
   name: 'submit_grade',
-  description: 'Submit the graded scores and written feedback for an exam attempt.',
+  description: 'Submit graded scores with evidence and actionable feedback for an exam attempt.',
   input_schema: {
     type: 'object' as const,
-    required: ['scores', 'feedback', 'strongPoints', 'improvementAreas'],
+    required: ['scores', 'topThingsFix', 'feedback'],
     properties: {
       scores: {
         type: 'object' as const,
         required: ['fluency', 'vocabulary', 'grammar', 'taskCompletion', 'register'],
         properties: {
-          fluency:        { type: 'number' as const, minimum: 0, maximum: 20 },
-          vocabulary:     { type: 'number' as const, minimum: 0, maximum: 20 },
-          grammar:        { type: 'number' as const, minimum: 0, maximum: 20 },
-          taskCompletion: { type: 'number' as const, minimum: 0, maximum: 20 },
-          register:       { type: 'number' as const, minimum: 0, maximum: 20 },
+          fluency: criterionSchema,
+          vocabulary: criterionSchema,
+          grammar: criterionSchema,
+          taskCompletion: criterionSchema,
+          register: {
+            type: 'object' as const,
+            required: ['score', 'examples', 'note', 'tuForms'],
+            properties: {
+              ...criterionSchema.properties,
+              tuForms: {
+                type: 'array' as const,
+                items: { type: 'string' as const },
+                description: 'Every tu-form used with the guest. Empty array if none found.',
+              },
+            },
+          },
         },
       },
-      feedback:         { type: 'string' as const, description: '3–4 sentences of constructive English feedback addressed to the student.' },
-      strongPoints:     { type: 'array' as const, items: { type: 'string' as const }, description: '2–3 specific things the student did well.' },
-      improvementAreas: { type: 'array' as const, items: { type: 'string' as const }, description: '2–3 specific areas to improve before the exam.' },
+      topThingsFix: {
+        type: 'array' as const,
+        description: 'Exactly 3 prioritised, specific, actionable fixes for the student.',
+        items: {
+          type: 'object' as const,
+          required: ['label', 'drillType'],
+          properties: {
+            label: { type: 'string' as const, description: 'Specific actionable fix in one sentence.' },
+            drillType: {
+              type: 'string' as const,
+              enum: ['register', 'vocabulary', 'grammar', 'fluency', 'taskCompletion'],
+            },
+          },
+        },
+      },
+      feedback: {
+        type: 'string' as const,
+        description: '2-3 sentences of encouraging, constructive English feedback to the student.',
+      },
     },
   },
 };
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatTranscript(messages: Message[]): string {
   return messages
@@ -72,23 +114,30 @@ function formatTranscript(messages: Message[]): string {
     .join('\n\n');
 }
 
-function computeTotalScore(scores: RubricScores, weights: RubricWeights): number {
-  const weighted =
-    scores.fluency        * (weights.fluency        ?? 0.2) +
-    scores.vocabulary     * (weights.vocabulary     ?? 0.2) +
-    scores.grammar        * (weights.grammar        ?? 0.2) +
-    scores.taskCompletion * (weights.taskCompletion ?? 0.2) +
-    scores.register       * (weights.register       ?? 0.2);
-  return Math.round(weighted * 10) / 10;
+function extractNumericScores(scores: GradeInput['scores']) {
+  return {
+    fluency:        scores.fluency.score,
+    vocabulary:     scores.vocabulary.score,
+    grammar:        scores.grammar.score,
+    taskCompletion: scores.taskCompletion.score,
+    register:       scores.register.score,
+  };
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────────
+function computeTotalScore(numeric: Record<string, number>, weights: RubricWeights): number {
+  const weighted =
+    numeric.fluency        * (weights.fluency        ?? 0.2) +
+    numeric.vocabulary     * (weights.vocabulary     ?? 0.2) +
+    numeric.grammar        * (weights.grammar        ?? 0.2) +
+    numeric.taskCompletion * (weights.taskCompletion ?? 0.2) +
+    numeric.register       * (weights.register       ?? 0.2);
+  return Math.round(weighted * 10) / 10;
+}
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return handleCors();
   if (req.method !== 'POST') return err('Method not allowed', 405);
 
-  // ── Auth ────────────────────────────────────────────────────────────────────
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return err('Missing Authorization header', 401);
 
@@ -101,7 +150,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return err('Unauthorized', 401);
 
-  // ── Parse body ──────────────────────────────────────────────────────────────
   let body: GradeRequest;
   try {
     body = await req.json();
@@ -110,31 +158,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   const { scenario, messages, durationSeconds } = body;
-
   if (!scenario || !Array.isArray(messages) || messages.length < 2) {
     return err('scenario, messages (min 2), and durationSeconds are required');
   }
 
-  // ── Call Anthropic (tool use for structured output) ─────────────────────────
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
   if (!apiKey) return err('AI service not configured', 503);
 
   const anthropic = new Anthropic({ apiKey });
   const transcript = formatTranscript(messages);
 
-  let gradeInput: {
-    scores: RubricScores;
-    feedback: string;
-    strongPoints: string[];
-    improvementAreas: string[];
-  };
+  let gradeInput: GradeInput;
 
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
+      max_tokens: 2048,
+      temperature: 0.2,
       system: buildGradingSystemPrompt(),
-      messages: [{ role: 'user', content: buildGradingUserPrompt({ scenarioTitle: scenario.title, objectives: scenario.objectives, transcript }) }],
+      messages: [{
+        role: 'user',
+        content: buildGradingUserPrompt({
+          scenarioTitle: scenario.title,
+          objectives: scenario.objectives,
+          transcript,
+        }),
+      }],
       tools: [submitGradeTool],
       tool_choice: { type: 'tool', name: 'submit_grade' },
     });
@@ -143,29 +192,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (!toolUse || toolUse.type !== 'tool_use') {
       return err('AI did not return a grade', 502);
     }
-    gradeInput = toolUse.input as typeof gradeInput;
+    gradeInput = toolUse.input as GradeInput;
   } catch (e) {
     console.error('Anthropic grading error:', e);
     return err('AI grading error', 502);
   }
 
-  // ── Compute weighted total & persist ─────────────────────────────────────────
-  const totalScore = computeTotalScore(gradeInput.scores, scenario.rubricWeights);
-
-  const attemptPayload = {
-    user_id:          user.id,
-    scenario_id:      scenario.id,
-    format:           scenario.format,
-    duration_seconds: durationSeconds,
-    scores:           gradeInput.scores,
-    total_score:      totalScore,
-    transcript:       transcript,
-    feedback:         gradeInput.feedback,
-  };
+  const numericScores = extractNumericScores(gradeInput.scores);
+  const totalScore = computeTotalScore(numericScores, scenario.rubricWeights);
 
   const { data: attempt, error: insertError } = await supabase
     .from('exam_attempts')
-    .insert(attemptPayload)
+    .insert({
+      user_id:          user.id,
+      scenario_id:      scenario.id,
+      format:           scenario.format,
+      duration_seconds: durationSeconds,
+      scores:           numericScores,
+      total_score:      totalScore,
+      transcript,
+      feedback:         gradeInput.feedback,
+    })
     .select('id, total_score, completed_at')
     .single();
 
@@ -176,13 +223,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   return json({
     attempt: {
-      id:               attempt.id,
-      scores:           gradeInput.scores,
+      id:           attempt.id,
       totalScore,
-      feedback:         gradeInput.feedback,
-      strongPoints:     gradeInput.strongPoints,
-      improvementAreas: gradeInput.improvementAreas,
-      completedAt:      attempt.completed_at,
+      completedAt:  attempt.completed_at,
+      numericScores,
+      detail:       gradeInput.scores,
+      topThingsFix: gradeInput.topThingsFix,
+      feedback:     gradeInput.feedback,
     },
   });
 });

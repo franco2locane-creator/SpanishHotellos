@@ -91,14 +91,59 @@ type GradingPromptArgs = {
 
 export function buildGradingSystemPrompt(): string {
   return `You are a senior examiner for hotel school Spanish oral exams.
-Grade the student's performance using the submit_grade tool.
-Be rigorous but fair. Base scores strictly on the transcript evidence provided.`;
+
+Your task is to grade the STUDENT's Spanish performance — ONLY the "STAFF (student)" lines. Completely ignore the AI guest lines.
+
+GRADING PRINCIPLES
+- Be rigorous but fair. Base every score strictly on transcript evidence.
+- Quote exact phrases from the transcript as examples (copy them verbatim).
+- Temperature for scoring: be consistent. The same performance should score the same every time.
+- Give concrete, actionable feedback that directly references what the student said.
+
+SCORE ANCHORS — what each benchmark looks like:
+
+FLUENCY (natural flow, pace, confidence, minimal hesitation)
+  20: Completely natural delivery — no audible hesitation, smooth transitions, native-like pacing.
+  15: Mostly fluent with only occasional brief pauses; recovers quickly without losing coherence.
+  10: Frequent pauses and self-corrections but messages remain communicable; listener must be patient.
+   5: Very halting — long silences, repeated restarts; communication is severely impaired.
+
+VOCABULARY (range and precision of hospitality-specific Spanish)
+  20: Rich hospitality terminology used precisely: "le proporciono", "a su disposición", "sin ningún cargo", "lo solventamos".
+  15: Good range of service vocabulary with only minor lexical gaps or approximate word choices.
+  10: Basic but sufficient — mostly high-frequency words, minimal specialised terms; some circumlocutions.
+   5: Very limited; constantly substitutes with English or very basic words; cannot express hospitality concepts.
+
+GRAMMAR (conjugation accuracy, gender/number agreement, tense use)
+  20: Near-perfect grammar; any errors are trivial and do not affect comprehension.
+  15: Minor recurring errors (e.g., ser/estar confusion, wrong tense once or twice) but generally accurate.
+  10: Frequent errors but the message is usually intelligible; listener can infer meaning.
+   5: Severe grammatical breakdown — most utterances contain multiple errors; comprehension often fails.
+
+TASK COMPLETION (all scenario objectives accomplished professionally)
+  20: All objectives met fully and handled in a professional, service-minded way.
+  15: Most objectives met; one may be partially fulfilled or handled awkwardly.
+  10: At least half the objectives attempted; some key tasks left incomplete.
+   5: Few or no objectives attempted; student could not guide the conversation to the required outcomes.
+
+REGISTER (formal register: "usted", professional hospitality language throughout)
+  20: Perfect formal register — always "usted", "su", "le"; professional courtesies ("con mucho gusto", "a sus órdenes"); never casual.
+  15: Mostly formal — 1–2 isolated tú-forms or informal expressions, otherwise correct.
+  10: Obvious mixing — uses "tú" / "tu" / "te" several times alongside "usted"; inconsistent.
+   5: Predominantly informal — mostly "tú" forms; registers entirely inappropriate for hospitality.
+
+REGISTER — CRITICAL: scan EVERY student line for tú-forms. Flag ALL instances:
+- Verb forms: eres, estás, tienes, quieres, puedes, necesitas, haces, etc.
+- Pronouns: te, tu (possessive), ti
+- Example: "¿Qué quieres?" → flag as tú-form violation
+
+Return your evaluation using the submit_grade tool.`;
 }
 
 export function buildGradingUserPrompt(args: GradingPromptArgs): string {
   const { scenarioTitle, objectives, transcript } = args;
 
-  return `Grade the STUDENT'S Spanish (the "STAFF" lines only — ignore the AI guest lines).
+  return `Grade the STUDENT's Spanish performance below.
 
 SCENARIO: ${scenarioTitle}
 
@@ -108,22 +153,10 @@ ${objectives.map((o, i) => `${i + 1}. [${o.id}] ${o.label}`).join('\n')}
 TRANSCRIPT:
 ${transcript}
 
-RUBRIC — score each criterion 0–20:
-
-FLUENCY — natural flow, pace, confidence, minimal hesitation
-  18–20: seamless  |  14–17: mostly fluent  |  10–13: frequent pauses but communicative  |  0–9: very limited
-
-VOCABULARY — range and precision of hospitality-specific Spanish
-  18–20: rich terminology  |  14–17: good range  |  10–13: basic but sufficient  |  0–9: severely limited
-
-GRAMMAR — accuracy (conjugation, agreement, tense)
-  18–20: near-perfect  |  14–17: minor errors  |  10–13: frequent but understood  |  0–9: severe breakdown
-
-TASK COMPLETION — all scenario objectives accomplished
-  18–20: all met professionally  |  14–17: most met  |  10–13: some met  |  0–9: few/none
-
-REGISTER — formal register (usted, professional hospitality language throughout)
-  18–20: perfect  |  14–17: mostly formal  |  10–13: mixed  |  0–9: predominantly informal
-
-Use the submit_grade tool to return your evaluation.`;
+INSTRUCTIONS:
+1. Read every "STAFF (student)" line carefully. Ignore "GUEST (AI)" lines completely.
+2. For each criterion, assign a score 0–20 and quote 2–3 exact student phrases as examples.
+3. For REGISTER: list EVERY tú-form you find in the student's lines (empty array if none found).
+4. Identify the top 3 most impactful things the student should fix before their exam.
+5. Call submit_grade with your complete evaluation.`;
 }
