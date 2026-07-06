@@ -10,14 +10,24 @@ import type { User } from '@supabase/supabase-js';
 export async function buildInitialUser(user: User): Promise<AuthUser> {
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_premium')
+    .select('is_premium, onboarding_completed_at, exam_date')
     .eq('id', user.id)
     .maybeSingle();
+
+  let onboardingStep: AuthUser['onboardingStep'];
+  if (profile?.onboarding_completed_at) {
+    onboardingStep = 'complete';
+  } else if (profile?.exam_date) {
+    onboardingStep = 'placement';
+  } else {
+    onboardingStep = 'exam-setup';
+  }
 
   return {
     id: user.id,
     email: user.email ?? null,
     isPremium: profile?.is_premium ?? false,
+    onboardingStep,
   };
 }
 

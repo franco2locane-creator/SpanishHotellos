@@ -36,15 +36,28 @@ export default function RootLayout() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Redirect based on auth state whenever user or route group changes.
+  // Redirect based on auth state and onboarding progress.
   useEffect(() => {
     if (isLoading) return;
-    const inAuthGroup = (segments[0] as string) === '(auth)';
+    const segment = segments[0] as string | undefined;
+    const inOnboarding = segment === 'onboarding';
+    const inTabs = segment === '(tabs)';
+    const inAuth = segment === '(auth)';
 
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/welcome');
-    } else if (user && inAuthGroup) {
-      router.replace('/(tabs)');
+    if (!user) {
+      // Legacy (auth) screens are still allowed; everything else → onboarding welcome.
+      if (!inOnboarding && !inAuth) router.replace('/onboarding');
+      return;
+    }
+
+    if (user.onboardingStep === 'complete') {
+      if (!inTabs) router.replace('/(tabs)');
+      return;
+    }
+
+    // Authenticated but onboarding incomplete — keep them in the onboarding group.
+    if (!inOnboarding) {
+      router.replace(`/onboarding/${user.onboardingStep}` as any);
     }
   }, [user, isLoading, segments]);
 
@@ -54,6 +67,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="onboarding" />
       </Stack>
     </>
   );

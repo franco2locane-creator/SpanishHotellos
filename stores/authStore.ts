@@ -7,6 +7,7 @@ type AuthState = {
   setUser: (user: AuthUser | null) => void;
   setLoading: (loading: boolean) => void;
   setPremium: (isPremium: boolean) => void;
+  setOnboardingComplete: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -17,5 +18,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   setPremium: (isPremium) =>
     set((state) => ({
       user: state.user ? { ...state.user, isPremium } : null,
+    })),
+  setOnboardingComplete: () =>
+    set((state) => ({
+      user: state.user ? { ...state.user, onboardingStep: 'complete' } : null,
     })),
 }));

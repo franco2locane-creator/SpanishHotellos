@@ -13,10 +13,17 @@ export type AsyncState<T> =
   | { status: 'success'; data: T }
   | { status: 'error'; error: ApiError };
 
+// Where the user is in the onboarding flow.
+// 'exam-setup' → authenticated, hasn't picked school/format/date yet
+// 'placement'  → done exam setup, placement test not yet completed
+// 'complete'   → placement done, onboarding_completed_at is set in DB
+export type OnboardingStep = 'exam-setup' | 'placement' | 'complete';
+
 export type AuthUser = {
   id: string;
   email: string | null;
   isPremium: boolean;
+  onboardingStep: OnboardingStep;
 };
 
 export type MessageRole = 'user' | 'assistant';
