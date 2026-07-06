@@ -24,6 +24,8 @@ export type AuthUser = {
   email: string | null;
   isPremium: boolean;
   onboardingStep: OnboardingStep;
+  examFormat: ExamFormat;
+  examDate?: string;             // ISO YYYY-MM-DD
 };
 
 export type MessageRole = 'user' | 'assistant';

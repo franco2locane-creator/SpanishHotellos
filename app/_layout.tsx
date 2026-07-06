@@ -72,6 +72,7 @@ export default function RootLayout() {
         <Stack.Screen name="roleplay" />
         <Stack.Screen name="feedback" />
         <Stack.Screen name="drill" />
+        <Stack.Screen name="exam" />
         <Stack.Screen name="phrases" options={{ presentation: 'modal' }} />
       </Stack>
     </>

@@ -38,7 +38,7 @@ function scoreColor(pct: number): string {
 export default function FeedbackScreen() {
   const { attemptId } = useLocalSearchParams<{ attemptId: string }>();
   const router = useRouter();
-  const { result, clear } = useFeedbackStore();
+  const { result, passMark, clear } = useFeedbackStore();
 
   // Clear the store when leaving so memory isn't held.
   useEffect(() => () => { clear(); }, []);
@@ -75,6 +75,13 @@ export default function FeedbackScreen() {
             <Text style={styles.scoreOf}>/100</Text>
           </View>
           <Text style={[styles.scoreLabel, { color }]}>{label}</Text>
+          {passMark !== null && (
+            <View style={[styles.passBadge, { backgroundColor: pct >= passMark ? '#DCFCE7' : '#FEE2E2' }]}>
+              <Text style={[styles.passBadgeText, { color: pct >= passMark ? '#15803D' : '#DC2626' }]}>
+                {pct >= passMark ? '✓ PASS' : '✗ FAIL'} · Pass mark: {passMark}/100
+              </Text>
+            </View>
+          )}
           <Text style={styles.feedback}>{result.feedback}</Text>
         </View>
 
@@ -135,6 +142,10 @@ const styles = StyleSheet.create({
   scorePct: { fontSize: 34, fontWeight: Typography.bold },
   scoreOf: { fontSize: 14, color: Colors.textMuted, alignSelf: 'flex-end', marginBottom: 8 },
   scoreLabel: { fontSize: Typography.heading, fontWeight: Typography.bold, marginTop: Spacing.sm },
+  passBadge: {
+    borderRadius: Radii.md, paddingHorizontal: Spacing.md, paddingVertical: 6, marginTop: Spacing.sm,
+  },
+  passBadgeText: { fontSize: Typography.body, fontWeight: '700' },
   feedback: {
     fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center',
     lineHeight: 22, marginTop: Spacing.sm, paddingHorizontal: Spacing.md,
