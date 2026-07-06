@@ -1,0 +1,65 @@
+[
+  {
+    "id": "deck-front-office",
+    "title": "Front Office Basics",
+    "description": "Essential vocabulary for reception and check-in/check-out.",
+    "isPremium": false,
+    "cards": [
+      {
+        "id": "vo-001",
+        "termEs": "la recepción",
+        "definitionEn": "reception / front desk",
+        "exampleEs": "Buenos días, bienvenido a la recepción del hotel.",
+        "category": "front_office",
+        "isPremium": false
+      },
+      {
+        "id": "vo-002",
+        "termEs": "la reserva",
+        "definitionEn": "reservation / booking",
+        "exampleEs": "¿Tiene usted una reserva a su nombre?",
+        "category": "front_office",
+        "isPremium": false
+      },
+      {
+        "id": "vo-003",
+        "termEs": "la habitación",
+        "definitionEn": "room",
+        "exampleEs": "Su habitación es la 412, en el cuarto piso.",
+        "category": "front_office",
+        "isPremium": false
+      },
+      {
+        "id": "vo-004",
+        "termEs": "el/la huésped",
+        "definitionEn": "guest",
+        "exampleEs": "El huésped necesita una llave adicional.",
+        "category": "front_office",
+        "isPremium": false
+      },
+      {
+        "id": "vo-005",
+        "termEs": "el camarero",
+        "termEsLatam": "el mesero",
+        "definitionEn": "waiter / server",
+        "exampleEs": "El camarero (ES) / El mesero (LATAM) les tomará la orden.",
+        "category": "restaurant",
+        "isPremium": false
+      }
+    ]
+  },
+  {
+    "id": "deck-restaurant",
+    "title": "Restaurant & F&B",
+    "description": "Food and beverage vocabulary for restaurant and bar service.",
+    "isPremium": true,
+    "cards": []
+  },
+  {
+    "id": "deck-housekeeping",
+    "title": "Housekeeping",
+    "description": "Vocabulary for housekeeping requests and room service.",
+    "isPremium": true,
+    "cards": []
+  }
+]

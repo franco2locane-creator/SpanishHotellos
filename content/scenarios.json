@@ -1,0 +1,52 @@
+[
+  {
+    "id": "check-in-standard",
+    "category": "check_in",
+    "title": "Standard Check-In",
+    "titleEs": "Recepción: entrada estándar",
+    "difficulty": "beginner",
+    "isPremium": false,
+    "durationMinutes": 5,
+    "descriptionEn": "Welcome a guest, verify their reservation, assign a room, and explain hotel amenities."
+  },
+  {
+    "id": "complaint-noise",
+    "category": "complaint",
+    "title": "Noise Complaint",
+    "titleEs": "Queja por ruido",
+    "difficulty": "beginner",
+    "isPremium": false,
+    "durationMinutes": 5,
+    "descriptionEn": "Handle a guest complaint about noise from a neighbouring room with professionalism."
+  },
+  {
+    "id": "restaurant-order",
+    "category": "restaurant",
+    "title": "Restaurant Order",
+    "titleEs": "Tomar un pedido en el restaurante",
+    "difficulty": "intermediate",
+    "isPremium": true,
+    "durationMinutes": 7,
+    "descriptionEn": "Take a full restaurant order, including dietary requirements and wine pairing recommendations."
+  },
+  {
+    "id": "concierge-city-tour",
+    "category": "concierge",
+    "title": "City Tour Recommendations",
+    "titleEs": "Recomendaciones de visitas por la ciudad",
+    "difficulty": "intermediate",
+    "isPremium": true,
+    "durationMinutes": 7,
+    "descriptionEn": "Recommend local attractions, arrange transport, and handle booking requests."
+  },
+  {
+    "id": "check-out-express",
+    "category": "check_out",
+    "title": "Express Check-Out",
+    "titleEs": "Salida exprés",
+    "difficulty": "intermediate",
+    "isPremium": true,
+    "durationMinutes": 5,
+    "descriptionEn": "Process an early departure, review the bill, and handle a billing discrepancy."
+  }
+]
