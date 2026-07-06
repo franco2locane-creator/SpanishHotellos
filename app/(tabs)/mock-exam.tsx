@@ -1,32 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, ActivityIndicator, Alert,
+  TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import Purchases from 'react-native-purchases';
 import { useAuthStore } from '@/stores/authStore';
+import { usePremium } from '@/hooks/usePremium';
 import { getMockExamAttemptCount, getStudyPlanData } from '@/lib/today';
 import { FORMAT_INFO } from '@/lib/mockExam/content';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { ExamFormat } from '@/types';
-
-function PaywallCard({ onUnlock }: { onUnlock: () => void }) {
-  return (
-    <View style={styles.paywall}>
-      <Text style={styles.paywallEmoji}>🔒</Text>
-      <Text style={styles.paywallTitle}>Free limit reached</Text>
-      <Text style={styles.paywallText}>
-        You have used your 1 free mock exam. Unlock full access for unlimited exams,
-        all 30+ scenarios, all vocab decks, and a personalised study plan.
-      </Text>
-      <TouchableOpacity style={styles.unlockBtn} onPress={onUnlock} activeOpacity={0.85}>
-        <Text style={styles.unlockBtnText}>Unlock Full Access — €9.99</Text>
-      </TouchableOpacity>
-      <Text style={styles.paywallSub}>One-time purchase · No subscription</Text>
-    </View>
-  );
-}
 
 function FormatCard({ format }: { format: ExamFormat }) {
   const info = FORMAT_INFO[format];
@@ -50,14 +33,14 @@ function FormatCard({ format }: { format: ExamFormat }) {
 
 export default function MockExamScreen() {
   const router = useRouter();
-  const { user, setPremium } = useAuthStore();
+  const { user } = useAuthStore();
+  const isPremium = usePremium();
   const [attemptCount, setAttemptCount] = useState<number | null>(null);
   const [scenarioId, setScenarioId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [purchasing, setPurchasing] = useState(false);
 
   const format: ExamFormat = user?.examFormat ?? 'guided_dialogue';
-  const freeLimit = !user?.isPremium && (attemptCount ?? 0) >= 1;
+  const freeLimit = !isPremium && (attemptCount ?? 0) >= 1;
 
   useEffect(() => {
     if (!user) return;
@@ -70,20 +53,6 @@ export default function MockExamScreen() {
       setLoading(false);
     });
   }, [user?.id]);
-
-  async function handleUnlock() {
-    setPurchasing(true);
-    try {
-      const result = await Purchases.purchaseProduct('spanish4hoteleros_full_access');
-      if (result.customerInfo.entitlements.active['premium']) {
-        setPremium(true);
-      }
-    } catch (e: any) {
-      if (!e.userCancelled) Alert.alert('Purchase failed', e.message ?? 'Please try again.');
-    } finally {
-      setPurchasing(false);
-    }
-  }
 
   function startExam() {
     const params: Record<string, string> = { format };
@@ -100,13 +69,11 @@ export default function MockExamScreen() {
 
         {loading ? (
           <ActivityIndicator style={{ marginTop: 60 }} color={Colors.navy} />
-        ) : freeLimit && !purchasing ? (
-          <PaywallCard onUnlock={handleUnlock} />
         ) : (
           <>
             <FormatCard format={format} />
 
-            {!user?.isPremium && (
+            {!isPremium && (
               <View style={styles.freeNotice}>
                 <Text style={styles.freeNoticeText}>
                   {attemptCount === 0
@@ -116,8 +83,15 @@ export default function MockExamScreen() {
               </View>
             )}
 
-            {purchasing ? (
-              <ActivityIndicator style={{ marginTop: 40 }} color={Colors.gold} />
+            {freeLimit ? (
+              <TouchableOpacity
+                style={styles.unlockBtn}
+                onPress={() => router.push('/paywall' as any)}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.unlockBtnText}>🔒  Unlock Unlimited Exams</Text>
+                <Text style={styles.unlockBtnSub}>€9.99 one-time · See what you get</Text>
+              </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.startBtn} onPress={startExam} activeOpacity={0.85}>
                 <Text style={styles.startBtnText}>Start Exam</Text>
@@ -165,22 +139,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md, alignItems: 'center', marginBottom: Spacing.lg,
   },
   startBtnText: { color: '#fff', fontWeight: '700', fontSize: Typography.body },
+  unlockBtn: {
+    backgroundColor: Colors.gold, borderRadius: Radii.lg,
+    paddingVertical: Spacing.md, alignItems: 'center', marginBottom: Spacing.lg, gap: 4,
+  },
+  unlockBtnText: { color: '#fff', fontWeight: '700', fontSize: Typography.body },
+  unlockBtnSub: { color: 'rgba(255,255,255,0.8)', fontSize: Typography.caption },
   examNotes: {
     backgroundColor: '#EEF3F9', borderRadius: Radii.lg, padding: Spacing.lg, gap: Spacing.sm,
   },
   notesTitle: { fontSize: Typography.caption, fontWeight: '700', color: Colors.navy, textTransform: 'uppercase', letterSpacing: 0.8 },
   notesText: { fontSize: Typography.caption, color: Colors.textSecondary, lineHeight: 20 },
-  paywall: {
-    backgroundColor: Colors.surface, borderRadius: Radii.xl, padding: Spacing.xl,
-    ...Shadows.md, marginTop: Spacing.lg, alignItems: 'center', gap: Spacing.md,
-  },
-  paywallEmoji: { fontSize: 48 },
-  paywallTitle: { fontSize: Typography.heading, fontWeight: '700', color: Colors.navy },
-  paywallText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
-  unlockBtn: {
-    backgroundColor: Colors.gold, borderRadius: Radii.lg,
-    paddingVertical: Spacing.md, paddingHorizontal: Spacing.xl, alignSelf: 'stretch', alignItems: 'center',
-  },
-  unlockBtnText: { color: '#fff', fontWeight: '700', fontSize: Typography.body },
-  paywallSub: { fontSize: Typography.caption, color: Colors.textMuted },
 });

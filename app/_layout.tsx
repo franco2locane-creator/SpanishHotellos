@@ -4,11 +4,33 @@ import { StatusBar } from 'expo-status-bar';
 import { supabase } from '@/lib/supabase';
 import { buildInitialUser } from '@/lib/auth';
 import { useAuthStore } from '@/stores/authStore';
+import { usePurchaseStore } from '@/stores/purchaseStore';
+import {
+  configurePurchases, loginPurchaseUser, logoutPurchaseUser,
+} from '@/lib/purchases';
+
+// Configure RevenueCat once at module load time (before any component mounts).
+configurePurchases();
 
 export default function RootLayout() {
-  const { user, isLoading, setUser, setLoading } = useAuthStore();
+  const { user, isLoading, setUser, setLoading, setPremium } = useAuthStore();
+  const { loadDevOverride } = usePurchaseStore();
   const router = useRouter();
   const segments = useSegments();
+
+  // Load dev override from AsyncStorage on startup.
+  useEffect(() => { loadDevOverride(); }, []);
+
+  // Sync RevenueCat login state with auth state.
+  useEffect(() => {
+    if (!user) {
+      logoutPurchaseUser();
+    } else {
+      loginPurchaseUser(user.id).then(isActive => {
+        if (isActive !== user.isPremium) setPremium(isActive);
+      });
+    }
+  }, [user?.id]);
 
   // Hydrate session on cold start, then subscribe to future changes.
   useEffect(() => {
@@ -73,6 +95,7 @@ export default function RootLayout() {
         <Stack.Screen name="feedback" />
         <Stack.Screen name="drill" />
         <Stack.Screen name="exam" />
+        <Stack.Screen name="paywall" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="phrases" options={{ presentation: 'modal' }} />
       </Stack>
     </>

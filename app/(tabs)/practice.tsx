@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
+import { usePremium } from '@/hooks/usePremium';
 import { SCENARIO_CATALOG, DEPT_LABELS, MOOD_ICONS, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { DECK_CATALOG, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
@@ -23,15 +24,15 @@ function DifficultyDots({ level }: { level: 1 | 2 | 3 }) {
 
 // ── Scenario card ─────────────────────────────────────────────────────────────
 
-function ScenarioCard({ s, isPremium, onPress }: { s: ScenarioMeta; isPremium: boolean; onPress: () => void }) {
+function ScenarioCard({ s, isPremium, onPress, onPaywall }: { s: ScenarioMeta; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
   const locked = !s.isFree && !isPremium;
   const moodKey = s.personaPreview.split(' · ')[2]?.split(' ')[0] ?? 'neutral';
 
   return (
     <TouchableOpacity
-      style={[styles.scenarioCard, locked && { opacity: 0.55 }]}
-      onPress={locked ? undefined : onPress}
-      activeOpacity={locked ? 1 : 0.8}
+      style={[styles.scenarioCard, locked && styles.lockedCard]}
+      onPress={locked ? onPaywall : onPress}
+      activeOpacity={0.8}
     >
       <View style={styles.row}>
         <Text style={styles.scenarioTitle} numberOfLines={1}>{s.title}</Text>
@@ -66,13 +67,13 @@ const DEPT_ICONS: Record<string, string> = {
   concierge: '🗝️', events: '🎊', management: '📋',
 };
 
-function DeckRow({ d, dueCount, isPremium, onPress }: { d: DeckMeta; dueCount: number | null; isPremium: boolean; onPress: () => void }) {
+function DeckRow({ d, dueCount, isPremium, onPress, onPaywall }: { d: DeckMeta; dueCount: number | null; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
   const locked = !d.isFree && !isPremium;
   return (
     <TouchableOpacity
-      style={[styles.deckRow, locked && { opacity: 0.55 }]}
-      onPress={locked ? undefined : onPress}
-      activeOpacity={locked ? 1 : 0.8}
+      style={[styles.deckRow, locked && styles.lockedCard]}
+      onPress={locked ? onPaywall : onPress}
+      activeOpacity={0.8}
     >
       <View style={[styles.deckIcon, { backgroundColor: DEPT_COLORS[d.department] ?? '#F0EDE8' }]}>
         <Text style={{ fontSize: 20 }}>{DEPT_ICONS[d.department] ?? '📚'}</Text>
@@ -95,13 +96,14 @@ function DeckRow({ d, dueCount, isPremium, onPress }: { d: DeckMeta; dueCount: n
 export default function PracticeScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const isPremium = usePremium();
   const [dueCounts, setDueCounts] = useState<Record<string, number | null>>({});
 
   useEffect(() => {
     if (!user) return;
     async function loadCounts() {
       for (const deck of DECK_CATALOG) {
-        if (!deck.isFree && !user!.isPremium) continue;
+        if (!deck.isFree && !isPremium) continue;
         const ids = loadDeckCards(deck.id).map(c => c.id);
         const count = await getDueCount(user!.id, ids);
         setDueCounts(prev => ({ ...prev, [deck.id]: count }));
@@ -126,8 +128,9 @@ export default function PracticeScreen() {
         <ScenarioCard
           key={s.id}
           s={s}
-          isPremium={user?.isPremium ?? false}
+          isPremium={isPremium}
           onPress={() => router.push(`/roleplay/${s.id}` as any)}
+          onPaywall={() => router.push('/paywall' as any)}
         />
       ))}
 
@@ -141,9 +144,10 @@ export default function PracticeScreen() {
         <DeckRow
           key={d.id}
           d={d}
-          dueCount={dueCounts[d.id] ?? (d.isFree || user?.isPremium ? null : -1)}
-          isPremium={user?.isPremium ?? false}
+          dueCount={dueCounts[d.id] ?? (d.isFree || isPremium ? null : -1)}
+          isPremium={isPremium}
           onPress={() => router.push(`/vocab/${d.id}` as any)}
+          onPaywall={() => router.push('/paywall' as any)}
         />
       ))}
     </ScrollView>
@@ -157,6 +161,7 @@ const styles = StyleSheet.create({
   sectionHeader: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg, paddingBottom: Spacing.sm },
   sectionTitle: { fontSize: Typography.caption, fontWeight: Typography.bold, color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 1 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  lockedCard: { opacity: 0.58 },
   // Scenario
   scenarioCard: {
     marginHorizontal: Spacing.lg, marginBottom: Spacing.md,

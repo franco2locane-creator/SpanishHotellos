@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFeedbackStore } from '@/stores/feedbackStore';
+import { usePremium } from '@/hooks/usePremium';
 import RadarChart from '@/components/feedback/RadarChart';
 import CriterionCard from '@/components/feedback/CriterionCard';
 import FixCard from '@/components/feedback/FixCard';
@@ -39,6 +40,7 @@ export default function FeedbackScreen() {
   const { attemptId } = useLocalSearchParams<{ attemptId: string }>();
   const router = useRouter();
   const { result, passMark, clear } = useFeedbackStore();
+  const isPremium = usePremium();
 
   // Clear the store when leaving so memory isn't held.
   useEffect(() => () => { clear(); }, []);
@@ -112,7 +114,24 @@ export default function FeedbackScreen() {
           </>
         )}
 
-        {/* Practice again */}
+        {/* Upgrade prompt — shown after mock exam for free users */}
+        {passMark !== null && !isPremium && (
+          <TouchableOpacity
+            style={styles.upgradeCard}
+            onPress={() => router.push((`/paywall?score=${pct}`) as any)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.upgradeTextWrap}>
+              <Text style={styles.upgradeTitle}>Unlock unlimited practice</Text>
+              <Text style={styles.upgradeSub}>
+                30+ scenarios · 6 vocab decks · unlimited exams
+              </Text>
+            </View>
+            <Text style={styles.upgradeArrow}>→</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Back to Practice */}
         <TouchableOpacity style={styles.doneBtn} onPress={() => router.replace('/(tabs)/practice')}>
           <Text style={styles.doneBtnText}>Back to Practice</Text>
         </TouchableOpacity>
@@ -156,8 +175,16 @@ const styles = StyleSheet.create({
     color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 1,
     marginBottom: Spacing.sm,
   },
+  upgradeCard: {
+    marginTop: Spacing.lg, backgroundColor: Colors.gold, borderRadius: Radii.lg,
+    padding: Spacing.md, flexDirection: 'row', alignItems: 'center', gap: Spacing.sm,
+  },
+  upgradeTextWrap: { flex: 1 },
+  upgradeTitle: { fontSize: Typography.body, fontWeight: '700', color: '#fff' },
+  upgradeSub: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
+  upgradeArrow: { fontSize: 20, color: '#fff', fontWeight: '700' },
   doneBtn: {
-    marginTop: Spacing.xl, backgroundColor: Colors.navy, borderRadius: Radii.lg,
+    marginTop: Spacing.md, backgroundColor: Colors.navy, borderRadius: Radii.lg,
     paddingVertical: Spacing.md, alignItems: 'center',
   },
   doneBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },

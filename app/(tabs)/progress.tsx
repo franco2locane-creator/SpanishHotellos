@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Switch,
 } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
+import { usePurchaseStore } from '@/stores/purchaseStore';
 import { SCENARIO_CATALOG } from '@/lib/scenarios/catalog';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
@@ -92,6 +93,7 @@ function AvgBar({ label, avg }: { label: string; avg: number }) {
 
 export default function ProgressScreen() {
   const { user } = useAuthStore();
+  const { devPremiumOverride, setDevPremiumOverride } = usePurchaseStore();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -139,6 +141,19 @@ export default function ProgressScreen() {
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.heading}>Progress</Text>
+
+        {/* Dev-only premium toggle — never shown in production builds */}
+        {__DEV__ && (
+          <View style={styles.devToggle}>
+            <Text style={styles.devToggleText}>🔧 Dev: Simulate Premium</Text>
+            <Switch
+              value={devPremiumOverride}
+              onValueChange={setDevPremiumOverride}
+              trackColor={{ true: Colors.gold }}
+              thumbColor="#fff"
+            />
+          </View>
+        )}
 
         {attempts.length === 0 ? (
           <View style={styles.emptyState}>
@@ -200,7 +215,13 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
   content: { padding: Spacing.lg, paddingBottom: 60 },
-  heading: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy, marginBottom: Spacing.lg },
+  heading: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy, marginBottom: Spacing.sm },
+  devToggle: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#FFF3CD', borderRadius: Radii.md, padding: Spacing.sm,
+    marginBottom: Spacing.md, borderWidth: 1, borderColor: '#FBBF24',
+  },
+  devToggleText: { fontSize: Typography.caption, fontWeight: '600', color: '#92400E' },
   card: {
     backgroundColor: Colors.surface, borderRadius: Radii.lg,
     padding: Spacing.lg, marginBottom: Spacing.md, ...Shadows.sm, gap: Spacing.sm,
