@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { Platform } from 'react-native';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Offline SQLite schema — vocab SRS state
@@ -73,6 +74,7 @@ const CREATE_DIRTY_INDEX = `
 let _db: SQLite.SQLiteDatabase | null = null;
 
 export async function getDb(): Promise<SQLite.SQLiteDatabase> {
+  if (Platform.OS === 'web') throw new Error('SQLite not available on web');
   if (_db) return _db;
   _db = await SQLite.openDatabaseAsync(DB_NAME);
   await _db.execAsync('PRAGMA journal_mode = WAL;');

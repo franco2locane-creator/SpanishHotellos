@@ -1,6 +1,7 @@
 import { getDb } from './sqlite';
 import { supabase } from '@/lib/supabase';
 import { isoToday } from '@/lib/srs';
+import { Platform } from 'react-native';
 import type { SrsData } from '@/types';
 
 // ── Read ──────────────────────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ export async function getCardProgress(
   userId: string,
   cardId: string,
 ): Promise<SrsData | null> {
+  if (Platform.OS === 'web') return null;
   const db = await getDb();
   const row = await db.getFirstAsync<ProgressRow>(
     `SELECT interval, ease_factor, due_date, repetitions
@@ -36,6 +38,7 @@ export async function getDueCount(
   userId: string,
   cardIds: string[],
 ): Promise<number> {
+  if (Platform.OS === 'web') return 0;
   if (!cardIds.length) return 0;
   const db = await getDb();
   const today = isoToday();
@@ -56,6 +59,7 @@ export async function getDueCardIds(
   allCardIds: string[],
   sessionLimit = 20,
 ): Promise<string[]> {
+  if (Platform.OS === 'web') return allCardIds.slice(0, sessionLimit);
   if (!allCardIds.length) return [];
   const db = await getDb();
   const today = isoToday();
@@ -82,6 +86,7 @@ export async function upsertCardProgress(
   deckId: string,
   data: SrsData,
 ): Promise<void> {
+  if (Platform.OS === 'web') return;
   const db = await getDb();
   await db.runAsync(
     `INSERT INTO vocab_progress
@@ -105,6 +110,7 @@ export async function logReview(
   before: SrsData,
   after: SrsData,
 ): Promise<void> {
+  if (Platform.OS === 'web') return;
   const db = await getDb();
   await db.runAsync(
     `INSERT INTO review_log
@@ -126,6 +132,7 @@ type DirtyRow = {
 };
 
 export async function syncDirtyToSupabase(userId: string): Promise<void> {
+  if (Platform.OS === 'web') return;
   const db = await getDb();
   const dirty = await db.getAllAsync<DirtyRow>(
     `SELECT card_id, interval, ease_factor, due_date, repetitions, last_reviewed_at
