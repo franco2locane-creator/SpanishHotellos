@@ -176,7 +176,7 @@ export default function DrillScreen() {
               ? 'Perfect! Keep drilling daily until it\'s automatic.'
               : 'Good effort. Come back tomorrow to reinforce this skill.'}
           </Text>
-          <TouchableOpacity style={styles.doneBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.doneBtn} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}>
             <Text style={styles.doneBtnText}>Back to Feedback</Text>
           </TouchableOpacity>
         </View>
@@ -188,7 +188,7 @@ export default function DrillScreen() {
     <SafeAreaView style={styles.screen}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} hitSlop={12}>
           <Text style={styles.back}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{config.title}</Text>

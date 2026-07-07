@@ -208,7 +208,7 @@ export default function ReviewScreen() {
           reviewed={reviewedCount}
           correct={correctCount}
           deckTitle={deck.title}
-          onDone={() => router.back()}
+          onDone={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}
         />
       </SafeAreaView>
     );
@@ -221,7 +221,7 @@ export default function ReviewScreen() {
           <Text style={styles.summaryEmoji}>✅</Text>
           <Text style={styles.summaryTitle}>You're all caught up</Text>
           <Text style={styles.summaryDeck}>No cards due in {deck.title} — your spacing is working. Come back tomorrow to keep the streak.</Text>
-          <TouchableOpacity style={styles.doneBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.doneBtn} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}>
             <Text style={styles.doneBtnText}>Back to decks</Text>
           </TouchableOpacity>
         </View>
@@ -236,7 +236,7 @@ export default function ReviewScreen() {
     <SafeAreaView style={styles.screen}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} hitSlop={12}>
           <Text style={styles.back}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.progressText}>{progress}</Text>

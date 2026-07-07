@@ -9,6 +9,9 @@ type Props = {
 };
 
 export default function SocialAuthRow({ onApple, onGoogle, isLoading = false }: Props) {
+  // Social auth (Apple / Google OAuth) requires native modules not available on web.
+  if (Platform.OS === 'web') return null;
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.dividerRow}>

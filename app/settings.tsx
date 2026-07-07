@@ -101,7 +101,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} hitSlop={12}>
           <Text style={styles.back}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>

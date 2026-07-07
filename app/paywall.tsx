@@ -73,7 +73,7 @@ export default function PaywallScreen() {
 
   // If the user is already premium, dismiss immediately
   useEffect(() => {
-    if (user?.isPremium) router.back();
+    if (user?.isPremium) router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
   }, [user?.isPremium]);
 
   // Reset purchase status on unmount so stale state doesn't persist
@@ -109,14 +109,14 @@ export default function PaywallScreen() {
   }
 
   if (purchaseStatus === 'success') {
-    return <CelebrationOverlay onDismiss={() => router.back()} />;
+    return <CelebrationOverlay onDismiss={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} />;
   }
 
   return (
     <SafeAreaView style={styles.screen}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12} style={styles.closeBtn}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} hitSlop={12} style={styles.closeBtn}>
           <Text style={styles.closeText}>✕</Text>
         </TouchableOpacity>
       </View>

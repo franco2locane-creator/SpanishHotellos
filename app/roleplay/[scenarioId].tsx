@@ -212,7 +212,7 @@ export default function RoleplayScreen() {
           <TouchableOpacity style={styles.startBtn} onPress={() => updatePhase('idle')}>
             <Text style={styles.startBtnText}>Retry this scenario</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.back()} style={{ marginTop: Spacing.sm }}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} style={{ marginTop: Spacing.sm }}>
             <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Go back</Text>
           </TouchableOpacity>
         </View>
@@ -238,7 +238,7 @@ export default function RoleplayScreen() {
         <View style={styles.gradingWrap}>
           <Text style={{ fontSize: 48 }}>✓</Text>
           <Text style={styles.gradingTitle}>Session complete</Text>
-          <TouchableOpacity style={styles.startBtn} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.startBtn} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}>
             <Text style={styles.startBtnText}>Back to Practice</Text>
           </TouchableOpacity>
         </View>
@@ -250,7 +250,7 @@ export default function RoleplayScreen() {
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Close and return to practice"

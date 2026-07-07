@@ -73,7 +73,9 @@ export default function RootLayout() {
     }
 
     if (user.onboardingStep === 'complete') {
-      if (!inTabs) router.replace('/(tabs)');
+      // Only redirect to tabs from auth/onboarding entry points.
+      // All other routes (roleplay, vocab, drill, exam, etc.) are valid.
+      if (inOnboarding || inAuth || !segment) router.replace('/(tabs)');
       return;
     }
 

@@ -81,7 +81,7 @@ export default function ExamSession() {
   }
 
   function handleExit() {
-    router.back();
+    router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
   }
 
   if (grading) {
