@@ -3,5 +3,13 @@
   "compilerOptions": {
     "types": ["jest", "node"]
   },
-  "include": ["lib/**/*.test.ts", "lib/srs.ts", "types/**/*.ts"]
+  "include": [
+    "lib/**/*.test.ts",
+    "lib/srs.ts",
+    "lib/grading.ts",
+    "lib/safeJson.ts",
+    "lib/scenarios/catalog.ts",
+    "lib/vocab/decks.ts",
+    "types/**/*.ts"
+  ]
 }
