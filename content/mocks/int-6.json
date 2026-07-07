@@ -1,0 +1,107 @@
+{
+  "id": "int-6",
+  "level": "intermediate",
+  "number": 6,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y cuántos años tienes?",
+          "¿Qué es lo que más te gusta de tu país desde el punto de vista turístico?",
+          "¿Qué idiomas hablas y cuál te resulta más difícil?",
+          "¿Tienes experiencia laboral en hostelería?",
+          "¿Cuál es tu objetivo profesional a largo plazo?",
+          "¿Por qué es importante la actitud en el sector hotelero?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Balneario de Archena",
+        "hotelCity": "Archena (Murcia)",
+        "timeOfDay": "15:00",
+        "reservations": [
+          {
+            "guestName": "Pérez",
+            "nights": 3,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "balneario superior",
+            "view": "thermal garden view"
+          },
+          {
+            "guestName": "De Vries",
+            "nights": 5,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "junior suite",
+            "view": "river view"
+          }
+        ],
+        "walkIn": "No reservation — requested room(s) not available. Suggest alternative: a standard room with garden view at €120/night",
+        "hotelInfo": [
+          { "label": "Thermal baths", "detail": "Open 09:00–21:00 daily, included in all room rates" },
+          { "label": "Restaurant Termal", "detail": "Open 13:00–15:30 and 20:00–22:30" },
+          { "label": "Breakfast", "detail": "Included — buffet 07:30–10:00" },
+          { "label": "Spa treatments", "detail": "Book at reception — minimum 24h in advance" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for name / confirm or identify reservation",
+          "Confirm room type, nights, number of guests",
+          "Ask for ID / passport",
+          "For walk-ins: apologise, explain unavailability, offer alternative with price",
+          "Hand over room key, state room number",
+          "Share relevant hotel information",
+          "Wish them a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    },
+    {
+      "type": "complaint",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Balneario de Archena",
+        "hotelCity": "Archena (Murcia)",
+        "timeOfDay": "22:00",
+        "complaintScenario": "A guest approaches the front desk to complain that their room is too noisy — they can hear guests in the room above them walking and talking loudly. They have an early wake-up call at 06:00.",
+        "guestName": "sr(a). De Vries",
+        "problemDetails": "Guests in the room above are making loud noise. The guest paid for a quiet stay and cannot sleep.",
+        "resolutionOptions": [
+          "Apologise sincerely for the inconvenience",
+          "Call the floor manager to speak to the guests in the room above",
+          "Offer to move the guest to a quieter room on a different floor (if available)",
+          "Offer complimentary earplugs or a do-not-disturb sign",
+          "Follow up with a phone call in 15 minutes to confirm the problem is resolved"
+        ],
+        "checklist": [
+          "Greet and listen to the guest calmly — let them explain",
+          "Apologise sincerely using formal usted register",
+          "Show empathy: acknowledge the inconvenience",
+          "Take action: call the relevant department or manager",
+          "Offer a concrete solution or compensation",
+          "Confirm the guest is satisfied before they leave",
+          "Thank them for bringing the issue to your attention"
+        ]
+      }
+    }
+  ]
+}

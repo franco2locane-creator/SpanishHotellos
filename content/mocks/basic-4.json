@@ -1,0 +1,76 @@
+{
+  "id": "basic-4",
+  "level": "basic",
+  "number": 4,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Dónde naciste y dónde vives actualmente?",
+          "¿Cuál es una cosa especial o famosa de tu país?",
+          "¿Cuáles son tus aficiones? ¿Practicas algún deporte?",
+          "¿Qué vas a hacer este verano?",
+          "¿Quieres hacer prácticas en el extranjero? ¿Dónde?",
+          "¿Por qué es importante aprender español para tu carrera?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Gran Vía",
+        "hotelCity": "Sevilla",
+        "timeOfDay": "09:15",
+        "reservations": [
+          {
+            "guestName": "López",
+            "nights": 3,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "standard",
+            "view": "patio view"
+          },
+          {
+            "guestName": "Schmidt",
+            "nights": 5,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "superior",
+            "view": "pool view"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Breakfast", "detail": "Not included — available at €18 per person in the restaurant" },
+          { "label": "Outdoor pool", "detail": "Open 08:00–20:00, towels available at reception" },
+          { "label": "Tourist info desk", "detail": "Lobby, staffed 09:00–18:00 daily" }
+        ],
+        "checkoutTime": "11:30",
+        "breakfastIncluded": false,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant if applicable",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "id": "basic-10",
+  "level": "basic",
+  "number": 10,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cuál es tu nombre completo y cuántos años tienes?",
+          "¿Qué hace especial a tu ciudad o región para los visitantes?",
+          "¿Qué tipo de música o películas te gustan?",
+          "¿Cuáles son tus puntos fuertes para trabajar en hostelería?",
+          "¿Tienes experiencia trabajando con clientes?",
+          "¿Qué harás si no encuentras trabajo inmediatamente después de graduarte?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Meliá Castilla",
+        "hotelCity": "Madrid",
+        "timeOfDay": "16:30",
+        "reservations": [
+          {
+            "guestName": "Ruiz",
+            "nights": 2,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "standard",
+            "view": "city view"
+          },
+          {
+            "guestName": "Johnson",
+            "nights": 6,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "executive",
+            "view": "skyline view"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Restaurant El Bodegón", "detail": "Open 07:00–23:00" },
+          { "label": "Indoor pool & fitness", "detail": "4th floor, open 07:00–22:00" },
+          { "label": "Breakfast", "detail": "Not included — buffet breakfast €22 per person" },
+          { "label": "Airport shuttle", "detail": "Available on request, €18 per person" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": false,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant if applicable",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

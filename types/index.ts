@@ -39,3 +39,22 @@ export type {
   WeeklyMilestone,
   StudyPlan,
 } from './user';
+
+export type {
+  AssignmentType,
+  MockLevel,
+  MockSource,
+  PersonalPresentationData,
+  CheckinReservation,
+  CheckinData,
+  TableReservation,
+  DishOfDay,
+  RestaurantData,
+  FeaturedRoom,
+  HotelPresentationData,
+  JobInterviewData,
+  ComplaintData,
+  SayingNoData,
+  Assignment,
+  MockExamData,
+} from './mock';

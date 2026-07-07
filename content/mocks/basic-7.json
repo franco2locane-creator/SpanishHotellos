@@ -1,0 +1,77 @@
+{
+  "id": "basic-7",
+  "level": "basic",
+  "number": 7,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y de dónde eres exactamente?",
+          "¿Cuál es el monumento o lugar más famoso de tu ciudad?",
+          "¿Practicas algún deporte o tienes alguna afición especial?",
+          "¿Qué idiomas hablas? ¿Por qué es importante el español para ti?",
+          "¿Qué vas a hacer cuando termines tus estudios?",
+          "¿Preferirías trabajar en un hotel grande o en un hotel boutique? ¿Por qué?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Alfonso XIII",
+        "hotelCity": "Sevilla",
+        "timeOfDay": "12:00",
+        "reservations": [
+          {
+            "guestName": "Jiménez",
+            "nights": 3,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "classic",
+            "view": "garden view"
+          },
+          {
+            "guestName": "Brown",
+            "nights": 5,
+            "persons": 3,
+            "rooms": 1,
+            "roomType": "family suite",
+            "view": "patio view"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Restaurant El Restaurante", "detail": "Ground floor, open 07:00–23:00" },
+          { "label": "Outdoor pool", "detail": "Open 09:00–20:00" },
+          { "label": "Breakfast", "detail": "Included, served 07:00–10:00 in the main restaurant" },
+          { "label": "Parking", "detail": "Valet parking available, €20 per night" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

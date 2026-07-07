@@ -1,0 +1,102 @@
+{
+  "id": "int-7",
+  "level": "intermediate",
+  "number": 7,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y de dónde eres?",
+          "¿Qué hay de especial en tu ciudad para los turistas?",
+          "¿Qué haces en tu tiempo libre?",
+          "¿Qué te motivó a estudiar hostelería?",
+          "¿En qué tipo de establecimiento te gustaría hacer tus prácticas?",
+          "¿Cómo te imaginas en diez años profesionalmente?"
+        ]
+      }
+    },
+    {
+      "type": "hotel_presentation",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Parador de Toledo",
+        "hotelCity": "Toledo",
+        "sloganCompletion": "la historia viva de España",
+        "architectureStyle": "historic & monumental",
+        "featuredRoom": {
+          "type": "Superior room",
+          "furniture": ["a carved wooden four-poster bed", "an antique writing desk"],
+          "bathroomFeature": "a deep soaking bathtub with views of the city"
+        },
+        "shuttlePriceEuros": 28,
+        "extraFacility": {
+          "name": "Outdoor terrace with panoramic views of Toledo",
+          "hours": "08:00–23:00",
+          "priceNote": "free for guests"
+        },
+        "targetAudience": "History enthusiasts and cultural travellers",
+        "guestQuestions": [
+          "¿Hay restaurante en el parador?",
+          "¿El hotel tiene piscina?",
+          "¿Se puede visitar la catedral de Toledo desde aquí?",
+          "¿Hay servicio de habitaciones por la noche?"
+        ],
+        "checklist": [
+          "Use the 'dejarse sorprender por' slogan formula",
+          "Describe the architecture and style",
+          "Present the featured room with all details (furniture + bathroom)",
+          "Mention the shuttle service and price",
+          "Present the extra facility with hours and pricing",
+          "State the target audience",
+          "Answer ALL guest questions — include at least one NO answer",
+          "Use formal usted register throughout"
+        ]
+      }
+    },
+    {
+      "type": "restaurant",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "restaurantName": "Restaurante Los Arcos",
+        "hotelName": "Hotel Parador de Toledo",
+        "hotelCity": "Toledo",
+        "timeOfDay": "14:00",
+        "reservations": [
+          { "guestName": "Sánchez", "covers": 2, "seating": "terrace with city view" },
+          { "guestName": "Chen", "covers": 4, "seating": "interior dining room" }
+        ],
+        "noTableSituation": "No terrace tables available until 14:30 (another party is just finishing). Offer the interior dining room immediately or a complimentary tapa at the bar while they wait.",
+        "dishOfDay": {
+          "name": "Perdiz estofada a la toledana",
+          "ingredients": "partridge, onion, bay leaf, white wine, black peppercorns, olive oil",
+          "cookingMethod": "slow-braised on low heat for 2 hours",
+          "flavourTexture": "deeply flavourful, tender meat that falls off the bone, with a rich wine sauce"
+        },
+        "checklist": [
+          "Greet the guests warmly at the entrance",
+          "Check reservation system — identify or seat the guests",
+          "If no table available: apologise, give waiting time, suggest alternative",
+          "Accompany guests to their table",
+          "Present the menu and recommend the dish of the day (with description)",
+          "Take the order professionally",
+          "Check on guests during the meal",
+          "Handle any requests or questions politely"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "id": "int-1",
+  "level": "intermediate",
+  "number": 1,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y de dónde eres?",
+          "¿Qué estudias y por qué elegiste la hostelería?",
+          "¿Qué idiomas hablas? ¿Por qué es importante el español en tu carrera?",
+          "¿Qué haces normalmente los fines de semana?",
+          "¿Dónde te gustaría trabajar después de graduarte?"
+        ]
+      }
+    },
+    {
+      "type": "hotel_presentation",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Arts Barcelona",
+        "hotelCity": "Barcelona",
+        "sloganCompletion": "el lujo del Mediterráneo",
+        "architectureStyle": "modern & sophisticated",
+        "featuredRoom": {
+          "type": "Deluxe room",
+          "furniture": ["a king-size bed", "a designer writing desk"],
+          "bathroomFeature": "a rain shower with sea views"
+        },
+        "shuttlePriceEuros": 32,
+        "extraFacility": {
+          "name": "Rooftop infinity pool",
+          "hours": "08:00–22:00",
+          "priceNote": "free for guests"
+        },
+        "targetAudience": "Business travellers and luxury couples",
+        "guestQuestions": [
+          "¿Hay parking en el hotel?",
+          "¿El desayuno está incluido en el precio?",
+          "¿Podemos hacer reservas en el restaurante del hotel?",
+          "¿Hay servicio de lavandería?"
+        ],
+        "checklist": [
+          "Use the 'dejarse sorprender por' slogan formula",
+          "Describe the architecture and style",
+          "Present the featured room with all details (furniture + bathroom)",
+          "Mention the shuttle service and price",
+          "Present the extra facility with hours and pricing",
+          "State the target audience",
+          "Answer ALL guest questions — include at least one NO answer",
+          "Use formal usted register throughout"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Arts Barcelona",
+        "hotelCity": "Barcelona",
+        "timeOfDay": "15:30",
+        "reservations": [
+          {
+            "guestName": "Herrera",
+            "nights": 3,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "deluxe",
+            "view": "sea view"
+          },
+          {
+            "guestName": "Nakamura",
+            "nights": 1,
+            "persons": 1,
+            "rooms": 1,
+            "roomType": "superior",
+            "view": "city view"
+          }
+        ],
+        "walkIn": "No reservation — requested room(s) not available. Suggest alternative: a superior room with city view at €220/night",
+        "hotelInfo": [
+          { "label": "Room service", "detail": "24/7 — menu available in all rooms" },
+          { "label": "Spa", "detail": "Ground floor, open 09:00–21:00 daily" },
+          { "label": "Rooftop pool", "detail": "Open 08:00–22:00, free for guests" },
+          { "label": "Late check-out", "detail": "Available on request" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": false,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for name / confirm or identify reservation",
+          "Confirm room type, nights, number of guests",
+          "Ask for ID / passport",
+          "For walk-ins: apologise, explain unavailability, offer alternative with price",
+          "Hand over room key, state room number",
+          "Share relevant hotel information",
+          "Wish them a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "id": "int-9",
+  "level": "intermediate",
+  "number": 9,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y dónde has crecido?",
+          "¿Cuál es el plato típico más famoso de tu región?",
+          "¿Qué tipo de música te gusta y por qué?",
+          "¿Tienes ya alguna idea de dónde quieres trabajar al graduarte?",
+          "¿Cuál es para ti la habilidad más importante en hostelería?",
+          "¿Aprendes español solo en clase o también fuera? ¿Cómo?"
+        ]
+      }
+    },
+    {
+      "type": "restaurant",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "restaurantName": "Restaurante La Cúpula",
+        "hotelName": "Hotel Mandarin Oriental Barcelona",
+        "hotelCity": "Barcelona",
+        "timeOfDay": "21:00",
+        "reservations": [
+          { "guestName": "Nakamura", "covers": 2, "seating": "window table" },
+          { "guestName": "García", "covers": 6, "seating": "private dining room" }
+        ],
+        "noTableSituation": "Window tables are all occupied until approximately 21:45. Offer the interior section with equally elegant ambiance, or complimentary cocktails at the bar while they wait.",
+        "dishOfDay": {
+          "name": "Lubina salvaje al vapor",
+          "ingredients": "wild sea bass, fennel, lemon zest, saffron broth",
+          "cookingMethod": "gently steamed in aromatic broth",
+          "flavourTexture": "delicate and flaky, with a subtle anise note and silky texture"
+        },
+        "checklist": [
+          "Greet the guests warmly at the entrance",
+          "Check reservation system — identify or seat the guests",
+          "If no table available: apologise, give waiting time, suggest alternative",
+          "Accompany guests to their table",
+          "Present the menu and recommend the dish of the day (with description)",
+          "Take the order professionally",
+          "Check on guests during the meal",
+          "Handle any requests or questions politely"
+        ]
+      }
+    },
+    {
+      "type": "saying_no",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Mandarin Oriental Barcelona",
+        "hotelCity": "Barcelona",
+        "timeOfDay": "23:30",
+        "requestContext": "A guest calls reception to ask if they can have a late check-out until 18:00 (standard check-out is 12:00). The hotel is fully booked the next day and housekeeping needs the room by 13:00 at the absolute latest.",
+        "reasonForNo": "The hotel is at full capacity the following day. Housekeeping must prepare the room for the incoming guest who arrives at 13:00. A 6-hour extension is not possible.",
+        "alternatives": [
+          "Offer a 1-hour complimentary extension until 13:00",
+          "Offer luggage storage at no charge until 18:00",
+          "Offer access to the hotel spa and lounge until their departure time",
+          "Check if a late check-out until 14:00 is possible at an extra charge of €50"
+        ],
+        "checklist": [
+          "Listen to the guest's request politely without interrupting",
+          "Apologise and explain the reason clearly (hotel fully booked)",
+          "Say NO politely using formal usted register",
+          "Immediately offer at least two concrete alternatives",
+          "Confirm the guest's departure time and arrange luggage storage if needed",
+          "Thank the guest for their understanding"
+        ]
+      }
+    }
+  ]
+}

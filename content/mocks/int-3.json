@@ -1,0 +1,109 @@
+{
+  "id": "int-3",
+  "level": "intermediate",
+  "number": 3,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿De qué país eres? ¿Cuál es la capital?",
+          "¿Qué te gusta hacer en tu tiempo libre?",
+          "¿Qué asignaturas te gustan más en la escuela y por qué?",
+          "¿Tienes hermanos? ¿Cómo es tu familia?",
+          "¿Qué vas a hacer cuando termines tus estudios?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel San Domenico Palace",
+        "hotelCity": "Taormina",
+        "timeOfDay": "13:00",
+        "reservations": [
+          {
+            "guestName": "Costa",
+            "nights": 5,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "suite",
+            "view": "sea & Etna view"
+          },
+          {
+            "guestName": "Andersen",
+            "nights": 2,
+            "persons": 4,
+            "rooms": 2,
+            "roomType": "superior",
+            "view": "garden view"
+          }
+        ],
+        "walkIn": "No reservation — requested room(s) not available. Suggest alternative: a classic room with garden view at €175/night",
+        "hotelInfo": [
+          { "label": "Room service", "detail": "24/7 — full menu available" },
+          { "label": "Outdoor pool", "detail": "Open 08:00–19:00 with view of Mount Etna" },
+          { "label": "Concierge", "detail": "Can arrange private tours of Taormina and Etna" },
+          { "label": "Breakfast", "detail": "Included — Mediterranean buffet 07:00–10:30" }
+        ],
+        "checkoutTime": "11:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for name / confirm or identify reservation",
+          "Confirm room type, nights, number of guests",
+          "Ask for ID / passport",
+          "For walk-ins: apologise, explain unavailability, offer alternative with price",
+          "Hand over room key, state room number",
+          "Share relevant hotel information",
+          "Wish them a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    },
+    {
+      "type": "restaurant",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "restaurantName": "Restaurante Belmond",
+        "hotelName": "Hotel San Domenico Palace",
+        "hotelCity": "Taormina",
+        "timeOfDay": "21:00",
+        "reservations": [
+          { "guestName": "Ferrari", "covers": 2, "seating": "terrace with sea view" },
+          { "guestName": "Novak", "covers": 3, "seating": "interior" }
+        ],
+        "noTableSituation": "No terrace tables available at this moment (in approximately 30 minutes). Suggest an interior table or a drink at the bar while waiting.",
+        "dishOfDay": {
+          "name": "Pez espada a la plancha",
+          "ingredients": "fresh swordfish steak, lemon, capers, fresh herbs",
+          "cookingMethod": "grilled on a hot iron plate",
+          "flavourTexture": "firm texture, slightly smoky, with a fresh citrus finish"
+        },
+        "checklist": [
+          "Greet the guests warmly at the entrance",
+          "Check reservation system — identify or seat the guests",
+          "If no table available: apologise, give waiting time, suggest alternative",
+          "Accompany guests to their table",
+          "Present the menu and recommend the dish of the day (with description)",
+          "Take the order professionally",
+          "Check on guests during the meal",
+          "Handle any requests or questions politely"
+        ]
+      }
+    }
+  ]
+}

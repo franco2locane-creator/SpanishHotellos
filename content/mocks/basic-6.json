@@ -1,0 +1,77 @@
+{
+  "id": "basic-6",
+  "level": "basic",
+  "number": 6,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas? ¿Cuántos años tienes y cuándo es tu cumpleaños?",
+          "¿De qué ciudad eres y qué es lo más famoso de ella?",
+          "¿Qué haces en tu tiempo libre? ¿Tienes algún pasatiempo especial?",
+          "¿Por qué elegiste estudiar hostelería?",
+          "¿Dónde te gustaría hacer tus prácticas? ¿Por qué?",
+          "¿Hablas otros idiomas además del español? ¿Cuáles?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Casa Fuster",
+        "hotelCity": "Barcelona",
+        "timeOfDay": "15:00",
+        "reservations": [
+          {
+            "guestName": "García",
+            "nights": 2,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "deluxe",
+            "view": "boulevard view"
+          },
+          {
+            "guestName": "Williams",
+            "nights": 4,
+            "persons": 1,
+            "rooms": 1,
+            "roomType": "superior",
+            "view": "interior courtyard"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Café Vienés", "detail": "Ground floor, open 09:00–22:00" },
+          { "label": "Rooftop terrace", "detail": "Open 10:00–22:00, panoramic views of Barcelona" },
+          { "label": "Breakfast", "detail": "Included, served 07:00–10:30" },
+          { "label": "Concierge", "detail": "Available 24/7 for tours and tickets" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

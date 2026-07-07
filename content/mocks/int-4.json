@@ -1,0 +1,150 @@
+{
+  "id": "int-4",
+  "level": "intermediate",
+  "number": 4,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y cuántos años tienes?",
+          "¿De dónde eres? ¿Cómo es tu ciudad?",
+          "¿Por qué estudias hostelería? ¿Qué te motivó?",
+          "¿Qué idiomas hablas y cuál estás aprendiendo ahora?",
+          "¿Cuáles son tus planes e intenciones para el futuro?",
+          "¿Tienes alguna experiencia laboral hasta ahora?"
+        ]
+      }
+    },
+    {
+      "type": "hotel_presentation",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Neptuno Granada",
+        "hotelCity": "Granada",
+        "sloganCompletion": "la magia de la Alhambra",
+        "architectureStyle": "elegant & Moorish-inspired",
+        "featuredRoom": {
+          "type": "Superior room",
+          "furniture": ["a handcrafted wooden bed frame", "a mosaic-tiled side table"],
+          "bathroomFeature": "a hammam-style steam shower"
+        },
+        "shuttlePriceEuros": 30,
+        "extraFacility": {
+          "name": "Rooftop bar with Alhambra views",
+          "hours": "17:00–01:00",
+          "priceNote": "cocktails from €10"
+        },
+        "targetAudience": "Cultural travellers and honeymooners",
+        "guestQuestions": [
+          "¿El hotel está cerca de la Alhambra?",
+          "¿Hay servicio de habitaciones por la noche?",
+          "¿Podemos dejar el equipaje después del check-out?",
+          "¿Tienen habitaciones comunicadas para familias?"
+        ],
+        "checklist": [
+          "Use the 'dejarse sorprender por' slogan formula",
+          "Describe the architecture and style",
+          "Present the featured room with all details (furniture + bathroom)",
+          "Mention the shuttle service and price",
+          "Present the extra facility with hours and pricing",
+          "State the target audience",
+          "Answer ALL guest questions — include at least one NO answer",
+          "Use formal usted register throughout"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Neptuno Granada",
+        "hotelCity": "Granada",
+        "timeOfDay": "16:00",
+        "reservations": [
+          {
+            "guestName": "Vidal",
+            "nights": 4,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "superior",
+            "view": "Alhambra view"
+          },
+          {
+            "guestName": "Kowalski",
+            "nights": 3,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "standard",
+            "view": "garden view"
+          }
+        ],
+        "walkIn": "No reservation — requested room(s) not available. Suggest alternative: a standard room with patio view at €160/night",
+        "hotelInfo": [
+          { "label": "Room service", "detail": "Available 24/7" },
+          { "label": "Rooftop bar", "detail": "Open 17:00–01:00 daily" },
+          { "label": "Concierge", "detail": "Alhambra tickets arranged — book 48hrs in advance" },
+          { "label": "Breakfast", "detail": "Included — Moorish breakfast buffet 07:30–10:00" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for name / confirm or identify reservation",
+          "Confirm room type, nights, number of guests",
+          "Ask for ID / passport",
+          "For walk-ins: apologise, explain unavailability, offer alternative with price",
+          "Hand over room key, state room number",
+          "Share relevant hotel information",
+          "Wish them a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    },
+    {
+      "type": "restaurant",
+      "number": 4,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "restaurantName": "Restaurante El Zegrí",
+        "hotelName": "Hotel Neptuno Granada",
+        "hotelCity": "Granada",
+        "timeOfDay": "21:30",
+        "reservations": [
+          { "guestName": "Morales", "covers": 2, "seating": "terrace" },
+          { "guestName": "Brennan", "covers": 6, "seating": "private dining room" }
+        ],
+        "noTableSituation": "No tables currently available (terrace fully booked until 22:30). Suggest the private lounge area with complimentary welcome drink while waiting.",
+        "dishOfDay": {
+          "name": "Cordero lechal asado",
+          "ingredients": "slow-roasted suckling lamb, rosemary, garlic, white wine jus",
+          "cookingMethod": "roasted in a traditional clay oven",
+          "flavourTexture": "incredibly tender, melts in the mouth, with rich and aromatic flavours"
+        },
+        "checklist": [
+          "Greet the guests warmly at the entrance",
+          "Check reservation system — identify or seat the guests",
+          "If no table available: apologise, give waiting time, suggest alternative",
+          "Accompany guests to their table",
+          "Present the menu and recommend the dish of the day (with description)",
+          "Take the order professionally",
+          "Check on guests during the meal",
+          "Handle any requests or questions politely"
+        ]
+      }
+    }
+  ]
+}

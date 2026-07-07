@@ -1,0 +1,76 @@
+{
+  "id": "basic-5",
+  "level": "basic",
+  "number": 5,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cuántas personas hay en tu familia? ¿Cómo se llaman?",
+          "¿Cuál es la ciudad más bonita de tu país? ¿Por qué?",
+          "¿Qué haces para aprender español fuera de clase?",
+          "¿Tienes algún plan para el próximo año?",
+          "¿Vas a continuar estudiando después de esta escuela?",
+          "¿Cuál es tu sueño profesional?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Alhambra Palace",
+        "hotelCity": "Granada",
+        "timeOfDay": "11:00",
+        "reservations": [
+          {
+            "guestName": "Rossi",
+            "nights": 2,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "honeymoon suite",
+            "view": "Alhambra view"
+          },
+          {
+            "guestName": "Petrov",
+            "nights": 3,
+            "persons": 3,
+            "rooms": 1,
+            "roomType": "triple room",
+            "view": "garden view"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Rooftop terrace", "detail": "Open 10:00–23:00 — stunning views of the Alhambra" },
+          { "label": "Concierge", "detail": "Can arrange Alhambra tickets — book at least 24 hours in advance" },
+          { "label": "Breakfast", "detail": "Included — Moorish-style buffet 07:30–10:00" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant if applicable",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

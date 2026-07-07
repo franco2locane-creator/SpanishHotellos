@@ -1,0 +1,76 @@
+{
+  "id": "basic-1",
+  "level": "basic",
+  "number": 1,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y de dónde eres?",
+          "¿Cuántos años tienes y dónde vives ahora?",
+          "¿Cómo es la ciudad donde vives? ¿Te gusta?",
+          "¿Qué quieres hacer después de tus estudios?",
+          "¿Vas a trabajar en el extranjero? ¿Por qué?",
+          "¿Qué idiomas hablas? ¿Estudias algún idioma nuevo?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Palace Barcelona",
+        "hotelCity": "Barcelona",
+        "timeOfDay": "14:30",
+        "reservations": [
+          {
+            "guestName": "Martínez",
+            "nights": 3,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "superior",
+            "view": "city view"
+          },
+          {
+            "guestName": "Fontaine",
+            "nights": 1,
+            "persons": 1,
+            "rooms": 1,
+            "roomType": "standard",
+            "view": "interior"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Restaurant", "detail": "2nd floor, open 07:00–23:00" },
+          { "label": "Rooftop pool", "detail": "5th floor, open 09:00–21:00 (summer only)" },
+          { "label": "Breakfast", "detail": "Included, served 07:00–10:30" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": true,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

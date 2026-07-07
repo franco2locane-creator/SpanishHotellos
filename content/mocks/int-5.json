@@ -1,0 +1,101 @@
+{
+  "id": "int-5",
+  "level": "intermediate",
+  "number": 5,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cuántas personas hay en tu familia? ¿Cómo son?",
+          "¿Cuál es la ciudad más interesante de tu país para los turistas?",
+          "¿Qué haces para practicar español fuera de clase?",
+          "¿Tienes algún trabajo a tiempo parcial? ¿Dónde?",
+          "¿Cuál es tu sueño profesional?"
+        ]
+      }
+    },
+    {
+      "type": "hotel_presentation",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Marqués de Riscal",
+        "hotelCity": "Elciego (Rioja)",
+        "sloganCompletion": "donde el vino, el arte y el lujo se encuentran",
+        "architectureStyle": "avant-garde & architectural",
+        "featuredRoom": {
+          "type": "Vineyard room",
+          "furniture": ["a custom-designed king bed", "a floor-to-ceiling glass window"],
+          "bathroomFeature": "a deep soaking tub with vineyard views"
+        },
+        "shuttlePriceEuros": 35,
+        "extraFacility": {
+          "name": "Vinotherapy Caudalie Spa",
+          "hours": "09:00–20:00",
+          "priceNote": "treatments from €80"
+        },
+        "targetAudience": "Wine lovers, design enthusiasts and luxury travellers",
+        "guestQuestions": [
+          "¿Se pueden hacer visitas a las bodegas?",
+          "¿El hotel tiene restaurante con estrella Michelin?",
+          "¿Hay actividades para niños en el hotel?",
+          "¿Cuál es la mejor época del año para visitar La Rioja?"
+        ],
+        "checklist": [
+          "Use the 'dejarse sorprender por' slogan formula",
+          "Describe the architecture and style",
+          "Present the featured room with all details (furniture + bathroom)",
+          "Mention the shuttle service and price",
+          "Present the extra facility with hours and pricing",
+          "State the target audience",
+          "Answer ALL guest questions — include at least one NO answer",
+          "Use formal usted register throughout"
+        ]
+      }
+    },
+    {
+      "type": "restaurant",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "restaurantName": "Restaurante Marqués de Riscal",
+        "hotelName": "Hotel Marqués de Riscal",
+        "hotelCity": "Elciego (Rioja)",
+        "timeOfDay": "20:30",
+        "reservations": [
+          { "guestName": "Álvarez", "covers": 2, "seating": "wine cellar view" },
+          { "guestName": "Thompson", "covers": 4, "seating": "terrace" }
+        ],
+        "noTableSituation": "Terrace tables not available this evening (closed due to weather). Offer interior alternative with vineyard views, and explain the situation politely.",
+        "dishOfDay": {
+          "name": "Solomillo de buey a la brasa",
+          "ingredients": "prime beef tenderloin, truffle butter, seasonal mushrooms",
+          "cookingMethod": "charcoal-grilled to perfection",
+          "flavourTexture": "exceptionally tender and juicy, with an intense smoky aroma"
+        },
+        "checklist": [
+          "Greet the guests warmly at the entrance",
+          "Check reservation system — identify or seat the guests",
+          "If no table available: apologise, give waiting time, suggest alternative",
+          "Accompany guests to their table",
+          "Present the menu and recommend the dish of the day (with description)",
+          "Take the order professionally",
+          "Check on guests during the meal",
+          "Handle any requests or questions politely"
+        ]
+      }
+    }
+  ]
+}

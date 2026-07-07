@@ -1,0 +1,99 @@
+{
+  "id": "int-10",
+  "level": "intermediate",
+  "number": 10,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cuál es tu nombre completo y de dónde eres?",
+          "¿Qué hace que tu país sea un destino turístico atractivo?",
+          "¿Qué sueles hacer para conocer gente nueva?",
+          "¿Cuáles son tus planes para el próximo año académico?",
+          "¿Cómo manejas situaciones de estrés en el trabajo?",
+          "¿Por qué es importante la sostenibilidad en la hostelería moderna?"
+        ]
+      }
+    },
+    {
+      "type": "hotel_presentation",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Puente Romano",
+        "hotelCity": "Marbella",
+        "sloganCompletion": "el auténtico lujo del Mediterráneo andaluz",
+        "architectureStyle": "Andalusian village & Mediterranean",
+        "featuredRoom": {
+          "type": "Deluxe room",
+          "furniture": ["a hand-painted headboard", "a private furnished terrace with sun loungers"],
+          "bathroomFeature": "an outdoor rainfall shower surrounded by lush gardens"
+        },
+        "shuttlePriceEuros": 40,
+        "extraFacility": {
+          "name": "Six Senses Spa",
+          "hours": "09:00–21:00",
+          "priceNote": "treatments from €120"
+        },
+        "targetAudience": "Luxury travellers, wellness seekers and international celebrities",
+        "guestQuestions": [
+          "¿Hay acceso directo a la playa?",
+          "¿El hotel tiene restaurante con estrella Michelin?",
+          "¿Podemos organizar una boda en el hotel?",
+          "¿Hay guardería o actividades para niños?"
+        ],
+        "checklist": [
+          "Use the 'dejarse sorprender por' slogan formula",
+          "Describe the architecture and style",
+          "Present the featured room with all details (furniture + bathroom)",
+          "Mention the shuttle service and price",
+          "Present the extra facility with hours and pricing",
+          "State the target audience",
+          "Answer ALL guest questions — include at least one NO answer",
+          "Use formal usted register throughout"
+        ]
+      }
+    },
+    {
+      "type": "complaint",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Puente Romano",
+        "hotelCity": "Marbella",
+        "timeOfDay": "09:30",
+        "complaintScenario": "A guest arrives at the restaurant for breakfast 20 minutes before the 10:30 closing time but is told by a waiter that the buffet is already being cleared. The guest is upset because they had a late wake-up call due to a hotel error.",
+        "guestName": "sr(a). Hoffmann",
+        "problemDetails": "The hotel's automated wake-up call system failed — the guest received their call 45 minutes late. They are now missing breakfast despite it being included in their room rate.",
+        "resolutionOptions": [
+          "Apologise sincerely for the wake-up call failure and the breakfast situation",
+          "Arrange for a fresh breakfast to be served in the restaurant or sent to the room",
+          "Offer a complimentary breakfast on their final day",
+          "Credit the cost of breakfast to their room account",
+          "Escalate to the duty manager and ensure the guest is compensated appropriately"
+        ],
+        "checklist": [
+          "Greet and listen to the guest calmly — let them explain",
+          "Apologise sincerely using formal usted register",
+          "Take ownership of the hotel's error (wake-up call failure)",
+          "Offer a concrete and immediate solution (fresh breakfast)",
+          "Offer additional compensation for the inconvenience",
+          "Confirm the guest is satisfied before they leave",
+          "Promise to investigate the wake-up call system failure"
+        ]
+      }
+    }
+  ]
+}

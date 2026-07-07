@@ -1,0 +1,106 @@
+{
+  "id": "int-8",
+  "level": "intermediate",
+  "number": 8,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cómo te llamas y cuántos años tienes?",
+          "¿Cómo describirías tu ciudad a alguien que nunca ha estado allí?",
+          "¿Qué haces para mantenerte en forma o cuidar tu salud?",
+          "¿Cuáles son tus tres puntos fuertes como futuro profesional de hostelería?",
+          "¿Qué departamento del hotel te interesa más y por qué?",
+          "¿Hablas algún idioma además del español? ¿A qué nivel?"
+        ]
+      }
+    },
+    {
+      "type": "job_interview",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel W Barcelona",
+        "hotelCity": "Barcelona",
+        "position": "Front Office Internship (Prácticas en Recepción)",
+        "context": "You are attending a job interview at Hotel W Barcelona for a 3-month front office internship. The interviewer is the Front Office Manager. Present yourself professionally, answer questions about your motivation and skills, and ask at least one question about the position.",
+        "assessorQuestions": [
+          "Buenos días, siéntese por favor. ¿Me puede hablar un poco de usted?",
+          "¿Por qué quiere hacer sus prácticas en el Hotel W Barcelona?",
+          "¿Qué idiomas habla? ¿A qué nivel habla el español?",
+          "¿Tiene alguna experiencia trabajando con clientes?",
+          "¿Cómo reaccionaría si un cliente está muy enfadado?",
+          "¿Tiene alguna pregunta sobre las prácticas?"
+        ],
+        "checklist": [
+          "Greet the interviewer professionally (Buenos días + usted register)",
+          "Give a clear and structured self-introduction",
+          "Explain your motivation for the specific hotel",
+          "Describe your relevant skills and language levels",
+          "Handle the difficult-client question with a concrete example or approach",
+          "Ask at least one relevant question about the position or hotel",
+          "Thank the interviewer at the end"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel W Barcelona",
+        "hotelCity": "Barcelona",
+        "timeOfDay": "16:00",
+        "reservations": [
+          {
+            "guestName": "López",
+            "nights": 2,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "wonderful room",
+            "view": "sea view"
+          },
+          {
+            "guestName": "Anderson",
+            "nights": 4,
+            "persons": 1,
+            "rooms": 1,
+            "roomType": "cool room",
+            "view": "city view"
+          }
+        ],
+        "walkIn": "No reservation — requested room(s) not available. Suggest alternative: a cool room with city view at €280/night",
+        "hotelInfo": [
+          { "label": "WET Deck", "detail": "Rooftop pool & bar, open 10:00–20:00" },
+          { "label": "Eclipse Bar", "detail": "26th floor, open 18:00–03:00" },
+          { "label": "Breakfast", "detail": "Not included — brunch available 07:30–12:00, €38 per person" },
+          { "label": "Beach", "detail": "Private beach access — towels and sun loungers available" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": false,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for name / confirm or identify reservation",
+          "Confirm room type, nights, number of guests",
+          "Ask for ID / passport",
+          "For walk-ins: apologise, explain unavailability, offer alternative with price",
+          "Hand over room key, state room number",
+          "Share relevant hotel information",
+          "Wish them a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

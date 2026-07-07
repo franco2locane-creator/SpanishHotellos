@@ -1,0 +1,101 @@
+{
+  "id": "int-2",
+  "level": "intermediate",
+  "number": 2,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Studies & Career Plans"
+        ],
+        "assessorQuestions": [
+          "¿Cuántos años tienes y dónde vives ahora?",
+          "¿Cómo es la ciudad donde vives? ¿Hay mucho turismo?",
+          "¿Tienes experiencia laboral en el sector de la hostelería?",
+          "¿Cuáles son tus planes para las próximas vacaciones?",
+          "¿Por qué crees que es importante hablar varios idiomas en hostelería?"
+        ]
+      }
+    },
+    {
+      "type": "hotel_presentation",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Villapanés",
+        "hotelCity": "Sevilla",
+        "sloganCompletion": "el alma de Andalucía",
+        "architectureStyle": "romantic & historic",
+        "featuredRoom": {
+          "type": "Junior suite",
+          "furniture": ["a four-poster bed", "a vintage armchair"],
+          "bathroomFeature": "a free-standing bathtub"
+        },
+        "shuttlePriceEuros": 25,
+        "extraFacility": {
+          "name": "Rooftop terrace with flamenco evenings",
+          "hours": "19:00–23:00",
+          "priceNote": "€10 per person"
+        },
+        "targetAudience": "Couples and cultural travellers",
+        "guestQuestions": [
+          "¿El hotel tiene piscina?",
+          "¿Se puede aparcar cerca del hotel?",
+          "¿A qué hora se sirve el desayuno?",
+          "¿Hay habitaciones para personas con movilidad reducida?"
+        ],
+        "checklist": [
+          "Use the 'dejarse sorprender por' slogan formula",
+          "Describe the architecture and style",
+          "Present the featured room with all details (furniture + bathroom)",
+          "Mention the shuttle service and price",
+          "Present the extra facility with hours and pricing",
+          "State the target audience",
+          "Answer ALL guest questions — include at least one NO answer",
+          "Use formal usted register throughout"
+        ]
+      }
+    },
+    {
+      "type": "restaurant",
+      "number": 3,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "restaurantName": "Restaurante Azahar",
+        "hotelName": "Hotel Villapanés",
+        "hotelCity": "Sevilla",
+        "timeOfDay": "20:45",
+        "reservations": [
+          { "guestName": "Ramos", "covers": 2, "seating": "interior" },
+          { "guestName": "Müller", "covers": 4, "seating": "terrace" }
+        ],
+        "noTableSituation": "No other tables available at this moment (in approximately 25 minutes). Suggest an alternative while guests wait — e.g. a drink at the bar.",
+        "dishOfDay": {
+          "name": "Merluza al horno",
+          "ingredients": "fresh hake fillet, cherry tomatoes, garlic, white wine",
+          "cookingMethod": "oven-baked at low temperature",
+          "flavourTexture": "delicate and juicy, with a slightly crispy skin"
+        },
+        "checklist": [
+          "Greet the guests warmly at the entrance",
+          "Check reservation system — identify or seat the guests",
+          "If no table available: apologise, give waiting time, suggest alternative",
+          "Accompany guests to their table",
+          "Present the menu and recommend the dish of the day (with description)",
+          "Take the order professionally",
+          "Check on guests during the meal",
+          "Handle any requests or questions politely"
+        ]
+      }
+    }
+  ]
+}

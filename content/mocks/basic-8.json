@@ -1,0 +1,77 @@
+{
+  "id": "basic-8",
+  "level": "basic",
+  "number": 8,
+  "source": "generated",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cuál es tu nombre y de qué ciudad eres?",
+          "¿Cómo es el clima en tu país? ¿Cuál es la mejor época para visitarlo?",
+          "¿Qué sueles hacer los fines de semana?",
+          "¿Tienes algún trabajo a tiempo parcial en hostelería?",
+          "¿Quieres especializarte en algún departamento del hotel? ¿Cuál?",
+          "¿Vas a estudiar en el extranjero? ¿Por qué sí o no?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel María Cristina",
+        "hotelCity": "San Sebastián",
+        "timeOfDay": "14:00",
+        "reservations": [
+          {
+            "guestName": "Fernández",
+            "nights": 2,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "standard",
+            "view": "river view"
+          },
+          {
+            "guestName": "Müller",
+            "nights": 3,
+            "persons": 4,
+            "rooms": 2,
+            "roomType": "standard",
+            "view": "city view"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Restaurante Kuia", "detail": "1st floor, open 13:00–15:30 and 20:00–23:00" },
+          { "label": "Spa Belle Époque", "detail": "Basement, open 08:00–21:00" },
+          { "label": "Breakfast", "detail": "Not included — available at €25 per person" },
+          { "label": "Beach", "detail": "La Concha beach is a 5-minute walk" }
+        ],
+        "checkoutTime": "12:00",
+        "breakfastIncluded": false,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant if applicable",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}

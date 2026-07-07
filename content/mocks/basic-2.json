@@ -1,0 +1,76 @@
+{
+  "id": "basic-2",
+  "level": "basic",
+  "number": 2,
+  "source": "transcribed",
+  "assignments": [
+    {
+      "type": "personal_presentation",
+      "number": 1,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "topics": [
+          "My Personal Information",
+          "My City & My Country",
+          "My Plans & Intentions"
+        ],
+        "assessorQuestions": [
+          "¿Cuál es tu nombre completo y cuándo es tu cumpleaños?",
+          "¿De qué país eres y cuál es la capital?",
+          "¿Qué te gusta hacer en tu tiempo libre?",
+          "¿Qué estudias y por qué elegiste esta carrera?",
+          "¿Tienes planes para las próximas vacaciones?",
+          "¿Dónde te gustaría trabajar en el futuro?"
+        ]
+      }
+    },
+    {
+      "type": "checkin",
+      "number": 2,
+      "prepTimeSecs": 120,
+      "maxKeywords": 5,
+      "data": {
+        "hotelName": "Hotel Reina Victoria",
+        "hotelCity": "Madrid",
+        "timeOfDay": "10:45",
+        "reservations": [
+          {
+            "guestName": "Van den Berg",
+            "nights": 4,
+            "persons": 2,
+            "rooms": 1,
+            "roomType": "deluxe",
+            "view": "garden view"
+          },
+          {
+            "guestName": "Okonkwo",
+            "nights": 2,
+            "persons": 3,
+            "rooms": 1,
+            "roomType": "family room",
+            "view": "ground floor"
+          }
+        ],
+        "walkIn": "Other guests = walk-ins (no reservation)",
+        "hotelInfo": [
+          { "label": "Bar", "detail": "Lobby, open 11:00–01:00" },
+          { "label": "Spa", "detail": "Basement, open 08:00–22:00" },
+          { "label": "Parking", "detail": "Underground, €15 per night" }
+        ],
+        "checkoutTime": "11:00",
+        "breakfastIncluded": false,
+        "checklist": [
+          "Greet the guest warmly in Spanish",
+          "Ask for their name / confirm their reservation",
+          "Confirm room type, number of nights and number of guests",
+          "Ask for ID / passport (pedir el pasaporte / DNI)",
+          "Hand over the room key and state the room number",
+          "Inform about breakfast / restaurant if applicable",
+          "Share relevant hotel information",
+          "Wish the guest a pleasant stay (¡Que disfrute su estancia!)"
+        ]
+      }
+    }
+  ]
+}
