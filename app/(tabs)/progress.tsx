@@ -6,7 +6,7 @@ import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
-import { SCENARIO_CATALOG } from '@/lib/scenarios/catalog';
+import { SCENARIO_CATALOG, DEPT_LABELS } from '@/lib/scenarios/catalog';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ export default function ProgressScreen() {
                 <Text style={styles.cardTitle}>Scenarios Practiced</Text>
                 {Object.entries(deptCounts).map(([dept, count]) => (
                   <View key={dept} style={styles.deptRow}>
-                    <Text style={styles.deptLabel}>{dept.replace('_', ' ')}</Text>
+                    <Text style={styles.deptLabel}>{DEPT_LABELS[dept as keyof typeof DEPT_LABELS] ?? dept.replace('_', ' ')}</Text>
                     <Text style={styles.deptCount}>{count}×</Text>
                   </View>
                 ))}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
@@ -118,12 +118,17 @@ export default function TodayScreen() {
             <Text style={styles.greeting}>{greeting()}</Text>
             <Text style={styles.heading}>Today</Text>
           </View>
-          {streak > 0 && (
-            <View style={styles.streakBadge}>
-              <Text style={styles.streakFire}>🔥</Text>
-              <Text style={styles.streakNum}>{streak}</Text>
-            </View>
-          )}
+          <View style={styles.headerRight}>
+            {streak > 0 && (
+              <View style={styles.streakBadge}>
+                <Text style={styles.streakFire}>🔥</Text>
+                <Text style={styles.streakNum}>{streak}</Text>
+              </View>
+            )}
+            <TouchableOpacity onPress={() => router.push('/settings' as any)} hitSlop={12}>
+              <Text style={styles.gearIcon}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Exam countdown */}
@@ -203,8 +208,10 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
   content: { padding: Spacing.lg, paddingBottom: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   greeting: { fontSize: Typography.caption, color: Colors.textMuted },
   heading: { fontSize: Typography.title, fontWeight: '700', color: Colors.navy },
+  gearIcon: { fontSize: 22, opacity: 0.6 },
   streakBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: '#FFF8EC', borderRadius: Radii.lg,

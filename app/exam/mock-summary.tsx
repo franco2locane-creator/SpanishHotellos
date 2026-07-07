@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } fr
 import { useRouter } from 'expo-router';
 import { useMockExamStore } from '@/stores/mockExamStore';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
+import type { FixItem } from '@/lib/api/grade';
 
 const PASS_MARK = 60;
 
@@ -25,6 +26,19 @@ export default function MockSummary() {
     : 0;
   const totalOut100 = Math.round(totalScoreRaw * 5);
   const passed = totalOut100 >= PASS_MARK;
+
+  // Aggregate topThingsFix from all assignments — rank by frequency across results
+  const fixCounts: Record<string, { item: FixItem; count: number }> = {};
+  for (const r of validResults) {
+    for (const f of r?.gradeResult.topThingsFix ?? []) {
+      if (fixCounts[f.drillType]) fixCounts[f.drillType].count++;
+      else fixCounts[f.drillType] = { item: f, count: 1 };
+    }
+  }
+  const topFixes = Object.values(fixCounts)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3)
+    .map(({ item }) => item);
 
   function handleDone() {
     reset();
@@ -80,13 +94,13 @@ export default function MockSummary() {
           );
         })}
 
-        {/* Criteria detail for first result with data */}
-        {validResults[0]?.gradeResult && (
+        {/* Top fixes — aggregated across all assignments by frequency */}
+        {topFixes.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Top things to improve</Text>
             <View style={styles.fixCard}>
-              {validResults[0].gradeResult.topThingsFix.map((f, i) => (
-                <View key={i} style={styles.fixRow}>
+              {topFixes.map((f, i) => (
+                <View key={f.drillType} style={styles.fixRow}>
                   <Text style={styles.fixNum}>{i + 1}</Text>
                   <Text style={styles.fixLabel}>{f.label}</Text>
                 </View>

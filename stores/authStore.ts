@@ -8,6 +8,8 @@ type AuthState = {
   setLoading: (loading: boolean) => void;
   setPremium: (isPremium: boolean) => void;
   setOnboardingComplete: () => void;
+  setExamDate: (examDate: string) => void;
+  setMockLevel: (mockLevel: 'basic' | 'intermediate') => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -22,5 +24,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   setOnboardingComplete: () =>
     set((state) => ({
       user: state.user ? { ...state.user, onboardingStep: 'complete' } : null,
+    })),
+  setExamDate: (examDate) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, examDate } : null,
+    })),
+  setMockLevel: (mockLevel) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, mockLevel } : null,
     })),
 }));
