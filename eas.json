@@ -31,9 +31,7 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "franco2.locane@gmail.com",
-        "ascAppId": "",
-        "appleTeamId": ""
+        "appleId": "franco2.locane@gmail.com"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
