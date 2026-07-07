@@ -89,7 +89,13 @@ type GradingPromptArgs = {
   transcript: string;
 };
 
-export function buildGradingSystemPrompt(): string {
+export function buildGradingSystemPrompt(opts: { allowTu?: boolean } = {}): string {
+  const registerNote = opts.allowTu
+    ? `REGISTER NOTE: This is a personal presentation about the student themselves — tú-forms are grammatically acceptable and should NOT be penalised in the register score. Only flag register issues if the student uses extremely informal slang inappropriate for an exam context.`
+    : `REGISTER — CRITICAL: scan EVERY student line for tú-forms. Flag ALL instances.`;
+
+  const hospitalityGate = `HOSPITALITY GATE: If the student's total output across ALL their lines is fewer than 10 words, or is completely incoherent/incomprehensible, assign a maximum score of 3 across all criteria and note that meaningful communication was not demonstrated.`;
+
   return `You are a senior examiner for hotel school Spanish oral exams.
 
 Your task is to grade the STUDENT's Spanish performance — ONLY the "STAFF (student)" lines. Completely ignore the AI guest lines.
@@ -132,10 +138,12 @@ REGISTER (formal register: "usted", professional hospitality language throughout
   10: Obvious mixing — uses "tú" / "tu" / "te" several times alongside "usted"; inconsistent.
    5: Predominantly informal — mostly "tú" forms; registers entirely inappropriate for hospitality.
 
-REGISTER — CRITICAL: scan EVERY student line for tú-forms. Flag ALL instances:
+${registerNote}
 - Verb forms: eres, estás, tienes, quieres, puedes, necesitas, haces, etc.
 - Pronouns: te, tu (possessive), ti
 - Example: "¿Qué quieres?" → flag as tú-form violation
+
+${hospitalityGate}
 
 Return your evaluation using the submit_grade tool.`;
 }

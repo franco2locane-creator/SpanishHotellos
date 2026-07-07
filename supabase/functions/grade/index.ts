@@ -19,6 +19,7 @@ type GradeRequest = {
   };
   messages: Message[];
   durationSeconds: number;
+  allowTu?: boolean;  // true for personal_presentation — tú-forms are acceptable
 };
 
 type CriterionDetail = {
@@ -157,7 +158,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return err('Invalid JSON body');
   }
 
-  const { scenario, messages, durationSeconds } = body;
+  const { scenario, messages, durationSeconds, allowTu = false } = body;
   if (!scenario || !Array.isArray(messages) || messages.length < 2) {
     return err('scenario, messages (min 2), and durationSeconds are required');
   }
@@ -175,7 +176,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       temperature: 0.2,
-      system: buildGradingSystemPrompt(),
+      system: buildGradingSystemPrompt({ allowTu }),
       messages: [{
         role: 'user',
         content: buildGradingUserPrompt({

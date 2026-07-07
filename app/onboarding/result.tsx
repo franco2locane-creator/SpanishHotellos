@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
+import { supabase } from '@/lib/supabase';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
+import type { MockLevel } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -35,13 +38,28 @@ function weeksUntil(isoDate: string): number {
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
+function suggestMockLevel(cefr: string): MockLevel {
+  return (cefr === 'A2' || cefr === 'B1') ? 'basic' : 'intermediate';
+}
+
 export default function Result() {
   const router = useRouter();
-  const { setOnboardingComplete } = useAuthStore();
+  const { user, setOnboardingComplete } = useAuthStore();
   const { level, justification, examDate } = useLocalSearchParams<Params>();
 
   const meta = LEVEL_META[level] ?? LEVEL_META.B1;
   const weeks = weeksUntil(examDate ?? '');
+  const [mockLevel, setMockLevel] = useState<MockLevel>(suggestMockLevel(level ?? 'B1'));
+  const [saving, setSaving] = useState(false);
+
+  async function handleStart() {
+    if (!user) return;
+    setSaving(true);
+    await supabase.from('profiles').update({ mock_level: mockLevel }).eq('id', user.id);
+    setSaving(false);
+    setOnboardingComplete();
+    router.replace('/(tabs)');
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -80,12 +98,33 @@ export default function Result() {
           </Text>
         </View>
 
+        {/* Mock level picker */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Which exam year are you in?</Text>
+          <Text style={styles.cardBody}>
+            We recommend{' '}
+            <Text style={{ fontWeight: '700' }}>{suggestMockLevel(level ?? 'B1') === 'basic' ? 'Basic' : 'Intermediate'}</Text>
+            {' '}based on your placement — but you can change this.
+          </Text>
+          <View style={styles.levelRow}>
+            {(['basic', 'intermediate'] as MockLevel[]).map((opt) => (
+              <TouchableOpacity
+                key={opt}
+                style={[styles.levelOption, mockLevel === opt && styles.levelOptionSelected]}
+                onPress={() => setMockLevel(opt)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.levelOptionText, mockLevel === opt && styles.levelOptionTextSelected]}>
+                  {opt === 'basic' ? '1st year\nBasic' : '2nd year\nIntermediate'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* CTA */}
-        <TouchableOpacity
-          style={styles.ctaBtn}
-          onPress={() => { setOnboardingComplete(); router.replace('/(tabs)'); }}
-        >
-          <Text style={styles.ctaText}>Start practising</Text>
+        <TouchableOpacity style={styles.ctaBtn} onPress={handleStart} activeOpacity={0.85} disabled={saving}>
+          <Text style={styles.ctaText}>{saving ? 'Saving…' : 'Start practising'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -121,4 +160,12 @@ const styles = StyleSheet.create({
   planHint: { fontSize: Typography.body, color: Colors.textOnDark, opacity: 0.75, lineHeight: 22 },
   ctaBtn: { backgroundColor: Colors.gold, borderRadius: Radii.md, paddingVertical: Spacing.md, alignItems: 'center', marginTop: Spacing.sm },
   ctaText: { color: Colors.textOnGold, fontSize: Typography.bodyLarge, fontWeight: Typography.bold },
+  levelRow: { flexDirection: 'row', gap: Spacing.md, marginTop: Spacing.md },
+  levelOption: {
+    flex: 1, borderRadius: Radii.md, borderWidth: 2, borderColor: Colors.border,
+    padding: Spacing.md, alignItems: 'center', backgroundColor: Colors.background,
+  },
+  levelOptionSelected: { borderColor: Colors.navy, backgroundColor: '#EEF3F9' },
+  levelOptionText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  levelOptionTextSelected: { color: Colors.navy, fontWeight: Typography.semibold },
 });

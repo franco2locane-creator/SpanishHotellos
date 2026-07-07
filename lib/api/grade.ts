@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Scenario, ExamFormat, ScenarioObjective } from '@/types';
+import type { Scenario, ExamFormat, ScenarioObjective, AssignmentType } from '@/types';
 import type { WireMessage } from './roleplay';
 
 // ── Types returned by the grade Edge Function ─────────────────────────────────
@@ -106,6 +106,41 @@ export async function gradeExamSession(args: {
       },
       messages: args.messages,
       durationSeconds: args.durationSeconds,
+    },
+  });
+
+  if (error) throw new Error(error.message ?? 'Grade function error');
+
+  const a = data!.attempt;
+  return {
+    attemptId: a.id, totalScore: a.totalScore, completedAt: a.completedAt,
+    numericScores: a.numericScores, detail: a.detail,
+    topThingsFix: a.topThingsFix, feedback: a.feedback,
+  };
+}
+
+// ── Mock assignment grading ───────────────────────────────────────────────────
+
+export async function gradeMockAssignment(args: {
+  assignmentType: AssignmentType;
+  mockId: string;
+  assignmentIdx: number;
+  objectives: ScenarioObjective[];
+  messages: WireMessage[];
+  durationSeconds: number;
+}): Promise<GradeResult> {
+  const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
+    body: {
+      scenario: {
+        id: `mock-${args.mockId}-${args.assignmentType}-${args.assignmentIdx}`,
+        title: args.assignmentType,
+        objectives: args.objectives,
+        rubricWeights: DEFAULT_WEIGHTS,
+        format: 'roleplay',
+      },
+      messages: args.messages,
+      durationSeconds: args.durationSeconds,
+      allowTu: args.assignmentType === 'personal_presentation',
     },
   });
 

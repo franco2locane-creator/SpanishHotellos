@@ -10,7 +10,7 @@ import type { User } from '@supabase/supabase-js';
 export async function buildInitialUser(user: User): Promise<AuthUser> {
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_premium, onboarding_completed_at, exam_date, exam_format')
+    .select('is_premium, onboarding_completed_at, exam_date, exam_format, mock_level')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -30,6 +30,7 @@ export async function buildInitialUser(user: User): Promise<AuthUser> {
     onboardingStep,
     examFormat: (profile?.exam_format ?? 'guided_dialogue') as AuthUser['examFormat'],
     examDate: profile?.exam_date ?? undefined,
+    mockLevel: ((profile as any)?.mock_level ?? 'basic') as AuthUser['mockLevel'],
   };
 }
 

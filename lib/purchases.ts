@@ -8,6 +8,8 @@ export const ENTITLEMENT_ID = 'premium';
 // ── SDK lifecycle ─────────────────────────────────────────────────────────────
 
 export function configurePurchases(): void {
+  // RevenueCat native SDK does not support web. Skip silently on web.
+  if (typeof document !== 'undefined') return;
   const key = Constants.expoConfig?.extra?.revenueCatApiKey as string | undefined;
   if (!key) {
     if (__DEV__) console.warn('[Purchases] REVENUECAT_API_KEY not set — purchases disabled in this build');

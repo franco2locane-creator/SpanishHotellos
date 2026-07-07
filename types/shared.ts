@@ -26,6 +26,7 @@ export type AuthUser = {
   onboardingStep: OnboardingStep;
   examFormat: ExamFormat;
   examDate?: string;             // ISO YYYY-MM-DD
+  mockLevel: 'basic' | 'intermediate';
 };
 
 export type MessageRole = 'user' | 'assistant';
