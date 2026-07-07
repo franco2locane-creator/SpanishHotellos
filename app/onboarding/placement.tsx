@@ -108,7 +108,10 @@ export default function Placement() {
     let final = [...transcripts];
     if (micGranted === false) final[qIdx] = typedAnswer.trim();
 
-    if (!user) return;
+    if (!user) {
+      Alert.alert('Session expired', 'Please sign in again to continue.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const { level, justification } = await assessPlacement(
@@ -137,7 +140,8 @@ export default function Placement() {
         params: { level, justification, examDate: profile?.exam_date ?? '' },
       } as any);
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Could not complete assessment.');
+      const msg = e instanceof Error ? e.message : 'Could not complete assessment.';
+      Alert.alert('Error', msg);
     } finally {
       setIsSubmitting(false);
     }
