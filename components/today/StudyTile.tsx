@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
+import { Haptics } from '@/lib/haptics';
 
 type Props = {
   id: string;
@@ -13,14 +14,36 @@ type Props = {
 };
 
 export default function StudyTile({ icon, title, subtitle, checked, onPress, onCheck, accent = Colors.navy }: Props) {
+  function handleCheck() {
+    if (!checked) Haptics.success();
+    onCheck();
+  }
+
   return (
     <View style={[styles.card, checked && styles.cardChecked]}>
-      <TouchableOpacity style={styles.iconWrap} onPress={onCheck} activeOpacity={0.8} hitSlop={8}>
+      <TouchableOpacity
+        style={styles.iconWrap}
+        onPress={handleCheck}
+        activeOpacity={0.8}
+        hitSlop={8}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked }}
+        accessibilityLabel={checked ? `${title} — marked complete` : `Mark ${title} as complete`}
+      >
         <View style={[styles.circle, { borderColor: accent }, checked && { backgroundColor: accent }]}>
           <Text style={styles.checkmark}>{checked ? '✓' : ''}</Text>
         </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.body} onPress={onPress} activeOpacity={0.8} disabled={checked}>
+      <TouchableOpacity
+        style={styles.body}
+        onPress={onPress}
+        activeOpacity={0.8}
+        disabled={checked}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityHint={checked ? undefined : subtitle}
+        accessibilityState={{ disabled: checked }}
+      >
         <Text style={styles.iconText}>{icon}</Text>
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, checked && styles.titleDone]}>{title}</Text>

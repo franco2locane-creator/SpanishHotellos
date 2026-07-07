@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, AppState, type AppStateStatus,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -11,12 +11,14 @@ import {
 import { loadMock } from '@/lib/mockExam/loader';
 import { useMockExamStore } from '@/stores/mockExamStore';
 import { gradeMockAssignment } from '@/lib/api/grade';
+import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
+import { Haptics } from '@/lib/haptics';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { PersonalPresentationData } from '@/types';
 
 const SPEAK_SECONDS = 120;
 
-type Phase = 'pick_topic' | 'countdown' | 'recording' | 'grading' | 'done' | 'error';
+type Phase = 'pick_topic' | 'countdown' | 'recording' | 'grading' | 'done' | 'error' | 'interrupted';
 
 export default function AssignmentMonologue() {
   const { mockId, assignmentIdx: idxStr } = useLocalSearchParams<{ mockId: string; assignmentIdx: string }>();
@@ -29,13 +31,33 @@ export default function AssignmentMonologue() {
   const data = assignment?.type === 'personal_presentation' ? assignment.data as PersonalPresentationData : null;
 
   const [phase, setPhase] = useState<Phase>('pick_topic');
+  const phaseRef = useRef<Phase>('pick_topic');
   const [topicIdx, setTopicIdx] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(SPEAK_SECONDS);
+  const secondsLeftRef = useRef(SPEAK_SECONDS);
   const [transcript, setTranscript] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const liveRef = useRef('');
   const sessionStartRef = useRef(0);
+
+  function updatePhase(p: Phase) {
+    phaseRef.current = p;
+    setPhase(p);
+  }
+
+  // Phone-call / interrupt detection — pauses timer and voids recording attempt
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if ((nextState === 'background' || nextState === 'inactive') && (phaseRef.current === 'recording' || phaseRef.current === 'countdown')) {
+        clearInterval(timerRef.current!);
+        ExpoSpeechRecognitionModule.stop();
+        setPlaybackMode();
+        updatePhase('interrupted');
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   useSpeechRecognitionEvent('result', (e) => {
     const text = e.results?.[0]?.transcript ?? '';
@@ -44,24 +66,23 @@ export default function AssignmentMonologue() {
   });
 
   useSpeechRecognitionEvent('end', () => {
-    if (phase === 'recording') {
+    if (phaseRef.current === 'recording') {
       stopRecording();
       handleGrade(liveRef.current);
     }
   });
 
   function startCountdown() {
-    setPhase('countdown');
+    updatePhase('countdown');
+    secondsLeftRef.current = SPEAK_SECONDS;
     setSecondsLeft(SPEAK_SECONDS);
     timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!);
-          beginRecording();
-          return 0;
-        }
-        return s - 1;
-      });
+      secondsLeftRef.current -= 1;
+      setSecondsLeft(secondsLeftRef.current);
+      if (secondsLeftRef.current <= 0) {
+        clearInterval(timerRef.current!);
+        beginRecording();
+      }
     }, 1000);
   }
 
@@ -71,28 +92,28 @@ export default function AssignmentMonologue() {
     setTranscript('');
     const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (perm.granted) {
+      await setRecordingMode();
       ExpoSpeechRecognitionModule.start({ lang: 'es-ES', interimResults: true });
     }
-    setPhase('recording');
-
-    // Auto-stop after SPEAK_SECONDS
-    timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!);
-          stopRecording();
-          handleGrade(liveRef.current);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
+    updatePhase('recording');
+    secondsLeftRef.current = SPEAK_SECONDS;
     setSecondsLeft(SPEAK_SECONDS);
+
+    timerRef.current = setInterval(() => {
+      secondsLeftRef.current -= 1;
+      setSecondsLeft(secondsLeftRef.current);
+      if (secondsLeftRef.current <= 0) {
+        clearInterval(timerRef.current!);
+        stopRecording();
+        handleGrade(liveRef.current);
+      }
+    }, 1000);
   }
 
   function stopRecording() {
     clearInterval(timerRef.current!);
     ExpoSpeechRecognitionModule.stop();
+    setPlaybackMode();
   }
 
   function handleFinishEarly() {
@@ -102,7 +123,7 @@ export default function AssignmentMonologue() {
 
   async function handleGrade(raw: string) {
     if (!assignment || !currentMock) return;
-    setPhase('grading');
+    updatePhase('grading');
     const durationSeconds = Math.max(1, Math.round((Date.now() - sessionStartRef.current) / 1000));
 
     const topics = data?.topics ?? [];
@@ -120,9 +141,10 @@ export default function AssignmentMonologue() {
       });
 
       saveResult(idx, { assignmentType: 'personal_presentation', score: gradeResult.totalScore, gradeResult });
-      setPhase('done');
+      Haptics.success();
+      updatePhase('done');
     } catch {
-      setPhase('error');
+      updatePhase('error');
       setErrorMsg('Grading failed. You can still continue.');
     }
   }
@@ -150,6 +172,23 @@ export default function AssignmentMonologue() {
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const ss = String(secondsLeft % 60).padStart(2, '0');
+
+  if (phase === 'interrupted') {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.center}>
+          <Text style={{ fontSize: 48 }}>📵</Text>
+          <Text style={styles.centerTitle}>Exam paused</Text>
+          <Text style={styles.centerText}>
+            Something interrupted your presentation — this attempt has been voided fairly. Take a breath and retry when you're ready.
+          </Text>
+          <TouchableOpacity style={styles.startBtn} onPress={() => { liveRef.current = ''; setTranscript(''); updatePhase('pick_topic'); }}>
+            <Text style={styles.startBtnText}>Retry this assignment</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (phase === 'grading') {
     return (
@@ -209,11 +248,20 @@ export default function AssignmentMonologue() {
               style={[styles.topicCard, topicIdx === i && styles.topicCardSelected]}
               onPress={() => setTopicIdx(i)}
               activeOpacity={0.8}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: topicIdx === i }}
+              accessibilityLabel={topic}
             >
               <Text style={[styles.topicText, topicIdx === i && styles.topicTextSelected]}>{topic}</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={styles.startBtn} onPress={startCountdown} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={startCountdown}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Start 2-minute presentation"
+          >
             <Text style={styles.startBtnText}>Start 2-minute presentation</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -221,7 +269,6 @@ export default function AssignmentMonologue() {
     );
   }
 
-  // countdown or recording
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
@@ -230,22 +277,33 @@ export default function AssignmentMonologue() {
       </View>
 
       <View style={styles.center}>
-        <Text style={[styles.bigTimer, secondsLeft <= 30 && styles.timerWarning]}>{mm}:{ss}</Text>
+        <Text
+          style={[styles.bigTimer, secondsLeft <= 30 && styles.timerWarning]}
+          accessibilityLabel={`${mm} minutes ${ss} seconds remaining`}
+          accessibilityLiveRegion={secondsLeft <= 30 ? 'polite' : 'none'}
+        >
+          {mm}:{ss}
+        </Text>
         <Text style={styles.phaseLabel}>
           {phase === 'countdown' ? 'Get ready…' : 'Speak now'}
         </Text>
 
         {phase === 'recording' && (
           <>
-            <View style={styles.micPulse}>
+            <View style={styles.micPulse} accessibilityLabel="Recording in progress">
               <Text style={styles.micEmoji}>🎙</Text>
             </View>
             {transcript ? (
-              <View style={styles.liveBox}>
+              <View style={styles.liveBox} accessibilityLiveRegion="polite">
                 <Text style={styles.liveText} numberOfLines={4}>{transcript}</Text>
               </View>
             ) : null}
-            <TouchableOpacity style={styles.finishBtn} onPress={handleFinishEarly}>
+            <TouchableOpacity
+              style={styles.finishBtn}
+              onPress={handleFinishEarly}
+              accessibilityRole="button"
+              accessibilityLabel="Finish presentation early"
+            >
               <Text style={styles.finishBtnText}>Finish early</Text>
             </TouchableOpacity>
           </>
@@ -284,7 +342,7 @@ const styles = StyleSheet.create({
   liveText: { fontSize: Typography.body, color: Colors.textPrimary, lineHeight: 24 },
   finishBtn: { backgroundColor: Colors.textSecondary, borderRadius: Radii.md, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm },
   finishBtnText: { color: '#fff', fontWeight: Typography.medium, fontSize: Typography.body },
-  centerTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
+  centerTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
   centerText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
   scoreEmoji: { fontSize: 56 },
   scoreLabel: { fontSize: 40, fontWeight: Typography.bold, color: Colors.gold },

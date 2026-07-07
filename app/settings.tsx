@@ -3,8 +3,8 @@ import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
   TouchableOpacity, TextInput, ActivityIndicator, Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { MockLevel } from '@/types';
@@ -36,6 +36,7 @@ export default function SettingsScreen() {
   const [mockLevel, setMockLevelLocal] = useState<MockLevel>(user?.mockLevel ?? 'basic');
   const [saving, setSaving] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   async function handleSave() {
     if (!user) return;
@@ -70,6 +71,31 @@ export default function SettingsScreen() {
         },
       },
     ]);
+  }
+
+  async function handleDeleteAccount() {
+    Alert.alert(
+      'Delete account',
+      'This will permanently delete your account and all your data — scores, vocab progress, everything. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete my account',
+          style: 'destructive',
+          onPress: async () => {
+            setDeletingAccount(true);
+            try {
+              const { error } = await supabase.functions.invoke('delete-account', {});
+              if (error) throw error;
+              await supabase.auth.signOut();
+            } catch {
+              setDeletingAccount(false);
+              Alert.alert('Error', 'Could not delete your account. Please try again or contact support.');
+            }
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -174,6 +200,21 @@ export default function SettingsScreen() {
             : <Text style={styles.signOutText}>Sign out</Text>}
         </TouchableOpacity>
 
+        {/* Delete account — App Store requirement */}
+        <Text style={[styles.sectionLabel, { marginTop: Spacing.xl }]}>Danger zone</Text>
+        <TouchableOpacity
+          style={[styles.signOutBtn, styles.deleteBtn, deletingAccount && styles.saveBtnDisabled]}
+          onPress={handleDeleteAccount}
+          activeOpacity={0.85}
+          disabled={deletingAccount}
+          accessibilityRole="button"
+          accessibilityLabel="Delete account permanently"
+        >
+          {deletingAccount
+            ? <ActivityIndicator size="small" color={Colors.error} />
+            : <Text style={styles.deleteText}>Delete account</Text>}
+        </TouchableOpacity>
+
         <Text style={styles.version}>Spanish4Hoteleros · com.spanish4hoteleros.app</Text>
       </ScrollView>
     </SafeAreaView>
@@ -232,5 +273,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md, alignItems: 'center', marginTop: Spacing.md, minHeight: 50, justifyContent: 'center',
   },
   signOutText: { color: Colors.error, fontWeight: Typography.semibold, fontSize: Typography.body },
+  deleteBtn: { borderStyle: 'dashed', marginTop: 0 },
+  deleteText: { color: Colors.error, fontWeight: Typography.semibold, fontSize: Typography.body },
   version: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginTop: Spacing.xl },
 });

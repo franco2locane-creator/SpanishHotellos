@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, TouchableOpacity,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
@@ -12,6 +12,7 @@ import { SCENARIO_CATALOG } from '@/lib/scenarios/catalog';
 import { DECK_CATALOG, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
 import StudyTile from '@/components/today/StudyTile';
+import Skeleton from '@/components/Skeleton';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 
 const CRITERION_LABELS: Record<string, string> = {
@@ -34,12 +35,27 @@ function greeting(): string {
 }
 
 function daysLabel(days: number | null): string {
-  if (days === null) return 'No exam date set';
-  if (days < 0) return 'Exam has passed';
-  if (days === 0) return 'Exam is today!';
-  if (days === 1) return 'Exam is tomorrow';
-  return `${days} days until exam`;
+  if (days === null) return 'No exam date set — tap ⚙️ to add one';
+  if (days < 0) return 'Exam has passed — great work getting through it';
+  if (days === 0) return "Exam is today — you're ready";
+  if (days === 1) return 'Exam is tomorrow — trust your prep';
+  return `${days} days until your exam`;
 }
+
+function TodaySkeleton() {
+  return (
+    <View style={skStyles.wrap}>
+      <Skeleton width={140} height={14} borderRadius={6} style={{ marginBottom: 6 }} />
+      <Skeleton width={80} height={22} borderRadius={6} style={{ marginBottom: Spacing.lg }} />
+      <Skeleton width="100%" height={52} borderRadius={12} style={{ marginBottom: Spacing.md }} />
+      <Skeleton width={160} height={12} borderRadius={6} style={{ marginBottom: Spacing.sm }} />
+      {[0, 1, 2].map(i => (
+        <Skeleton key={i} width="100%" height={64} borderRadius={12} style={{ marginBottom: Spacing.sm }} />
+      ))}
+    </View>
+  );
+}
+const skStyles = StyleSheet.create({ wrap: { padding: Spacing.lg } });
 
 export default function TodayScreen() {
   const router = useRouter();
@@ -66,7 +82,6 @@ export default function TodayScreen() {
       setChecked(ch);
       setPlanData(plan);
 
-      // Due vocab from the best free/unlocked deck
       let totalDue = 0;
       let bestDeck = 'front-office-basics';
       let bestCount = 0;
@@ -94,7 +109,7 @@ export default function TodayScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+        <TodaySkeleton />
       </SafeAreaView>
     );
   }
@@ -120,66 +135,69 @@ export default function TodayScreen() {
           </View>
           <View style={styles.headerRight}>
             {streak > 0 && (
-              <View style={styles.streakBadge}>
+              <View style={styles.streakBadge} accessibilityLabel={`${streak} day streak`}>
                 <Text style={styles.streakFire}>🔥</Text>
                 <Text style={styles.streakNum}>{streak}</Text>
               </View>
             )}
-            <TouchableOpacity onPress={() => router.push('/settings' as any)} hitSlop={12}>
+            <TouchableOpacity
+              onPress={() => router.push('/settings' as any)}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+            >
               <Text style={styles.gearIcon}>⚙️</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Exam countdown */}
-        <View style={[styles.countdownBar, finalWeek && styles.countdownFinalWeek]}>
+        <View
+          style={[styles.countdownBar, finalWeek && styles.countdownFinalWeek]}
+          accessibilityLabel={daysLabel(days)}
+        >
           <Text style={styles.countdownText}>{daysLabel(days)}</Text>
           {finalWeek && <Text style={styles.finalWeekLabel}>Final week</Text>}
         </View>
 
-        {/* Final-week calm message */}
         {finalWeek && (
           <View style={styles.calmCard}>
             <Text style={styles.calmTitle}>You're more ready than you think.</Text>
             <Text style={styles.calmText}>
-              Focus on your weakest areas, run through previously difficult scenarios,
-              and trust the preparation you've already done. You've got this.
+              Focus on your weakest areas, run through the scenarios that felt hard,
+              and trust everything you've already built. You've got this.
             </Text>
           </View>
         )}
 
-        {/* Today's session */}
         <Text style={styles.sectionTitle}>
           {allChecked ? "Today's session complete ✓" : "Today's 15-minute session"}
         </Text>
 
-        {/* Tile 1: Vocab */}
         <StudyTile
           id="vocab"
           icon="📖"
-          title={dueCount > 0 ? `Review ${dueCount} due card${dueCount !== 1 ? 's' : ''}` : 'Vocab: all cards up to date'}
-          subtitle="Spaced-repetition flashcard review"
+          title={dueCount > 0 ? `Review ${dueCount} due card${dueCount !== 1 ? 's' : ''}` : 'Vocab — all caught up'}
+          subtitle={dueCount > 0 ? 'Spaced-repetition review' : 'No cards due today — check back tomorrow'}
           checked={tilesChecked.has('vocab')}
           accent={Colors.gold}
           onPress={() => router.push(`/vocab/${bestDeckId}` as any)}
           onCheck={() => handleCheck('vocab')}
         />
 
-        {/* Tile 2: Scenario */}
         <StudyTile
           id="scenario"
           icon="🗣️"
           title={finalWeek ? `Retry: ${scenario.title}` : `Practice: ${scenario.title}`}
           subtitle={finalWeek
-            ? 'Your lowest-scoring scenario — master it before the exam'
-            : `Weakest department: ${scenario.department.replace('_', ' ')}`}
+            ? 'Your lowest-scoring scenario — nail it before the exam'
+            : `Targeted at your weakest area: ${scenario.department.replace('_', ' ')}`}
           checked={tilesChecked.has('scenario')}
           accent={Colors.navy}
           onPress={() => router.push(`/roleplay/${scenario.id}` as any)}
           onCheck={() => handleCheck('scenario')}
         />
 
-        {/* Tile 3: Drill */}
         <StudyTile
           id="drill"
           icon="🎯"
@@ -192,10 +210,10 @@ export default function TodayScreen() {
         />
 
         {allChecked && (
-          <View style={styles.doneCard}>
-            <Text style={styles.doneTitle}>Session complete! 🎉</Text>
+          <View style={styles.doneCard} accessibilityLiveRegion="polite">
+            <Text style={styles.doneTitle}>Session done — great work! 🎉</Text>
             <Text style={styles.doneText}>
-              Great work. Come back tomorrow to keep your streak going.
+              Rest up. Come back tomorrow to keep the streak alive.
             </Text>
           </View>
         )}

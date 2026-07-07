@@ -219,8 +219,8 @@ export default function ReviewScreen() {
       <SafeAreaView style={styles.screen}>
         <View style={styles.allDoneWrap}>
           <Text style={styles.summaryEmoji}>✅</Text>
-          <Text style={styles.summaryTitle}>All caught up!</Text>
-          <Text style={styles.summaryDeck}>No cards due in {deck.title}.</Text>
+          <Text style={styles.summaryTitle}>You're all caught up</Text>
+          <Text style={styles.summaryDeck}>No cards due in {deck.title} — your spacing is working. Come back tomorrow to keep the streak.</Text>
           <TouchableOpacity style={styles.doneBtn} onPress={() => router.back()}>
             <Text style={styles.doneBtnText}>Back to decks</Text>
           </TouchableOpacity>

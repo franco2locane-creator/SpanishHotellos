@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, AppState, type AppStateStatus,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Speech from 'expo-speech';
@@ -14,6 +14,8 @@ import { useMockExamStore } from '@/stores/mockExamStore';
 import { sendRolePlayTurn, type WireMessage } from '@/lib/api/roleplay';
 import { gradeMockAssignment } from '@/lib/api/grade';
 import { useAuthStore } from '@/stores/authStore';
+import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
+import { Haptics } from '@/lib/haptics';
 import ChatBubble from '@/components/roleplay/ChatBubble';
 import MicButton from '@/components/roleplay/MicButton';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
@@ -22,7 +24,9 @@ const MAX_TURNS = 14;
 const SPEED_RATE: Record<string, number> = { slow: 0.7, normal: 0.9, fast: 1.1 };
 
 type Turn = { role: 'guest' | 'student'; text: string };
-type Phase = 'idle' | 'guest_speaking' | 'student_turn' | 'recording' | 'sending' | 'grading' | 'error' | 'done';
+type Phase = 'idle' | 'guest_speaking' | 'student_turn' | 'recording' | 'sending' | 'grading' | 'error' | 'done' | 'interrupted';
+
+const ACTIVE_PHASES: Phase[] = ['guest_speaking', 'student_turn', 'recording', 'sending'];
 
 export default function AssignmentRoleplay() {
   const { mockId, assignmentIdx: idxStr } = useLocalSearchParams<{ mockId: string; assignmentIdx: string }>();
@@ -38,6 +42,7 @@ export default function AssignmentRoleplay() {
     : null;
 
   const [phase, setPhase] = useState<Phase>('idle');
+  const phaseRef = useRef<Phase>('idle');
   const [turns, setTurns] = useState<Turn[]>([]);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -46,6 +51,23 @@ export default function AssignmentRoleplay() {
   const liveRef = useRef('');
   const scrollRef = useRef<ScrollView>(null);
 
+  function updatePhase(p: Phase) {
+    phaseRef.current = p;
+    setPhase(p);
+  }
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if ((nextState === 'background' || nextState === 'inactive') && ACTIVE_PHASES.includes(phaseRef.current)) {
+        Speech.stop();
+        ExpoSpeechRecognitionModule.stop();
+        setPlaybackMode();
+        updatePhase('interrupted');
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   useSpeechRecognitionEvent('result', (e) => {
     const text = e.results?.[0]?.transcript ?? '';
     liveRef.current = text;
@@ -53,16 +75,20 @@ export default function AssignmentRoleplay() {
   });
 
   useSpeechRecognitionEvent('end', () => {
-    if (phase === 'recording') handleStudentFinished(liveRef.current);
+    if (phaseRef.current === 'recording') {
+      setPlaybackMode();
+      handleStudentFinished(liveRef.current);
+    }
   });
 
-  function speakGuest(text: string) {
-    setPhase('guest_speaking');
+  async function speakGuest(text: string) {
+    await setPlaybackMode();
+    updatePhase('guest_speaking');
     const rate = SPEED_RATE[scenario?.guestPersona.speakingSpeed ?? 'normal'];
     Speech.speak(text, {
       language: 'es-ES', rate,
-      onDone: () => setPhase('student_turn'),
-      onError: () => setPhase('student_turn'),
+      onDone: () => updatePhase('student_turn'),
+      onError: () => updatePhase('student_turn'),
     });
   }
 
@@ -80,17 +106,18 @@ export default function AssignmentRoleplay() {
   }
 
   async function handleMicPressIn() {
-    if (phase !== 'student_turn') return;
+    if (phaseRef.current !== 'student_turn') return;
     liveRef.current = '';
     setLiveTranscript('');
     const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!perm.granted) return;
+    await setRecordingMode();
     ExpoSpeechRecognitionModule.start({ lang: 'es-ES', interimResults: true });
-    setPhase('recording');
+    updatePhase('recording');
   }
 
   function handleMicPressOut() {
-    if (phase !== 'recording') return;
+    if (phaseRef.current !== 'recording') return;
     ExpoSpeechRecognitionModule.stop();
   }
 
@@ -109,7 +136,7 @@ export default function AssignmentRoleplay() {
       return;
     }
 
-    setPhase('sending');
+    updatePhase('sending');
 
     const wireHistory: WireMessage[] = [];
     for (const t of turns) {
@@ -130,14 +157,14 @@ export default function AssignmentRoleplay() {
         speakGuest(result.guestReply);
       }
     } catch {
-      setErrorMsg('Connection error. Check your internet and try again.');
-      setPhase('error');
+      setErrorMsg('Connection issue. Check your signal and try again.');
+      updatePhase('error');
     }
   }, [scenario, turns, assignment]);
 
   async function triggerGrading(messages: WireMessage[]) {
     if (!assignment || !currentMock) return;
-    setPhase('grading');
+    updatePhase('grading');
     const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
     try {
@@ -152,9 +179,10 @@ export default function AssignmentRoleplay() {
       });
 
       saveResult(idx, { assignmentType: assignment.type, score: gradeResult.totalScore, gradeResult });
-      setPhase('done');
+      Haptics.success();
+      updatePhase('done');
     } catch {
-      setPhase('error');
+      updatePhase('error');
       setErrorMsg('Grading failed. You can still continue to the next assignment.');
     }
   }
@@ -174,6 +202,23 @@ export default function AssignmentRoleplay() {
     return (
       <SafeAreaView style={styles.screen}>
         <Text style={styles.errText}>Assignment not found.</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (phase === 'interrupted') {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.center}>
+          <Text style={{ fontSize: 48 }}>📵</Text>
+          <Text style={styles.centerTitle}>Exam paused</Text>
+          <Text style={styles.centerText}>
+            Something interrupted your exam — this attempt has been voided fairly. No penalties. Take a breath and retry when you're ready.
+          </Text>
+          <TouchableOpacity style={styles.nextBtn} onPress={() => { setTurns([]); wireHistoryRef.current = []; updatePhase('idle'); }}>
+            <Text style={styles.nextBtnText}>Retry this assignment</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -234,7 +279,7 @@ export default function AssignmentRoleplay() {
       {phase === 'error' && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{errorMsg}</Text>
-          <TouchableOpacity onPress={() => setPhase('student_turn')} style={styles.retryBtn}>
+          <TouchableOpacity onPress={() => updatePhase('student_turn')} style={styles.retryBtn}>
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -242,7 +287,12 @@ export default function AssignmentRoleplay() {
 
       <View style={styles.footer}>
         {phase === 'idle' ? (
-          <TouchableOpacity style={styles.startBtn} onPress={startSession}>
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={startSession}
+            accessibilityRole="button"
+            accessibilityLabel="Start the assignment"
+          >
             <Text style={styles.startBtnText}>Start</Text>
           </TouchableOpacity>
         ) : (phase === 'student_turn' || phase === 'recording') ? (
@@ -278,7 +328,7 @@ const styles = StyleSheet.create({
   startBtn: { marginTop: Spacing.md, backgroundColor: Colors.navy, borderRadius: Radii.lg, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
   startBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.lg, padding: Spacing.xl },
-  centerTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
+  centerTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
   centerText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
   scoreEmoji: { fontSize: 56 },
   scoreLabel: { fontSize: 40, fontWeight: Typography.bold, color: Colors.gold },

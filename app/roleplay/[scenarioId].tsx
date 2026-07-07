@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, ActivityIndicator,
+  TouchableOpacity, ActivityIndicator, AppState, type AppStateStatus,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Speech from 'expo-speech';
@@ -14,6 +14,8 @@ import { useFeedbackStore } from '@/stores/feedbackStore';
 import { loadScenario } from '@/lib/scenarios/catalog';
 import { sendRolePlayTurn, type WireMessage } from '@/lib/api/roleplay';
 import { gradeSession } from '@/lib/api/grade';
+import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
+import { Haptics } from '@/lib/haptics';
 import ChatBubble from '@/components/roleplay/ChatBubble';
 import ObjectivesChecklist from '@/components/roleplay/ObjectivesChecklist';
 import MicButton from '@/components/roleplay/MicButton';
@@ -33,7 +35,10 @@ type Phase =
   | 'sending'
   | 'error'
   | 'grading'
-  | 'done';
+  | 'done'
+  | 'interrupted';
+
+const ACTIVE_PHASES: Phase[] = ['guest_speaking', 'student_turn', 'recording', 'sending'];
 
 export default function RoleplayScreen() {
   const { scenarioId } = useLocalSearchParams<{ scenarioId: string }>();
@@ -43,6 +48,7 @@ export default function RoleplayScreen() {
 
   const scenario = loadScenario(scenarioId ?? '');
   const [phase, setPhase] = useState<Phase>('idle');
+  const phaseRef = useRef<Phase>('idle');
   const [turns, setTurns] = useState<Turn[]>([]);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [errorMsg, setErrorMsg] = useState('');
@@ -52,6 +58,24 @@ export default function RoleplayScreen() {
   const wireHistoryRef = useRef<WireMessage[]>([]);
   const scrollRef = useRef<ScrollView>(null);
 
+  function updatePhase(p: Phase) {
+    phaseRef.current = p;
+    setPhase(p);
+  }
+
+  // Phone-call / interrupt detection
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if ((nextState === 'background' || nextState === 'inactive') && ACTIVE_PHASES.includes(phaseRef.current)) {
+        Speech.stop();
+        ExpoSpeechRecognitionModule.stop();
+        setPlaybackMode();
+        updatePhase('interrupted');
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   useSpeechRecognitionEvent('result', e => {
     const text = e.results?.[0]?.transcript ?? '';
     liveRef.current = text;
@@ -59,17 +83,21 @@ export default function RoleplayScreen() {
   });
 
   useSpeechRecognitionEvent('end', () => {
-    if (phase === 'recording') handleStudentFinished(liveRef.current);
+    if (phaseRef.current === 'recording') {
+      setPlaybackMode();
+      handleStudentFinished(liveRef.current);
+    }
   });
 
-  function speakGuest(text: string) {
-    setPhase('guest_speaking');
+  async function speakGuest(text: string) {
+    await setPlaybackMode();
+    updatePhase('guest_speaking');
     const rate = SPEED_RATE[scenario?.guestPersona.speakingSpeed ?? 'normal'];
     Speech.speak(text, {
       language: 'es-ES',
       rate,
-      onDone: () => setPhase('student_turn'),
-      onError: () => setPhase('student_turn'),
+      onDone: () => updatePhase('student_turn'),
+      onError: () => updatePhase('student_turn'),
     });
   }
 
@@ -87,18 +115,20 @@ export default function RoleplayScreen() {
   }
 
   async function handleMicPressIn() {
-    if (phase !== 'student_turn') return;
+    if (phaseRef.current !== 'student_turn') return;
     liveRef.current = '';
     setLiveTranscript('');
     const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!perm.granted) return;
+    await setRecordingMode();
     ExpoSpeechRecognitionModule.start({ lang: 'es-ES', interimResults: true });
-    setPhase('recording');
+    updatePhase('recording');
   }
 
   function handleMicPressOut() {
-    if (phase !== 'recording') return;
+    if (phaseRef.current !== 'recording') return;
     ExpoSpeechRecognitionModule.stop();
+    // setPlaybackMode called in the 'end' event
   }
 
   const handleStudentFinished = useCallback(async (raw: string) => {
@@ -114,9 +144,7 @@ export default function RoleplayScreen() {
       return;
     }
 
-    setPhase('sending');
-
-    // Maintain wire history for grading.
+    updatePhase('sending');
     wireHistoryRef.current.push({ role: 'user', content: text });
 
     const wireHistory: WireMessage[] = [];
@@ -144,24 +172,23 @@ export default function RoleplayScreen() {
         speakGuest(result.guestReply);
       }
     } catch {
-      setErrorMsg('Connection error. Check your internet and try again.');
-      setPhase('error');
+      setErrorMsg('Connection issue. Check your signal and try again.');
+      updatePhase('error');
     }
   }, [scenario, turns, user]);
 
   async function triggerGrading(messages: WireMessage[]) {
-    if (!scenario || !user) { setPhase('done'); return; }
-    setPhase('grading');
-
+    if (!scenario || !user) { updatePhase('done'); return; }
+    updatePhase('grading');
     const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
     try {
       const gradeResult = await gradeSession({ scenario, messages, durationSeconds });
+      Haptics.success();
       setResult(gradeResult);
       router.replace(`/feedback/${gradeResult.attemptId}` as any);
     } catch {
-      // Grading failed — navigate to a simple done screen.
-      setPhase('done');
+      updatePhase('done');
     }
   }
 
@@ -169,6 +196,26 @@ export default function RoleplayScreen() {
     return (
       <SafeAreaView style={styles.screen}>
         <Text style={styles.errText}>Scenario not found.</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (phase === 'interrupted') {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.gradingWrap}>
+          <Text style={{ fontSize: 48 }}>📵</Text>
+          <Text style={styles.gradingTitle}>Session paused</Text>
+          <Text style={styles.gradingText}>
+            Something interrupted your session. This attempt has been voided — no worries, it won't count against you. Retry when you're ready.
+          </Text>
+          <TouchableOpacity style={styles.startBtn} onPress={() => updatePhase('idle')}>
+            <Text style={styles.startBtnText}>Retry this scenario</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.back()} style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Go back</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -190,7 +237,7 @@ export default function RoleplayScreen() {
       <SafeAreaView style={styles.screen}>
         <View style={styles.gradingWrap}>
           <Text style={{ fontSize: 48 }}>✓</Text>
-          <Text style={styles.gradingTitle}>Session complete!</Text>
+          <Text style={styles.gradingTitle}>Session complete</Text>
           <TouchableOpacity style={styles.startBtn} onPress={() => router.back()}>
             <Text style={styles.startBtnText}>Back to Practice</Text>
           </TouchableOpacity>
@@ -201,9 +248,13 @@ export default function RoleplayScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Close and return to practice"
+        >
           <Text style={styles.back}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{scenario.title}</Text>
@@ -211,7 +262,12 @@ export default function RoleplayScreen() {
           <Text style={styles.turnCount}>
             {turns.filter(t => t.role === 'student').length}/{MAX_TURNS / 2}
           </Text>
-          <TouchableOpacity onPress={() => router.push('/phrases' as any)} hitSlop={12}>
+          <TouchableOpacity
+            onPress={() => router.push('/phrases' as any)}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Phrase bank"
+          >
             <Text style={styles.lifebuoy}>⛟</Text>
           </TouchableOpacity>
         </View>
@@ -244,7 +300,7 @@ export default function RoleplayScreen() {
       {phase === 'error' && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{errorMsg}</Text>
-          <TouchableOpacity onPress={() => setPhase('student_turn')} style={styles.retryBtn}>
+          <TouchableOpacity onPress={() => updatePhase('student_turn')} style={styles.retryBtn}>
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -252,7 +308,12 @@ export default function RoleplayScreen() {
 
       <View style={styles.footer}>
         {phase === 'idle' ? (
-          <TouchableOpacity style={styles.startBtn} onPress={startSession}>
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={startSession}
+            accessibilityRole="button"
+            accessibilityLabel="Start the conversation"
+          >
             <Text style={styles.startBtnText}>Start conversation</Text>
           </TouchableOpacity>
         ) : (phase === 'student_turn' || phase === 'recording') ? (
@@ -299,6 +360,6 @@ const styles = StyleSheet.create({
   startBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   errText: { padding: Spacing.xl, color: Colors.error },
   gradingWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.lg, padding: Spacing.xl },
-  gradingTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
+  gradingTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
   gradingText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
 });

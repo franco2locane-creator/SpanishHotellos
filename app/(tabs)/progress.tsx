@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator, Switch,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { SCENARIO_CATALOG, DEPT_LABELS } from '@/lib/scenarios/catalog';
+import Skeleton from '@/components/Skeleton';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 type Attempt = {
   id: string;
@@ -26,8 +26,6 @@ const CRITERION_LABELS: Record<CriterionKey, string> = {
   taskCompletion: 'Task', register: 'Register',
 };
 
-// ── Trend chart ───────────────────────────────────────────────────────────────
-
 const CHART_W = 280;
 const CHART_H = 100;
 
@@ -35,7 +33,7 @@ function TrendChart({ attempts }: { attempts: Attempt[] }) {
   if (attempts.length < 2) {
     return (
       <View style={styles.chartEmpty}>
-        <Text style={styles.chartEmptyText}>Complete 2+ sessions to see your trend</Text>
+        <Text style={styles.chartEmptyText}>Complete 2 or more sessions to see your trend</Text>
       </View>
     );
   }
@@ -54,7 +52,7 @@ function TrendChart({ attempts }: { attempts: Attempt[] }) {
     .join(' ');
 
   return (
-    <Svg width={CHART_W} height={CHART_H + 20}>
+    <Svg width={CHART_W} height={CHART_H + 20} accessibilityLabel="Score trend chart">
       <Line x1={0} y1={CHART_H} x2={CHART_W} y2={CHART_H} stroke="#E8E3DC" strokeWidth={1} />
       <Polyline points={pts} fill="none" stroke={Colors.gold} strokeWidth={2.5} />
       {scores.map((s, i) => {
@@ -72,14 +70,15 @@ function TrendChart({ attempts }: { attempts: Attempt[] }) {
   );
 }
 
-// ── Average bar ───────────────────────────────────────────────────────────────
-
 function AvgBar({ label, avg }: { label: string; avg: number }) {
   const pct = Math.round((avg / 20) * 100);
   const color = pct >= 75 ? '#16A34A' : pct >= 55 ? '#CA8A04' : '#DC2626';
 
   return (
-    <View style={styles.avgRow}>
+    <View
+      style={styles.avgRow}
+      accessibilityLabel={`${label}: ${pct}%`}
+    >
       <Text style={styles.avgLabel}>{label}</Text>
       <View style={styles.avgBarBg}>
         <View style={[styles.avgBarFill, { width: `${pct}%`, backgroundColor: color }]} />
@@ -89,9 +88,19 @@ function AvgBar({ label, avg }: { label: string; avg: number }) {
   );
 }
 
-// ── Screen ────────────────────────────────────────────────────────────────────
+function ProgressSkeleton() {
+  return (
+    <View style={{ padding: Spacing.lg, gap: Spacing.md }}>
+      <Skeleton width={100} height={22} borderRadius={6} />
+      {[120, 160, 100].map((h, i) => (
+        <Skeleton key={i} width="100%" height={h} borderRadius={12} />
+      ))}
+    </View>
+  );
+}
 
 export default function ProgressScreen() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const { devPremiumOverride, setDevPremiumOverride } = usePurchaseStore();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
@@ -120,7 +129,6 @@ export default function ProgressScreen() {
     ? CRITERION_KEYS.reduce((a, b) => (avgScores[a] <= avgScores[b] ? a : b))
     : null;
 
-  // Department breakdown: group by scenario's department.
   const deptCounts: Record<string, number> = {};
   for (const a of attempts) {
     const dept = SCENARIO_CATALOG.find(s => s.id === a.scenario_id)?.department ?? 'other';
@@ -132,7 +140,7 @@ export default function ProgressScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+        <ProgressSkeleton />
       </SafeAreaView>
     );
   }
@@ -142,7 +150,6 @@ export default function ProgressScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.heading}>Progress</Text>
 
-        {/* Dev-only premium toggle — never shown in production builds */}
         {__DEV__ && (
           <View style={styles.devToggle}>
             <Text style={styles.devToggleText}>🔧 Dev: Simulate Premium</Text>
@@ -151,6 +158,7 @@ export default function ProgressScreen() {
               onValueChange={setDevPremiumOverride}
               trackColor={{ true: Colors.gold }}
               thumbColor="#fff"
+              accessibilityLabel="Toggle premium simulation"
             />
           </View>
         )}
@@ -158,14 +166,22 @@ export default function ProgressScreen() {
         {attempts.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>📊</Text>
-            <Text style={styles.emptyTitle}>No sessions yet</Text>
+            <Text style={styles.emptyTitle}>Your first session is the hardest</Text>
             <Text style={styles.emptyText}>
-              Complete a role-play session to see your scores and improvement over time.
+              Complete a role-play or mock exam and your scores will appear here.
+              No pressure — this is practice.
             </Text>
+            <TouchableOpacity
+              style={styles.emptyBtn}
+              onPress={() => router.push('/(tabs)/practice' as any)}
+              accessibilityRole="button"
+              accessibilityLabel="Start practising — go to Practice tab"
+            >
+              <Text style={styles.emptyBtnText}>Start practising</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
-            {/* Score trend */}
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Score Trend</Text>
               <Text style={styles.cardSub}>{attempts.length} session{attempts.length !== 1 ? 's' : ''} completed</Text>
@@ -174,7 +190,6 @@ export default function ProgressScreen() {
               </View>
             </View>
 
-            {/* Per-criterion averages */}
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Criterion Averages</Text>
               {CRITERION_KEYS.map(k => (
@@ -182,18 +197,16 @@ export default function ProgressScreen() {
               ))}
             </View>
 
-            {/* Weakest area */}
             {weakest && (
               <View style={[styles.card, styles.weakCard]}>
                 <Text style={styles.weakTitle}>Focus area this week</Text>
                 <Text style={styles.weakCriterion}>{CRITERION_LABELS[weakest]}</Text>
                 <Text style={styles.weakSub}>
-                  Average {Math.round((avgScores[weakest] / 20) * 100)}% — below your other criteria
+                  Your average here is {Math.round((avgScores[weakest] / 20) * 100)}% — a few targeted drills will move this quickly.
                 </Text>
               </View>
             )}
 
-            {/* Department breakdown */}
             {Object.keys(deptCounts).length > 0 && (
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Scenarios Practiced</Text>
@@ -237,14 +250,19 @@ const styles = StyleSheet.create({
   weakCard: { backgroundColor: '#FFF8EC', borderLeftWidth: 4, borderLeftColor: Colors.gold },
   weakTitle: { fontSize: Typography.caption, fontWeight: Typography.bold, color: Colors.gold, textTransform: 'uppercase', letterSpacing: 0.8 },
   weakCriterion: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
-  weakSub: { fontSize: Typography.caption, color: Colors.textSecondary },
+  weakSub: { fontSize: Typography.caption, color: Colors.textSecondary, lineHeight: 18 },
   deptRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  deptLabel: { fontSize: Typography.caption, color: Colors.textSecondary, textTransform: 'capitalize' },
+  deptLabel: { fontSize: Typography.caption, color: Colors.textSecondary },
   deptCount: { fontSize: Typography.caption, fontWeight: Typography.bold, color: Colors.navy },
-  emptyState: { alignItems: 'center', paddingTop: 80, gap: Spacing.md },
+  emptyState: { alignItems: 'center', paddingTop: 64, gap: Spacing.md },
   emptyEmoji: { fontSize: 60 },
-  emptyTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
-  emptyText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  emptyTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
+  emptyText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, paddingHorizontal: Spacing.md },
+  emptyBtn: {
+    backgroundColor: Colors.navy, borderRadius: Radii.lg,
+    paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md, marginTop: Spacing.sm,
+  },
+  emptyBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   chartEmpty: { alignItems: 'center', paddingVertical: Spacing.lg },
   chartEmptyText: { fontSize: Typography.caption, color: Colors.textMuted, fontStyle: 'italic' },
 });

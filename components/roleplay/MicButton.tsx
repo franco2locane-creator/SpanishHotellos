@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
+import { Haptics } from '@/lib/haptics';
 
 type Props = {
   onPressIn: () => void;
@@ -20,19 +21,26 @@ export default function MicButton({
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
+    Haptics.medium();
     Animated.spring(scaleAnim, { toValue: 1.12, useNativeDriver: true }).start();
     onPressIn();
   }, [onPressIn, scaleAnim]);
 
   const handlePressOut = useCallback(() => {
+    Haptics.light();
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
     onPressOut();
   }, [onPressOut, scaleAnim]);
 
+  const hintText = isRecording ? 'Release to send' : disabled ? 'Please wait…' : 'Hold to speak';
+  const a11yLabel = isRecording
+    ? 'Recording — release to send your reply'
+    : 'Hold to record your reply in Spanish';
+
   return (
     <View style={styles.wrapper}>
       {isRecording && transcript ? (
-        <View style={styles.liveTranscript}>
+        <View style={styles.liveTranscript} accessibilityLiveRegion="polite">
           <Text style={styles.liveText} numberOfLines={2}>{transcript}</Text>
         </View>
       ) : null}
@@ -44,14 +52,15 @@ export default function MicButton({
             onPressOut={handlePressOut}
             disabled={disabled}
             style={[styles.btn, isRecording && styles.btnRecording, disabled && styles.btnDisabled]}
+            accessibilityRole="button"
+            accessibilityLabel={a11yLabel}
+            accessibilityState={{ disabled, busy: isRecording }}
           >
             <Text style={styles.icon}>{isRecording ? '⏹' : '🎤'}</Text>
           </Pressable>
         </Animated.View>
 
-        <Text style={styles.hint}>
-          {isRecording ? 'Release to send' : disabled ? 'Wait…' : 'Hold to speak'}
-        </Text>
+        <Text style={styles.hint} accessibilityElementsHidden>{hintText}</Text>
       </View>
     </View>
   );
