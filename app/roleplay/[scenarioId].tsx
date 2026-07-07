@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, ActivityIndicator, AppState, type AppStateStatus,
+  TouchableOpacity, ActivityIndicator, AppState, TextInput, Platform,
+  type AppStateStatus,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Speech from 'expo-speech';
@@ -53,6 +54,7 @@ export default function RoleplayScreen() {
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [errorMsg, setErrorMsg] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
+  const [webInput, setWebInput] = useState('');
   const sessionStartRef = useRef<number>(Date.now());
   const liveRef = useRef('');
   const wireHistoryRef = useRef<WireMessage[]>([]);
@@ -131,6 +133,13 @@ export default function RoleplayScreen() {
     // setPlaybackMode called in the 'end' event
   }
 
+  function handleWebSend() {
+    const text = webInput.trim();
+    if (!text || phaseRef.current !== 'student_turn') return;
+    setWebInput('');
+    handleStudentFinished(text);
+  }
+
   const handleStudentFinished = useCallback(async (raw: string) => {
     if (!scenario || !user) return;
     const text = raw.trim();
@@ -147,8 +156,14 @@ export default function RoleplayScreen() {
     updatePhase('sending');
     wireHistoryRef.current.push({ role: 'user', content: text });
 
+    // Build wire history: skip leading guest turns (the opening line is already
+    // embedded in the system prompt and must not appear as an assistant message
+    // at position 0 — the Edge Function requires messages[0].role === 'user').
     const wireHistory: WireMessage[] = [];
+    let seenStudent = false;
     for (const t of turns) {
+      if (t.role === 'student') seenStudent = true;
+      if (!seenStudent) continue;
       wireHistory.push({ role: t.role === 'student' ? 'user' : 'assistant', content: t.text });
     }
     wireHistory.push({ role: 'user', content: text });
@@ -316,13 +331,39 @@ export default function RoleplayScreen() {
           >
             <Text style={styles.startBtnText}>Start conversation</Text>
           </TouchableOpacity>
-        ) : (phase === 'student_turn' || phase === 'recording') ? (
-          <MicButton
-            onPressIn={handleMicPressIn}
-            onPressOut={handleMicPressOut}
-            isRecording={phase === 'recording'}
-            transcript={liveTranscript}
-          />
+        ) : (phase === 'student_turn' || phase === 'recording' || phase === 'sending') ? (
+          Platform.OS === 'web' ? (
+            <View style={styles.webInputRow}>
+              <TextInput
+                style={styles.webInput}
+                placeholder="Type your reply in Spanish…"
+                placeholderTextColor={Colors.textMuted}
+                value={webInput}
+                onChangeText={setWebInput}
+                onSubmitEditing={handleWebSend}
+                editable={phase === 'student_turn'}
+                returnKeyType="send"
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={[styles.webSendBtn, (phase !== 'student_turn' || !webInput.trim()) && styles.webSendBtnDisabled]}
+                onPress={handleWebSend}
+                disabled={phase !== 'student_turn' || !webInput.trim()}
+              >
+                {phase === 'sending'
+                  ? <ActivityIndicator size="small" color="#fff" />
+                  : <Text style={styles.webSendBtnText}>Send</Text>}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <MicButton
+              onPressIn={handleMicPressIn}
+              onPressOut={handleMicPressOut}
+              isRecording={phase === 'recording'}
+              transcript={liveTranscript}
+            />
+          )
         ) : null}
       </View>
     </SafeAreaView>
@@ -353,6 +394,21 @@ const styles = StyleSheet.create({
   retryBtn: { backgroundColor: Colors.error, borderRadius: Radii.sm, paddingHorizontal: Spacing.md, paddingVertical: 4 },
   retryText: { color: '#fff', fontSize: Typography.caption, fontWeight: Typography.semibold },
   footer: { paddingBottom: Spacing.lg, alignItems: 'center', backgroundColor: Colors.surface, borderTopWidth: 1, borderTopColor: '#E8E3DC' },
+  webInputRow: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, alignSelf: 'stretch',
+  },
+  webInput: {
+    flex: 1, borderWidth: 1.5, borderColor: Colors.border, borderRadius: Radii.lg,
+    paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
+    fontSize: Typography.body, backgroundColor: '#fff', color: Colors.textPrimary,
+  },
+  webSendBtn: {
+    backgroundColor: Colors.navy, borderRadius: Radii.lg,
+    paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm, minWidth: 64, alignItems: 'center',
+  },
+  webSendBtnDisabled: { opacity: 0.4 },
+  webSendBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   startBtn: {
     marginTop: Spacing.md, backgroundColor: Colors.navy, borderRadius: Radii.lg,
     paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md,
