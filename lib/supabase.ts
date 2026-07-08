@@ -8,8 +8,12 @@ const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl as string;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey as string;
 
 if (!supabaseUrl || !supabaseAnonKey) {
+  const missing = [
+    !supabaseUrl && 'EXPO_PUBLIC_SUPABASE_URL',
+    !supabaseAnonKey && 'EXPO_PUBLIC_SUPABASE_ANON_KEY',
+  ].filter(Boolean).join(', ');
   throw new Error(
-    'Missing Supabase config. Set SUPABASE_URL and SUPABASE_ANON_KEY in your .env file.'
+    `Missing Supabase config: ${missing}. Set these in your .env file for local builds, or with "eas env:create" (or eas.json's env block) for EAS builds.`
   );
 }
 
