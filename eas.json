@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -20,6 +21,7 @@
       }
     },
     "production": {
+      "autoIncrement": true,
       "ios": {
         "distribution": "store"
       },
@@ -31,7 +33,8 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "franco2.locane@gmail.com"
+        "appleId": "franco2.locane@gmail.com",
+        "ascAppId": "6788525670"
       },
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",

@@ -16,8 +16,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.spanish4hoteleros.app",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Spanish4Hoteleros needs access to your microphone to record your spoken Spanish practice and provide feedback on pronunciation.",
-        "NSPhotoLibraryUsageDescription": "Spanish4Hoteleros may need access to your photo library for profile pictures or learning materials."
+        "NSMicrophoneUsageDescription": "Spanish4Hoteleros records your voice so you can practice speaking Spanish and receive feedback.",
+        "NSSpeechRecognitionUsageDescription": "Spanish4Hoteleros transcribes your spoken Spanish to evaluate your practice answers.",
+        "NSPhotoLibraryUsageDescription": "Spanish4Hoteleros can access your photo library if you choose to add a profile picture.",
+        "NSCameraUsageDescription": "Spanish4Hoteleros can use the camera if you choose to take a profile picture."
       }
     },
     "android": {
@@ -44,8 +46,8 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Allow Spanish4Hoteleros to access the microphone for speaking practice.",
-          "speechRecognitionPermission": "Allow Spanish4Hoteleros to use speech recognition for speaking practice."
+          "microphonePermission": "Spanish4Hoteleros records your voice so you can practice speaking Spanish and receive feedback.",
+          "speechRecognitionPermission": "Spanish4Hoteleros transcribes your spoken Spanish to evaluate your practice answers."
         }
       ]
     ],

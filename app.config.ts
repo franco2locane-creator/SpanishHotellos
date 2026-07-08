@@ -7,6 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     ...(config.ios ?? {}),
     infoPlist: {
+      ...(config.ios?.infoPlist ?? {}),
       ITSAppUsesNonExemptEncryption: false,
     },
   },
