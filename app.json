@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.spanish4hoteleros.app",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Spanish4Hoteleros needs access to your microphone to record your spoken Spanish practice and provide feedback on pronunciation."
+        "NSMicrophoneUsageDescription": "Spanish4Hoteleros needs access to your microphone to record your spoken Spanish practice and provide feedback on pronunciation.",
+        "NSPhotoLibraryUsageDescription": "Spanish4Hoteleros may need access to your photo library for profile pictures or learning materials."
       }
     },
     "android": {
