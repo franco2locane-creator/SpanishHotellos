@@ -14,7 +14,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.spanish4hoteleros.app"
+      "bundleIdentifier": "com.spanish4hoteleros.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Spanish4Hoteleros needs access to your microphone to record your spoken Spanish practice and provide feedback on pronunciation."
+      }
     },
     "android": {
       "package": "com.spanish4hoteleros.app",
@@ -47,6 +50,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3fdc630d-c767-4152-9706-d3b2287559c2"
+      }
     }
   }
 }
