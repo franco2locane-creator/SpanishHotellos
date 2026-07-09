@@ -26,11 +26,27 @@ Copy `.env.example` to `.env` and fill in values. Never commit `.env`.
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-EXPO_PUBLIC_REVENUECAT_IOS_KEY=appl_...
-EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=goog_...
+EXPO_PUBLIC_REVENUECAT_API_KEY=appl_...
 ```
 
 The Anthropic API key lives **only** in Supabase Edge Function secrets — never in this file.
+
+**EAS cloud builds don't read your local `.env`.** `app.config.ts` reads these
+via `process.env`, which only exists locally (from `.env`) or in CI. For any
+build run on EAS's servers — `eas build --profile preview` or `production` —
+you must also register each variable with the project so the build machine
+can see it:
+
+```bash
+eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL --value "https://<project>.supabase.co"
+eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "eyJ..."
+eas env:create --environment production --name EXPO_PUBLIC_REVENUECAT_API_KEY --value "appl_..."
+```
+
+Repeat with `--environment preview` for internal/preview builds. Forgetting
+this causes `lib/supabase.ts`'s missing-config guard to throw on module load —
+the app crashes on launch before any screen renders, since `Constants.expoConfig.extra`
+comes back empty. Verify what's registered with `eas env:list --environment production`.
 
 ## 3. Supabase local dev
 
@@ -95,14 +111,23 @@ eas build --profile preview       # internal distribution
 eas build --profile production    # App Store / Play Store
 ```
 
-Fill in `submit.production.ios.ascAppId` and `appleTeamId` in `eas.json` before your first production build.
+`submit.production.ios.ascAppId`/`appleId` in `eas.json` are already filled in.
+EAS resolves the Apple Team automatically from your logged-in account's
+credentials — no `appleTeamId` field needed.
 
 Submit:
 
 ```bash
 eas submit --platform ios --latest
-eas submit --platform android --latest
 ```
+
+**Android is not part of the v1.0 launch** — the app is iOS-only for now.
+`submit.production.android` in `eas.json` points at `./google-service-account.json`,
+which does not exist in this repo (and must never be committed — it's a real
+service-account private key). Before any future Play Store submission,
+generate one in Google Play Console → Setup → API access, save it as
+`google-service-account.json` in the project root (already covered by
+`.gitignore`), then `eas submit --platform android --latest`.
 
 ## 8. RevenueCat
 
@@ -110,7 +135,19 @@ eas submit --platform android --latest
 - Entitlement: `premium`
 - Price: €9.99 one-time (non-consumable on iOS; one-time on Android)
 
-Configure offerings in the RevenueCat dashboard and set API keys in `.env`.
+The app fetches this product directly by ID (`Purchases.getProducts([...], PURCHASE_TYPE.INAPP)`
+in `lib/purchases.ts`) — it does not use RevenueCat Offerings/Packages, so none
+need to be configured in the dashboard. You only need:
+
+1. An **Apple App Store** app configured in RevenueCat (Project → Apps), with
+   the App Store Connect API key for receipt validation.
+2. The product `spanish4hoteleros_full_access` in Product Catalog → Products
+   (auto-imports from App Store Connect once it exists there and the app in
+   step 1 is connected).
+3. The entitlement `premium` with that product attached.
+
+Set `EXPO_PUBLIC_REVENUECAT_API_KEY` locally in `.env` and, for EAS builds,
+via `eas env:create` (see section 2).
 
 ## 9. Project structure
 

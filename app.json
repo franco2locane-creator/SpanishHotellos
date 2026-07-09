@@ -6,11 +6,6 @@
     "scheme": "spanish4hoteleros",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1B3A5C"
-    },
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -38,6 +33,14 @@
     },
     "plugins": [
       "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1B3A5C"
+        }
+      ],
       "expo-router",
       "expo-status-bar",
       "expo-font",
