@@ -1,4 +1,4 @@
-import Purchases from 'react-native-purchases';
+import Purchases, { PURCHASE_TYPE, PurchasesStoreProduct } from 'react-native-purchases';
 import Constants from 'expo-constants';
 import { supabase } from './supabase';
 
@@ -16,6 +16,24 @@ export function configurePurchases(): void {
     return;
   }
   Purchases.configure({ apiKey: key });
+
+  if (__DEV__) {
+    Purchases.getOfferings()
+      .then((offerings) => console.log('[Purchases] offerings:', JSON.stringify(offerings, null, 2)))
+      .catch((e) => console.warn('[Purchases] getOfferings failed:', e));
+  }
+}
+
+// spanish4hoteleros_full_access is a non-consumable — must fetch as PURCHASE_TYPE.INAPP.
+// (Purchases.purchaseProduct()'s default type is SUBS, which looks up the wrong
+// store product and surfaces as "product not found".)
+async function getPremiumProduct(): Promise<PurchasesStoreProduct | null> {
+  try {
+    const products = await Purchases.getProducts([PRODUCT_ID], PURCHASE_TYPE.INAPP);
+    return products[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function loginPurchaseUser(userId: string): Promise<boolean> {
@@ -49,8 +67,12 @@ export type PurchaseOutcome = 'success' | 'cancelled' | 'pending' | 'error';
 export type PurchaseResult = { outcome: PurchaseOutcome; errorMessage?: string };
 
 export async function purchasePremium(): Promise<PurchaseResult> {
+  const product = await getPremiumProduct();
+  if (!product) {
+    return { outcome: 'error', errorMessage: 'Purchases temporarily unavailable. Please try again later.' };
+  }
   try {
-    const { customerInfo } = await Purchases.purchaseProduct(PRODUCT_ID);
+    const { customerInfo } = await Purchases.purchaseStoreProduct(product);
     const active = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
     if (active) return { outcome: 'success' };
     // Purchase completed but entitlement not active yet — rare edge case

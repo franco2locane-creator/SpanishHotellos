@@ -1,16 +1,18 @@
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 
 type Props = {
   onApple: () => void;
-  onGoogle: () => void;
   isLoading?: boolean;
 };
 
-export default function SocialAuthRow({ onApple, onGoogle, isLoading = false }: Props) {
-  // Social auth (Apple / Google OAuth) requires native modules not available on web.
-  if (Platform.OS === 'web') return null;
+// Google sign-in is intentionally not offered in v1: Apple guideline 4.8 requires
+// Sign in with Apple whenever a third-party login is offered, and Google's own
+// OAuth chain isn't configured yet. Returns in v1.1.
+export default function SocialAuthRow({ onApple, isLoading = false }: Props) {
+  // Apple Sign In is iOS-only and requires a native module not available on web/Android.
+  if (Platform.OS !== 'ios') return null;
 
   return (
     <View style={styles.wrapper}>
@@ -20,25 +22,14 @@ export default function SocialAuthRow({ onApple, onGoogle, isLoading = false }: 
         <View style={styles.dividerLine} />
       </View>
 
-      <View style={styles.buttons}>
-        {Platform.OS === 'ios' && (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-            cornerRadius={Radii.md}
-            style={[styles.socialBtn, styles.appleBtn]}
-            onPress={onApple}
-          />
-        )}
-
-        <TouchableOpacity
-          style={[styles.socialBtn, styles.googleBtn]}
-          onPress={onGoogle}
-          disabled={isLoading}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.googleLabel}>G  Continue with Google</Text>
-        </TouchableOpacity>
+      <View style={styles.buttons} pointerEvents={isLoading ? 'none' : 'auto'}>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={Radii.md}
+          style={[styles.socialBtn, styles.appleBtn, isLoading && styles.disabled]}
+          onPress={onApple}
+        />
       </View>
     </View>
   );
@@ -73,16 +64,7 @@ const styles = StyleSheet.create({
   appleBtn: {
     width: '100%',
   },
-  googleBtn: {
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleLabel: {
-    fontSize: Typography.body,
-    fontWeight: Typography.medium,
-    color: Colors.textPrimary,
+  disabled: {
+    opacity: 0.6,
   },
 });

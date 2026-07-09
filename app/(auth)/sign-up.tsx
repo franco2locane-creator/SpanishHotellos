@@ -7,7 +7,7 @@ import { Link, useRouter } from 'expo-router';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import SocialAuthRow from '@/components/auth/SocialAuthRow';
-import { signUpWithEmail, signInWithApple, signInWithGoogle } from '@/lib/auth';
+import { signUpWithEmail, signInWithApple } from '@/lib/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors, Spacing, Typography } from '@/lib/theme';
 
@@ -27,7 +27,7 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'apple' | 'google' | null>(null);
+  const [socialLoading, setSocialLoading] = useState<'apple' | null>(null);
 
   function validate(): boolean {
     const next: FormErrors = {};
@@ -64,18 +64,6 @@ export default function SignUpScreen() {
     } catch (e: unknown) {
       if (e instanceof Error && e.message.includes('canceled')) return;
       setErrors({ general: e instanceof Error ? e.message : 'Apple sign in failed.' });
-    } finally {
-      setSocialLoading(null);
-    }
-  }
-
-  async function handleGoogle() {
-    setSocialLoading('google');
-    setErrors({});
-    try {
-      await signInWithGoogle();
-    } catch (e: unknown) {
-      setErrors({ general: e instanceof Error ? e.message : 'Google sign in failed.' });
     } finally {
       setSocialLoading(null);
     }
@@ -138,7 +126,6 @@ export default function SignUpScreen() {
 
           <SocialAuthRow
             onApple={handleApple}
-            onGoogle={handleGoogle}
             isLoading={!!socialLoading}
           />
 

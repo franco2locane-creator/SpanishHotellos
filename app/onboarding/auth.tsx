@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthButton from '@/components/auth/AuthButton';
 import SocialAuthRow from '@/components/auth/SocialAuthRow';
-import { signInWithEmail, signUpWithEmail, signInWithApple, signInWithGoogle } from '@/lib/auth';
+import { signInWithEmail, signUpWithEmail, signInWithApple } from '@/lib/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { Colors, Spacing, Typography } from '@/lib/theme';
 
@@ -18,7 +18,7 @@ export default function OnboardingAuth() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
 
-  // Advance to the right step when auth completes (e.g., after Google OAuth redirect).
+  // Advance to the right step once auth completes.
   useEffect(() => {
     if (!user) return;
     if (user.onboardingStep === 'complete') {
@@ -34,7 +34,7 @@ export default function OnboardingAuth() {
   const [confirm, setConfirm] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'apple' | 'google' | null>(null);
+  const [socialLoading, setSocialLoading] = useState<'apple' | null>(null);
 
   function validate(): boolean {
     const e: FormErrors = {};
@@ -72,18 +72,6 @@ export default function OnboardingAuth() {
     } catch (e: unknown) {
       if (e instanceof Error && e.message.includes('canceled')) return;
       setErrors({ general: e instanceof Error ? e.message : 'Apple sign-in failed.' });
-    } finally {
-      setSocialLoading(null);
-    }
-  }
-
-  async function handleGoogle() {
-    setSocialLoading('google');
-    setErrors({});
-    try {
-      await signInWithGoogle();
-    } catch (e: unknown) {
-      setErrors({ general: e instanceof Error ? e.message : 'Google sign-in failed.' });
     } finally {
       setSocialLoading(null);
     }
@@ -133,7 +121,7 @@ export default function OnboardingAuth() {
             disabled={!!socialLoading}
           />
 
-          <SocialAuthRow onApple={handleApple} onGoogle={handleGoogle} isLoading={!!socialLoading} />
+          <SocialAuthRow onApple={handleApple} isLoading={!!socialLoading} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
