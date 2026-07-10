@@ -47,8 +47,8 @@ describe('DECK_CATALOG premium gating', () => {
     expect(freeId).toBe('front-office-basics');
   });
 
-  it('has 5 paid decks', () => {
-    expect(DECK_CATALOG.filter(d => !d.isFree)).toHaveLength(5);
+  it('has 9 paid decks', () => {
+    expect(DECK_CATALOG.filter(d => !d.isFree)).toHaveLength(9);
   });
 
   it('every deck has a positive cardCount', () => {

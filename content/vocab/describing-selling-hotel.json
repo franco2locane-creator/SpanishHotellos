@@ -1,42 +1,362 @@
 [
-  { "id": "dh-001", "termEs": "dejarse sorprender por", "termEn": "to let yourself be surprised by / to be swept away by", "exampleSentence": "Nuestro hotel le invita a dejarse sorprender por el lujo del Mediterráneo.", "department": "management", "isFree": false },
-  { "id": "dh-002", "termEs": "moderno/a y sofisticado/a", "termEn": "modern and sophisticated", "exampleSentence": "El Hotel Arts Barcelona destaca por su arquitectura moderna y sofisticada.", "department": "management", "isFree": false },
-  { "id": "dh-003", "termEs": "romántico/a e histórico/a", "termEn": "romantic and historic", "exampleSentence": "El Hotel Villapanés es un palacio romántico e histórico en el corazón de Sevilla.", "department": "management", "isFree": false },
-  { "id": "dh-004", "termEs": "elegante e inspirado/a en el arte moro", "termEn": "elegant and Moorish-inspired", "exampleSentence": "La decoración es elegante e inspirada en el arte moro de la Alhambra.", "department": "management", "isFree": false },
-  { "id": "dh-005", "termEs": "vanguardista / arquitectónico/a", "termEn": "avant-garde / architectural", "exampleSentence": "El Hotel Marqués de Riscal tiene un diseño absolutamente vanguardista de Frank Gehry.", "department": "management", "isFree": false },
-  { "id": "dh-006", "termEs": "la habitación de lujo / la suite", "termEn": "the luxury room / the suite", "exampleSentence": "Nuestra suite presidencial ofrece vistas panorámicas al mar desde un balcón privado.", "department": "management", "isFree": false },
-  { "id": "dh-007", "termEs": "la cama de matrimonio / king-size", "termEn": "the double bed / king-size bed", "exampleSentence": "La habitación deluxe cuenta con una cama king-size y escritorio de diseño.", "department": "management", "isFree": false },
-  { "id": "dh-008", "termEs": "la ducha de lluvia con vistas al mar", "termEn": "a rain shower with sea views", "exampleSentence": "El baño incluye una ducha de lluvia con unas increíbles vistas al mar.", "department": "management", "isFree": false },
-  { "id": "dh-009", "termEs": "la bañera exenta / de diseño", "termEn": "a free-standing / designer bathtub", "exampleSentence": "La suite junior dispone de una bañera exenta en el centro del baño.", "department": "management", "isFree": false },
-  { "id": "dh-010", "termEs": "el ducha hammam / el baño de vapor", "termEn": "a hammam shower / steam bath", "exampleSentence": "La habitación superior cuenta con una ducha de estilo hammam muy relajante.", "department": "management", "isFree": false },
-  { "id": "dh-011", "termEs": "el servicio de lanzadera / shuttle al aeropuerto", "termEn": "shuttle service to/from the airport", "exampleSentence": "Ofrecemos un servicio de lanzadera al aeropuerto a treinta euros por trayecto.", "department": "management", "isFree": false },
-  { "id": "dh-012", "termEs": "la piscina infinity en la azotea", "termEn": "the rooftop infinity pool", "exampleSentence": "La piscina infinity en la azotea está abierta de ocho a veintidós horas para todos los huéspedes.", "department": "management", "isFree": false },
-  { "id": "dh-013", "termEs": "la terraza con vistas a / el bar de la azotea", "termEn": "the terrace with views of / the rooftop bar", "exampleSentence": "El bar de la azotea ofrece cócteles artesanales con vistas impresionantes a la Alhambra.", "department": "management", "isFree": false },
-  { "id": "dh-014", "termEs": "el público objetivo / el viajero de lujo", "termEn": "the target audience / the luxury traveller", "exampleSentence": "Nuestro público objetivo son los viajeros de lujo y las parejas en luna de miel.", "department": "management", "isFree": false },
-  { "id": "dh-015", "termEs": "las parejas / los viajeros culturales", "termEn": "couples / cultural travellers", "exampleSentence": "El Hotel Villapanés es ideal para parejas y viajeros culturales.", "department": "management", "isFree": false },
-  { "id": "dh-016", "termEs": "los viajeros de negocios", "termEn": "business travellers", "exampleSentence": "El Hotel Arts es perfecto para viajeros de negocios que buscan comodidad y tecnología.", "department": "management", "isFree": false },
-  { "id": "dh-017", "termEs": "lo sentimos, ese servicio no está disponible", "termEn": "we are sorry, that service is not available", "exampleSentence": "Lo sentimos, el desayuno no está incluido en el precio de la habitación.", "department": "management", "isFree": false },
-  { "id": "dh-018", "termEs": "lamentablemente / desafortunadamente", "termEn": "unfortunately / regrettably", "exampleSentence": "Lamentablemente, el hotel no dispone de parking propio, pero hay uno público a doscientos metros.", "department": "management", "isFree": false },
-  { "id": "dh-019", "termEs": "estamos encantados de informarle de que", "termEn": "we are delighted to inform you that", "exampleSentence": "Estamos encantados de informarle de que el desayuno está incluido en el precio.", "department": "management", "isFree": false },
-  { "id": "dh-020", "termEs": "las instalaciones / los servicios del hotel", "termEn": "the hotel facilities / services", "exampleSentence": "El hotel cuenta con excelentes instalaciones: spa, restaurante, piscina y sala de reuniones.", "department": "management", "isFree": false },
-  { "id": "dh-021", "termEs": "la arquitectura / el estilo / el diseño", "termEn": "the architecture / style / design", "exampleSentence": "La arquitectura del hotel combina elementos históricos con un diseño de interiores contemporáneo.", "department": "management", "isFree": false },
-  { "id": "dh-022", "termEs": "el lema / el eslogan del hotel", "termEn": "the hotel motto / slogan", "exampleSentence": "Nuestro lema es 'dejarse sorprender por el alma de Andalucía'.", "department": "management", "isFree": false },
-  { "id": "dh-023", "termEs": "la estrella Michelin / el restaurante gourmet", "termEn": "the Michelin star / gourmet restaurant", "exampleSentence": "Nuestro restaurante ha sido galardonado con una estrella Michelin.", "department": "management", "isFree": false },
-  { "id": "dh-024", "termEs": "el spa / los tratamientos de belleza", "termEn": "the spa / beauty treatments", "exampleSentence": "El spa Caudalie ofrece tratamientos a partir de ochenta euros por sesión.", "department": "management", "isFree": false },
-  { "id": "dh-025", "termEs": "el servicio personalizado / la atención al detalle", "termEn": "personalised service / attention to detail", "exampleSentence": "Nos distinguimos por un servicio personalizado y una atención al detalle exquisita.", "department": "management", "isFree": false },
-  { "id": "dh-026", "termEs": "la ubicación privilegiada / el entorno único", "termEn": "the privileged location / the unique setting", "exampleSentence": "El hotel tiene una ubicación privilegiada a dos minutos a pie de la catedral.", "department": "management", "isFree": false },
-  { "id": "dh-027", "termEs": "los viñedos / la bodega", "termEn": "the vineyards / the wine cellar", "exampleSentence": "El hotel está rodeado de viñedos y organiza visitas a la bodega familiar.", "department": "management", "isFree": false },
-  { "id": "dh-028", "termEs": "el palacio / el edificio histórico", "termEn": "the palace / the historic building", "exampleSentence": "El hotel está instalado en un palacio del siglo XVIII reformado con todo el lujo moderno.", "department": "management", "isFree": false },
-  { "id": "dh-029", "termEs": "la habitación con terraza privada", "termEn": "the room with a private terrace", "exampleSentence": "Nuestra habitación deluxe tiene una terraza privada con tumbonas y vistas al jardín.", "department": "management", "isFree": false },
-  { "id": "dh-030", "termEs": "por trayecto / por persona", "termEn": "per trip / per person", "exampleSentence": "El shuttle al aeropuerto cuesta treinta y cinco euros por trayecto.", "department": "management", "isFree": false },
-  { "id": "dh-031", "termEs": "la luna de miel / los recién casados", "termEn": "the honeymoon / newlyweds", "exampleSentence": "Ofrecemos un paquete especial de luna de miel con champán y decoración floral.", "department": "management", "isFree": false },
-  { "id": "dh-032", "termEs": "el check-out tardío / la ampliación de la estancia", "termEn": "late check-out / extending the stay", "exampleSentence": "El check-out tardío está disponible bajo petición y sujeto a disponibilidad.", "department": "management", "isFree": false },
-  { "id": "dh-033", "termEs": "la vista panorámica / con vistas a la Alhambra", "termEn": "panoramic view / with views of the Alhambra", "exampleSentence": "Desde la azotea se disfruta de una vista panorámica de toda la ciudad.", "department": "management", "isFree": false },
-  { "id": "dh-034", "termEs": "el precio incluye / no incluye", "termEn": "the price includes / does not include", "exampleSentence": "El precio de la habitación incluye el desayuno pero no incluye el acceso al spa.", "department": "management", "isFree": false },
-  { "id": "dh-035", "termEs": "gratuito/a / de cortesía / incluido/a", "termEn": "free of charge / complimentary / included", "exampleSentence": "El acceso a la piscina es gratuito para todos nuestros huéspedes.", "department": "management", "isFree": false },
-  { "id": "dh-036", "termEs": "a partir de / desde ___ euros", "termEn": "from / starting at ___ euros", "exampleSentence": "Las habitaciones están disponibles desde ciento sesenta euros por noche.", "department": "management", "isFree": false },
-  { "id": "dh-037", "termEs": "el evento especial / la celebración", "termEn": "the special event / the celebration", "exampleSentence": "Disponemos de salones para bodas, conferencias y eventos corporativos.", "department": "management", "isFree": false },
-  { "id": "dh-038", "termEs": "el reconocimiento / el galardón", "termEn": "the award / the accolade", "exampleSentence": "El hotel ha recibido el galardón de mejor hotel boutique de España.", "department": "management", "isFree": false },
-  { "id": "dh-039", "termEs": "la decoración / el mobiliario de diseño", "termEn": "the décor / the designer furniture", "exampleSentence": "El mobiliario de diseño es obra de reconocidos interioristas internacionales.", "department": "management", "isFree": false },
-  { "id": "dh-040", "termEs": "el hotel se encuentra en el corazón de", "termEn": "the hotel is located in the heart of", "exampleSentence": "El hotel se encuentra en el corazón del barrio gótico de Barcelona.", "department": "management", "isFree": false }
+  {
+    "id": "dh-001",
+    "termEs": "dejarse sorprender por",
+    "termEn": "to let yourself be surprised by / to be swept away by",
+    "exampleSentence": "Nuestro hotel le invita a dejarse sorprender por el lujo del Mediterráneo.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-002",
+    "termEs": "moderno/a y sofisticado/a",
+    "termEn": "modern and sophisticated",
+    "exampleSentence": "El Hotel Arts Barcelona destaca por su arquitectura moderna y sofisticada.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-003",
+    "termEs": "romántico/a e histórico/a",
+    "termEn": "romantic and historic",
+    "exampleSentence": "El Hotel Villapanés es un palacio romántico e histórico en el corazón de Sevilla.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-004",
+    "termEs": "elegante e inspirado/a en el arte moro",
+    "termEn": "elegant and Moorish-inspired",
+    "exampleSentence": "La decoración es elegante e inspirada en el arte moro de la Alhambra.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-005",
+    "termEs": "vanguardista / arquitectónico/a",
+    "termEn": "avant-garde / architectural",
+    "exampleSentence": "El Hotel Marqués de Riscal tiene un diseño absolutamente vanguardista de Frank Gehry.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-006",
+    "termEs": "la habitación de lujo / la suite",
+    "termEn": "the luxury room / the suite",
+    "exampleSentence": "Nuestra suite presidencial ofrece vistas panorámicas al mar desde un balcón privado.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-007",
+    "termEs": "la cama de matrimonio / king-size",
+    "termEn": "the double bed / king-size bed",
+    "exampleSentence": "La habitación deluxe cuenta con una cama king-size y escritorio de diseño.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-008",
+    "termEs": "la ducha de lluvia con vistas al mar",
+    "termEn": "a rain shower with sea views",
+    "exampleSentence": "El baño incluye una ducha de lluvia con unas increíbles vistas al mar.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-009",
+    "termEs": "la bañera exenta / de diseño",
+    "termEn": "a free-standing / designer bathtub",
+    "exampleSentence": "La suite junior dispone de una bañera exenta en el centro del baño.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-010",
+    "termEs": "el ducha hammam / el baño de vapor",
+    "termEn": "a hammam shower / steam bath",
+    "exampleSentence": "La habitación superior cuenta con una ducha de estilo hammam muy relajante.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-011",
+    "termEs": "el servicio de lanzadera / shuttle al aeropuerto",
+    "termEn": "shuttle service to/from the airport",
+    "exampleSentence": "Ofrecemos un servicio de lanzadera al aeropuerto a treinta euros por trayecto.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-012",
+    "termEs": "la piscina infinity en la azotea",
+    "termEn": "the rooftop infinity pool",
+    "exampleSentence": "La piscina infinity en la azotea está abierta de ocho a veintidós horas para todos los huéspedes.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-013",
+    "termEs": "la terraza con vistas a / el bar de la azotea",
+    "termEn": "the terrace with views of / the rooftop bar",
+    "exampleSentence": "El bar de la azotea ofrece cócteles artesanales con vistas impresionantes a la Alhambra.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-014",
+    "termEs": "el público objetivo / el viajero de lujo",
+    "termEn": "the target audience / the luxury traveller",
+    "exampleSentence": "Nuestro público objetivo son los viajeros de lujo y las parejas en luna de miel.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-015",
+    "termEs": "las parejas / los viajeros culturales",
+    "termEn": "couples / cultural travellers",
+    "exampleSentence": "El Hotel Villapanés es ideal para parejas y viajeros culturales.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-016",
+    "termEs": "los viajeros de negocios",
+    "termEn": "business travellers",
+    "exampleSentence": "El Hotel Arts es perfecto para viajeros de negocios que buscan comodidad y tecnología.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-017",
+    "termEs": "lo sentimos, ese servicio no está disponible",
+    "termEn": "we are sorry, that service is not available",
+    "exampleSentence": "Lo sentimos, el desayuno no está incluido en el precio de la habitación.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-018",
+    "termEs": "lamentablemente / desafortunadamente",
+    "termEn": "unfortunately / regrettably",
+    "exampleSentence": "Lamentablemente, el hotel no dispone de parking propio, pero hay uno público a doscientos metros.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-019",
+    "termEs": "estamos encantados de informarle de que",
+    "termEn": "we are delighted to inform you that",
+    "exampleSentence": "Estamos encantados de informarle de que el desayuno está incluido en el precio.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-020",
+    "termEs": "las instalaciones / los servicios del hotel",
+    "termEn": "the hotel facilities / services",
+    "exampleSentence": "El hotel cuenta con excelentes instalaciones: spa, restaurante, piscina y sala de reuniones.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-021",
+    "termEs": "la arquitectura / el estilo / el diseño",
+    "termEn": "the architecture / style / design",
+    "exampleSentence": "La arquitectura del hotel combina elementos históricos con un diseño de interiores contemporáneo.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-022",
+    "termEs": "el lema / el eslogan del hotel",
+    "termEn": "the hotel motto / slogan",
+    "exampleSentence": "Nuestro lema es 'dejarse sorprender por el alma de Andalucía'.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-023",
+    "termEs": "la estrella Michelin / el restaurante gourmet",
+    "termEn": "the Michelin star / gourmet restaurant",
+    "exampleSentence": "Nuestro restaurante ha sido galardonado con una estrella Michelin.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-024",
+    "termEs": "el spa / los tratamientos de belleza",
+    "termEn": "the spa / beauty treatments",
+    "exampleSentence": "El spa Caudalie ofrece tratamientos a partir de ochenta euros por sesión.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-025",
+    "termEs": "el servicio personalizado / la atención al detalle",
+    "termEn": "personalised service / attention to detail",
+    "exampleSentence": "Nos distinguimos por un servicio personalizado y una atención al detalle exquisita.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-026",
+    "termEs": "la ubicación privilegiada / el entorno único",
+    "termEn": "the privileged location / the unique setting",
+    "exampleSentence": "El hotel tiene una ubicación privilegiada a dos minutos a pie de la catedral.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-027",
+    "termEs": "los viñedos / la bodega",
+    "termEn": "the vineyards / the wine cellar",
+    "exampleSentence": "El hotel está rodeado de viñedos y organiza visitas a la bodega familiar.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-028",
+    "termEs": "el palacio / el edificio histórico",
+    "termEn": "the palace / the historic building",
+    "exampleSentence": "El hotel está instalado en un palacio del siglo XVIII reformado con todo el lujo moderno.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-029",
+    "termEs": "la habitación con terraza privada",
+    "termEn": "the room with a private terrace",
+    "exampleSentence": "Nuestra habitación deluxe tiene una terraza privada con tumbonas y vistas al jardín.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-030",
+    "termEs": "por trayecto / por persona",
+    "termEn": "per trip / per person",
+    "exampleSentence": "El shuttle al aeropuerto cuesta treinta y cinco euros por trayecto.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-031",
+    "termEs": "la luna de miel / los recién casados",
+    "termEn": "the honeymoon / newlyweds",
+    "exampleSentence": "Ofrecemos un paquete especial de luna de miel con champán y decoración floral.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-032",
+    "termEs": "el check-out tardío / la ampliación de la estancia",
+    "termEn": "late check-out / extending the stay",
+    "exampleSentence": "El check-out tardío está disponible bajo petición y sujeto a disponibilidad.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-033",
+    "termEs": "la vista panorámica / con vistas a la Alhambra",
+    "termEn": "panoramic view / with views of the Alhambra",
+    "exampleSentence": "Desde la azotea se disfruta de una vista panorámica de toda la ciudad.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-034",
+    "termEs": "el precio incluye / no incluye",
+    "termEn": "the price includes / does not include",
+    "exampleSentence": "El precio de la habitación incluye el desayuno pero no incluye el acceso al spa.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-035",
+    "termEs": "gratuito/a / de cortesía / incluido/a",
+    "termEn": "free of charge / complimentary / included",
+    "exampleSentence": "El acceso a la piscina es gratuito para todos nuestros huéspedes.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-036",
+    "termEs": "a partir de / desde ___ euros",
+    "termEn": "from / starting at ___ euros",
+    "exampleSentence": "Las habitaciones están disponibles desde ciento sesenta euros por noche.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-037",
+    "termEs": "el evento especial / la celebración",
+    "termEn": "the special event / the celebration",
+    "exampleSentence": "Disponemos de salones para bodas, conferencias y eventos corporativos.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-038",
+    "termEs": "el reconocimiento / el galardón",
+    "termEn": "the award / the accolade",
+    "exampleSentence": "El hotel ha recibido el galardón de mejor hotel boutique de España.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-039",
+    "termEs": "la decoración / el mobiliario de diseño",
+    "termEn": "the décor / the designer furniture",
+    "exampleSentence": "El mobiliario de diseño es obra de reconocidos interioristas internacionales.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "dh-040",
+    "termEs": "el hotel se encuentra en el corazón de",
+    "termEn": "the hotel is located in the heart of",
+    "exampleSentence": "El hotel se encuentra en el corazón del barrio gótico de Barcelona.",
+    "department": "management",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  }
 ]

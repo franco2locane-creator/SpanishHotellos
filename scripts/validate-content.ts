@@ -147,10 +147,66 @@ function validateMock(filePath: string) {
   });
 }
 
+// ── Scenario validation ────────────────────────────────────────────────────────
+
+const VALID_COURSE_LEVELS = ['basic', 'intermediate'];
+const VALID_CARD_COURSE_LEVELS = ['basic', 'intermediate', 'both'];
+const REQUIRED_RUBRIC_KEYS = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
+
+function validateScenario(filePath: string) {
+  const name = path.basename(filePath);
+  console.log(`\nScenario: ${name}`);
+
+  let data: any;
+  try {
+    data = readJson(filePath);
+  } catch (e) {
+    fail(`invalid JSON: ${e}`);
+    return;
+  }
+
+  if (!data.id || typeof data.id !== 'string') fail('missing or invalid .id');
+  else ok(`.id = "${data.id}"`);
+
+  if (!VALID_DEPARTMENTS.includes(data.department)) {
+    fail(`invalid .department "${data.department}"`);
+  }
+
+  if (!Array.isArray(data.courseLevels) || data.courseLevels.length === 0) {
+    fail('.courseLevels must be a non-empty array');
+  } else if (data.courseLevels.some((l: string) => !VALID_COURSE_LEVELS.includes(l))) {
+    fail(`.courseLevels contains an invalid level: ${JSON.stringify(data.courseLevels)}`);
+  } else {
+    ok(`.courseLevels = ${JSON.stringify(data.courseLevels)}`);
+  }
+
+  const weights = data.rubricWeights;
+  if (!weights || typeof weights !== 'object') {
+    fail('.rubricWeights is missing');
+  } else {
+    const keys = Object.keys(weights).sort();
+    const expected = [...REQUIRED_RUBRIC_KEYS].sort();
+    if (JSON.stringify(keys) !== JSON.stringify(expected)) {
+      fail(`.rubricWeights keys must be exactly [${expected.join(', ')}], got [${keys.join(', ')}]`);
+    } else {
+      const sum = REQUIRED_RUBRIC_KEYS.reduce((s, k) => s + (weights[k] ?? 0), 0);
+      if (Math.abs(sum - 1) > 0.01) fail(`.rubricWeights must sum to 1.0, got ${sum}`);
+      else ok(`.rubricWeights sums to 1.0`);
+    }
+  }
+
+  if (!data.guestPersona) fail('.guestPersona is missing');
+  if (!Array.isArray(data.objectives) || data.objectives.length === 0) fail('.objectives must be a non-empty array');
+  if (!data.systemContext) fail('.systemContext is missing');
+  if (!data.openingLine) fail('.openingLine is missing');
+
+  if (errors === 0) ok('scenario valid');
+}
+
 // ── Vocab deck validation ─────────────────────────────────────────────────────
 
 const VALID_DEPARTMENTS = ['front_office', 'fnb', 'housekeeping', 'concierge', 'events', 'management'];
-const REQUIRED_CARD_FIELDS = ['id', 'termEs', 'termEn', 'exampleSentence', 'department', 'isFree'];
+const REQUIRED_CARD_FIELDS = ['id', 'termEs', 'termEn', 'exampleSentence', 'department', 'isFree', 'courseLevel'];
 
 function validateVocabDeck(filePath: string) {
   const name = path.basename(filePath);
@@ -193,9 +249,70 @@ function validateVocabDeck(filePath: string) {
     if (typeof card.isFree !== 'boolean') {
       fail(`card[${i}] .isFree must be boolean`);
     }
+
+    if (!VALID_CARD_COURSE_LEVELS.includes(card.courseLevel)) {
+      fail(`card[${i}] has invalid courseLevel "${card.courseLevel}" (expected: ${VALID_CARD_COURSE_LEVELS.join(', ')})`);
+    }
   });
 
   if (errors === 0) ok('all cards valid');
+}
+
+// ── Grammar drill validation ───────────────────────────────────────────────────
+
+const VALID_TOPICS = [
+  'presente_regular', 'presente_irregular', 'imperativo_usted',
+  'preterito_vs_indefinido', 'ser_estar', 'hay', 'reflexivos', 'gustar',
+];
+
+function validateGrammarDrill(filePath: string) {
+  const name = path.basename(filePath);
+  console.log(`\nGrammar: ${name}`);
+
+  let data: any;
+  try {
+    data = readJson(filePath);
+  } catch (e) {
+    fail(`invalid JSON: ${e}`);
+    return;
+  }
+
+  if (!data.id || typeof data.id !== 'string') fail('missing or invalid .id');
+  else ok(`.id = "${data.id}"`);
+
+  if (!data.title || !data.titleEs) fail('.title and .titleEs are required');
+
+  if (!VALID_TOPICS.includes(data.topic)) {
+    fail(`invalid .topic "${data.topic}" (expected one of: ${VALID_TOPICS.join(', ')})`);
+  } else {
+    ok(`.topic = "${data.topic}"`);
+  }
+
+  if (!VALID_CARD_COURSE_LEVELS.includes(data.courseLevel)) {
+    fail(`invalid .courseLevel "${data.courseLevel}"`);
+  } else {
+    ok(`.courseLevel = "${data.courseLevel}"`);
+  }
+
+  if (typeof data.isFree !== 'boolean') fail('.isFree must be boolean');
+
+  if (!Array.isArray(data.questions) || data.questions.length < 8) {
+    fail(`.questions must be an array of at least 8 items, got ${data.questions?.length ?? 0}`);
+  } else {
+    ok(`.questions count = ${data.questions.length}`);
+    const ids = new Set<string>();
+    data.questions.forEach((q: any, i: number) => {
+      if (!q.id) fail(`question[${i}] missing .id`);
+      else if (ids.has(q.id)) fail(`question[${i}] duplicate id "${q.id}"`);
+      else ids.add(q.id);
+
+      if (!q.prompt || !q.prompt.includes('___')) fail(`question[${i}] .prompt must contain a "___" blank`);
+      if (!q.answer) fail(`question[${i}] missing .answer`);
+      if (!q.hint) fail(`question[${i}] missing .hint`);
+    });
+  }
+
+  if (errors === 0) ok('drill set valid');
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
@@ -203,6 +320,15 @@ function validateVocabDeck(filePath: string) {
 const ROOT = path.resolve(__dirname, '..');
 const MOCKS_DIR = path.join(ROOT, 'content', 'mocks');
 const VOCAB_DIR = path.join(ROOT, 'content', 'vocab');
+const SCENARIOS_DIR = path.join(ROOT, 'content', 'scenarios');
+const GRAMMAR_DIR = path.join(ROOT, 'content', 'grammar');
+
+console.log('\n=== Validating role-play scenario JSON files ===');
+
+const scenarioFiles = fs.readdirSync(SCENARIOS_DIR).filter(f => f.endsWith('.json'));
+for (const file of scenarioFiles.sort()) {
+  validateScenario(path.join(SCENARIOS_DIR, file));
+}
 
 console.log('\n=== Validating mock exam JSON files ===');
 
@@ -248,6 +374,17 @@ for (const expected of expectedVocab) {
 
 for (const file of vocabFiles.sort()) {
   validateVocabDeck(path.join(VOCAB_DIR, file));
+}
+
+console.log('\n=== Validating grammar drill JSON files ===');
+
+const grammarFiles = fs.readdirSync(GRAMMAR_DIR).filter(f => f.endsWith('.json'));
+if (grammarFiles.length < 8) {
+  fail(`expected at least 8 grammar drill sets in ${GRAMMAR_DIR}, found ${grammarFiles.length}`);
+}
+
+for (const file of grammarFiles.sort()) {
+  validateGrammarDrill(path.join(GRAMMAR_DIR, file));
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────────

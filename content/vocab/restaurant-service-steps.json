@@ -1,42 +1,362 @@
 [
-  { "id": "rs-001", "termEs": "¡Bienvenidos! ¿Tienen reserva?", "termEn": "Welcome! Do you have a reservation?", "exampleSentence": "Buenas noches, bienvenidos al restaurante. ¿Tienen reserva esta noche?", "department": "fnb", "isFree": false },
-  { "id": "rs-002", "termEs": "la mesa para dos / cuatro personas", "termEn": "a table for two / four people", "exampleSentence": "Tenemos su mesa para cuatro personas en la terraza.", "department": "fnb", "isFree": false },
-  { "id": "rs-003", "termEs": "acompañarles a su mesa", "termEn": "to accompany you to your table", "exampleSentence": "Permítanme acompañarles a su mesa.", "department": "fnb", "isFree": false },
-  { "id": "rs-004", "termEs": "la carta / el menú", "termEn": "the menu", "exampleSentence": "Aquí tiene la carta — les recomiendo el plato del día.", "department": "fnb", "isFree": false },
-  { "id": "rs-005", "termEs": "el plato del día", "termEn": "the dish of the day / today's special", "exampleSentence": "Hoy el plato del día es merluza al horno con tomates cherry.", "department": "fnb", "isFree": false },
-  { "id": "rs-006", "termEs": "¿Están listos para pedir?", "termEn": "Are you ready to order?", "exampleSentence": "¿Han decidido ya? ¿Están listos para pedir?", "department": "fnb", "isFree": false },
-  { "id": "rs-007", "termEs": "¿Qué van a tomar? / ¿Qué desean?", "termEn": "What will you have? / What would you like?", "exampleSentence": "¿Qué van a tomar de primero?", "department": "fnb", "isFree": false },
-  { "id": "rs-008", "termEs": "tomar nota / anotar el pedido", "termEn": "to take (note of) the order", "exampleSentence": "Voy a tomar nota de su pedido — de primero, ensalada mixta.", "department": "fnb", "isFree": false },
-  { "id": "rs-009", "termEs": "de primero / de segundo / de postre", "termEn": "for starters / main course / dessert", "exampleSentence": "De segundo, el solomillo al punto con guarnición de patatas.", "department": "fnb", "isFree": false },
-  { "id": "rs-010", "termEs": "¿Algo para beber?", "termEn": "Anything to drink?", "exampleSentence": "¿Desean algo para beber? Tenemos una excelente carta de vinos.", "department": "fnb", "isFree": false },
-  { "id": "rs-011", "termEs": "lo sentimos, no hay mesa disponible en este momento", "termEn": "we are sorry, no table is available right now", "exampleSentence": "Lo sentimos, en este momento no hay ninguna mesa disponible en la terraza.", "department": "fnb", "isFree": false },
-  { "id": "rs-012", "termEs": "en aproximadamente ___ minutos", "termEn": "in approximately ___ minutes", "exampleSentence": "En aproximadamente veinticinco minutos tendremos una mesa libre para ustedes.", "department": "fnb", "isFree": false },
-  { "id": "rs-013", "termEs": "¿Les gustaría esperar en el bar?", "termEn": "Would you like to wait at the bar?", "exampleSentence": "Mientras esperan, ¿les gustaría tomar una copa en el bar? Corre por nuestra cuenta.", "department": "fnb", "isFree": false },
-  { "id": "rs-014", "termEs": "les recomiendo / le aconsejo", "termEn": "I recommend / I advise you", "exampleSentence": "Les recomiendo especialmente el pez espada a la plancha — está exquisito.", "department": "fnb", "isFree": false },
-  { "id": "rs-015", "termEs": "el sabor / la textura", "termEn": "the flavour / the texture", "exampleSentence": "Tiene un sabor delicado y una textura muy suave y jugosa.", "department": "fnb", "isFree": false },
-  { "id": "rs-016", "termEs": "cocinado/a a fuego lento / al horno / a la plancha", "termEn": "slow-cooked / oven-baked / grilled", "exampleSentence": "El cordero está cocinado a fuego lento durante dos horas en horno de barro.", "department": "fnb", "isFree": false },
-  { "id": "rs-017", "termEs": "¿Todo bien? ¿Están disfrutando la comida?", "termEn": "Is everything OK? Are you enjoying the meal?", "exampleSentence": "¿Todo bien? ¿Están disfrutando la comida?", "department": "fnb", "isFree": false },
-  { "id": "rs-018", "termEs": "enseguida se lo traigo", "termEn": "I will bring it to you right away", "exampleSentence": "Claro que sí, enseguida se lo traigo.", "department": "fnb", "isFree": false },
-  { "id": "rs-019", "termEs": "la cuenta, por favor / ¿Cómo desean pagar?", "termEn": "the bill please / How would you like to pay?", "exampleSentence": "Aquí tiene la cuenta. ¿Cómo desean pagar — en efectivo o con tarjeta?", "department": "fnb", "isFree": false },
-  { "id": "rs-020", "termEs": "incluye el servicio / IVA incluido", "termEn": "service included / VAT included", "exampleSentence": "El precio incluye el IVA pero no el servicio.", "department": "fnb", "isFree": false },
-  { "id": "rs-021", "termEs": "el interior / la terraza / la mesa junto a la ventana", "termEn": "the inside area / the terrace / the window table", "exampleSentence": "Les he reservado una mesa en la terraza con vistas al jardín.", "department": "fnb", "isFree": false },
-  { "id": "rs-022", "termEs": "vegetariano/a / sin gluten / alérgico/a a", "termEn": "vegetarian / gluten-free / allergic to", "exampleSentence": "¿Tienen alguna alergia o intolerancia alimentaria que deba conocer?", "department": "fnb", "isFree": false },
-  { "id": "rs-023", "termEs": "la guarnición / la ensalada / las patatas", "termEn": "the side dish / the salad / the potatoes", "exampleSentence": "El plato se sirve con patatas asadas como guarnición.", "department": "fnb", "isFree": false },
-  { "id": "rs-024", "termEs": "el vino de la casa / la carta de vinos", "termEn": "the house wine / the wine list", "exampleSentence": "¿Les gustaría ver la carta de vinos? Tenemos una selección de Rioja excelente.", "department": "fnb", "isFree": false },
-  { "id": "rs-025", "termEs": "la copa de vino / la botella", "termEn": "the glass of wine / the bottle", "exampleSentence": "¿Prefieren una copa o una botella completa?", "department": "fnb", "isFree": false },
-  { "id": "rs-026", "termEs": "punto / poco hecho / muy hecho", "termEn": "medium / rare / well done (meat)", "exampleSentence": "¿Cómo prefiere el solomillo — al punto, poco hecho o muy hecho?", "department": "fnb", "isFree": false },
-  { "id": "rs-027", "termEs": "los entremeses / los aperitivos", "termEn": "starters / appetizers", "exampleSentence": "Para comenzar, les traemos unos entremeses de cortesía de la casa.", "department": "fnb", "isFree": false },
-  { "id": "rs-028", "termEs": "el menú degustación", "termEn": "the tasting menu", "exampleSentence": "Esta noche nuestro menú degustación consiste en seis platos creativos.", "department": "fnb", "isFree": false },
-  { "id": "rs-029", "termEs": "el/la camarero/a (Spain) / el/la mesero/a (LatAm)", "termEn": "waiter / waitress", "exampleSentence": "En España se llama camarero; en México o Colombia, mesero.", "department": "fnb", "isFree": false },
-  { "id": "rs-030", "termEs": "¿Quieren ver la carta de postres?", "termEn": "Would you like to see the dessert menu?", "exampleSentence": "¿Quieren ver la carta de postres? El coulant de chocolate es nuestra especialidad.", "department": "fnb", "isFree": false },
-  { "id": "rs-031", "termEs": "el café solo / cortado / con leche", "termEn": "black coffee / coffee with a drop of milk / white coffee", "exampleSentence": "¿Van a tomar café? Tenemos espresso, cortado y americano.", "department": "fnb", "isFree": false },
-  { "id": "rs-032", "termEs": "la bebida sin alcohol / el agua con o sin gas", "termEn": "non-alcoholic drink / still or sparkling water", "exampleSentence": "¿Prefieren agua con gas o sin gas?", "department": "fnb", "isFree": false },
-  { "id": "rs-033", "termEs": "fresco/a / caliente / templado/a", "termEn": "fresh / hot / warm", "exampleSentence": "Les recomiendo la sopa de ajo caliente — perfecta para una noche fría.", "department": "fnb", "isFree": false },
-  { "id": "rs-034", "termEs": "la especialidad de la casa", "termEn": "the house speciality", "exampleSentence": "La especialidad de la casa es la paella valenciana, hecha para dos personas mínimo.", "department": "fnb", "isFree": false },
-  { "id": "rs-035", "termEs": "los ingredientes principales son", "termEn": "the main ingredients are", "exampleSentence": "Los ingredientes principales de este plato son el bacalao, el ajo y el aceite de oliva.", "department": "fnb", "isFree": false },
-  { "id": "rs-036", "termEs": "el tiempo de espera / tardar unos minutos", "termEn": "the waiting time / to take a few minutes", "exampleSentence": "El plato tarda unos veinte minutos en prepararse, ya que se cocina al momento.", "department": "fnb", "isFree": false },
-  { "id": "rs-037", "termEs": "servir a la derecha / retirar los platos", "termEn": "to serve from the right / to clear the plates", "exampleSentence": "Siempre se sirve por la derecha y se retiran los platos por la izquierda.", "department": "fnb", "isFree": false },
-  { "id": "rs-038", "termEs": "¿Desean algo más?", "termEn": "Would you like anything else?", "exampleSentence": "¿Desean algo más? ¿Quizás un digestivo o un café?", "department": "fnb", "isFree": false },
-  { "id": "rs-039", "termEs": "que aprovechen / buen provecho", "termEn": "enjoy your meal (bon appétit)", "exampleSentence": "Aquí tienen sus platos — que aprovechen.", "department": "fnb", "isFree": false },
-  { "id": "rs-040", "termEs": "fue un placer atenderles", "termEn": "it was a pleasure serving you", "exampleSentence": "Fue un placer atenderles esta noche. ¡Esperamos volver a verles pronto!", "department": "fnb", "isFree": false }
+  {
+    "id": "rs-001",
+    "termEs": "¡Bienvenidos! ¿Tienen reserva?",
+    "termEn": "Welcome! Do you have a reservation?",
+    "exampleSentence": "Buenas noches, bienvenidos al restaurante. ¿Tienen reserva esta noche?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-002",
+    "termEs": "la mesa para dos / cuatro personas",
+    "termEn": "a table for two / four people",
+    "exampleSentence": "Tenemos su mesa para cuatro personas en la terraza.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-003",
+    "termEs": "acompañarles a su mesa",
+    "termEn": "to accompany you to your table",
+    "exampleSentence": "Permítanme acompañarles a su mesa.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-004",
+    "termEs": "la carta / el menú",
+    "termEn": "the menu",
+    "exampleSentence": "Aquí tiene la carta — les recomiendo el plato del día.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-005",
+    "termEs": "el plato del día",
+    "termEn": "the dish of the day / today's special",
+    "exampleSentence": "Hoy el plato del día es merluza al horno con tomates cherry.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-006",
+    "termEs": "¿Están listos para pedir?",
+    "termEn": "Are you ready to order?",
+    "exampleSentence": "¿Han decidido ya? ¿Están listos para pedir?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-007",
+    "termEs": "¿Qué van a tomar? / ¿Qué desean?",
+    "termEn": "What will you have? / What would you like?",
+    "exampleSentence": "¿Qué van a tomar de primero?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-008",
+    "termEs": "tomar nota / anotar el pedido",
+    "termEn": "to take (note of) the order",
+    "exampleSentence": "Voy a tomar nota de su pedido — de primero, ensalada mixta.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-009",
+    "termEs": "de primero / de segundo / de postre",
+    "termEn": "for starters / main course / dessert",
+    "exampleSentence": "De segundo, el solomillo al punto con guarnición de patatas.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-010",
+    "termEs": "¿Algo para beber?",
+    "termEn": "Anything to drink?",
+    "exampleSentence": "¿Desean algo para beber? Tenemos una excelente carta de vinos.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-011",
+    "termEs": "lo sentimos, no hay mesa disponible en este momento",
+    "termEn": "we are sorry, no table is available right now",
+    "exampleSentence": "Lo sentimos, en este momento no hay ninguna mesa disponible en la terraza.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-012",
+    "termEs": "en aproximadamente ___ minutos",
+    "termEn": "in approximately ___ minutes",
+    "exampleSentence": "En aproximadamente veinticinco minutos tendremos una mesa libre para ustedes.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-013",
+    "termEs": "¿Les gustaría esperar en el bar?",
+    "termEn": "Would you like to wait at the bar?",
+    "exampleSentence": "Mientras esperan, ¿les gustaría tomar una copa en el bar? Corre por nuestra cuenta.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-014",
+    "termEs": "les recomiendo / le aconsejo",
+    "termEn": "I recommend / I advise you",
+    "exampleSentence": "Les recomiendo especialmente el pez espada a la plancha — está exquisito.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-015",
+    "termEs": "el sabor / la textura",
+    "termEn": "the flavour / the texture",
+    "exampleSentence": "Tiene un sabor delicado y una textura muy suave y jugosa.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-016",
+    "termEs": "cocinado/a a fuego lento / al horno / a la plancha",
+    "termEn": "slow-cooked / oven-baked / grilled",
+    "exampleSentence": "El cordero está cocinado a fuego lento durante dos horas en horno de barro.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-017",
+    "termEs": "¿Todo bien? ¿Están disfrutando la comida?",
+    "termEn": "Is everything OK? Are you enjoying the meal?",
+    "exampleSentence": "¿Todo bien? ¿Están disfrutando la comida?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-018",
+    "termEs": "enseguida se lo traigo",
+    "termEn": "I will bring it to you right away",
+    "exampleSentence": "Claro que sí, enseguida se lo traigo.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-019",
+    "termEs": "la cuenta, por favor / ¿Cómo desean pagar?",
+    "termEn": "the bill please / How would you like to pay?",
+    "exampleSentence": "Aquí tiene la cuenta. ¿Cómo desean pagar — en efectivo o con tarjeta?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-020",
+    "termEs": "incluye el servicio / IVA incluido",
+    "termEn": "service included / VAT included",
+    "exampleSentence": "El precio incluye el IVA pero no el servicio.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-021",
+    "termEs": "el interior / la terraza / la mesa junto a la ventana",
+    "termEn": "the inside area / the terrace / the window table",
+    "exampleSentence": "Les he reservado una mesa en la terraza con vistas al jardín.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-022",
+    "termEs": "vegetariano/a / sin gluten / alérgico/a a",
+    "termEn": "vegetarian / gluten-free / allergic to",
+    "exampleSentence": "¿Tienen alguna alergia o intolerancia alimentaria que deba conocer?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-023",
+    "termEs": "la guarnición / la ensalada / las patatas",
+    "termEn": "the side dish / the salad / the potatoes",
+    "exampleSentence": "El plato se sirve con patatas asadas como guarnición.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-024",
+    "termEs": "el vino de la casa / la carta de vinos",
+    "termEn": "the house wine / the wine list",
+    "exampleSentence": "¿Les gustaría ver la carta de vinos? Tenemos una selección de Rioja excelente.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-025",
+    "termEs": "la copa de vino / la botella",
+    "termEn": "the glass of wine / the bottle",
+    "exampleSentence": "¿Prefieren una copa o una botella completa?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-026",
+    "termEs": "punto / poco hecho / muy hecho",
+    "termEn": "medium / rare / well done (meat)",
+    "exampleSentence": "¿Cómo prefiere el solomillo — al punto, poco hecho o muy hecho?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-027",
+    "termEs": "los entremeses / los aperitivos",
+    "termEn": "starters / appetizers",
+    "exampleSentence": "Para comenzar, les traemos unos entremeses de cortesía de la casa.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-028",
+    "termEs": "el menú degustación",
+    "termEn": "the tasting menu",
+    "exampleSentence": "Esta noche nuestro menú degustación consiste en seis platos creativos.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-029",
+    "termEs": "el/la camarero/a (Spain) / el/la mesero/a (LatAm)",
+    "termEn": "waiter / waitress",
+    "exampleSentence": "En España se llama camarero; en México o Colombia, mesero.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-030",
+    "termEs": "¿Quieren ver la carta de postres?",
+    "termEn": "Would you like to see the dessert menu?",
+    "exampleSentence": "¿Quieren ver la carta de postres? El coulant de chocolate es nuestra especialidad.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-031",
+    "termEs": "el café solo / cortado / con leche",
+    "termEn": "black coffee / coffee with a drop of milk / white coffee",
+    "exampleSentence": "¿Van a tomar café? Tenemos espresso, cortado y americano.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-032",
+    "termEs": "la bebida sin alcohol / el agua con o sin gas",
+    "termEn": "non-alcoholic drink / still or sparkling water",
+    "exampleSentence": "¿Prefieren agua con gas o sin gas?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-033",
+    "termEs": "fresco/a / caliente / templado/a",
+    "termEn": "fresh / hot / warm",
+    "exampleSentence": "Les recomiendo la sopa de ajo caliente — perfecta para una noche fría.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-034",
+    "termEs": "la especialidad de la casa",
+    "termEn": "the house speciality",
+    "exampleSentence": "La especialidad de la casa es la paella valenciana, hecha para dos personas mínimo.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-035",
+    "termEs": "los ingredientes principales son",
+    "termEn": "the main ingredients are",
+    "exampleSentence": "Los ingredientes principales de este plato son el bacalao, el ajo y el aceite de oliva.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-036",
+    "termEs": "el tiempo de espera / tardar unos minutos",
+    "termEn": "the waiting time / to take a few minutes",
+    "exampleSentence": "El plato tarda unos veinte minutos en prepararse, ya que se cocina al momento.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-037",
+    "termEs": "servir a la derecha / retirar los platos",
+    "termEn": "to serve from the right / to clear the plates",
+    "exampleSentence": "Siempre se sirve por la derecha y se retiran los platos por la izquierda.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-038",
+    "termEs": "¿Desean algo más?",
+    "termEn": "Would you like anything else?",
+    "exampleSentence": "¿Desean algo más? ¿Quizás un digestivo o un café?",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-039",
+    "termEs": "que aprovechen / buen provecho",
+    "termEn": "enjoy your meal (bon appétit)",
+    "exampleSentence": "Aquí tienen sus platos — que aprovechen.",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  },
+  {
+    "id": "rs-040",
+    "termEs": "fue un placer atenderles",
+    "termEn": "it was a pleasure serving you",
+    "exampleSentence": "Fue un placer atenderles esta noche. ¡Esperamos volver a verles pronto!",
+    "department": "fnb",
+    "isFree": false,
+    "courseLevel": "intermediate"
+  }
 ]

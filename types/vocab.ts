@@ -1,4 +1,4 @@
-import type { Department } from './shared';
+import type { Department, CourseLevel } from './shared';
 
 // SM-2 spaced-repetition data stored per card per user.
 export type SrsData = {
@@ -17,6 +17,9 @@ export type VocabCard = {
   audioHint?: string;      // IPA or pronunciation note for tricky words
   department: Department;
   isFree: boolean;
+  /** Every card in a deck shares its deck's level — kept per-card so content
+   *  JSON stays self-describing without a wrapper object. */
+  courseLevel: CourseLevel | 'both';
   srsData?: SrsData;       // undefined = card not yet introduced to this user
 };
 
@@ -26,5 +29,6 @@ export type VocabDeck = {
   description: string;
   department: Department;
   isFree: boolean;
+  courseLevel: CourseLevel | 'both';
   cards: VocabCard[];
 };

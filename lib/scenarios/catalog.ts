@@ -1,4 +1,4 @@
-import type { Department, Scenario } from '@/types';
+import type { CourseLevel, Department, Scenario } from '@/types';
 
 // ── Catalogue metadata (no card content loaded until needed) ──────────────────
 
@@ -12,6 +12,7 @@ export type ScenarioMeta = {
   isFree: boolean;
   personaPreview: string;
   durationMinutes: number;
+  courseLevels: CourseLevel[];
 };
 
 export const SCENARIO_CATALOG: ScenarioMeta[] = [
@@ -25,6 +26,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     isFree: true,
     personaPreview: 'Mr. Anderson · British · frustrated',
     durationMinutes: 5,
+    courseLevels: ['basic', 'intermediate'],
   },
   {
     id: 'restaurant-allergy-order',
@@ -36,6 +38,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     isFree: true,
     personaPreview: 'Madame Dupont · French · composed',
     durationMinutes: 6,
+    courseLevels: ['basic', 'intermediate'],
   },
   {
     id: 'overbooking',
@@ -47,6 +50,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     isFree: false,
     personaPreview: 'Don Ramírez · Mexican · demanding',
     durationMinutes: 7,
+    courseLevels: ['intermediate'],
   },
   {
     id: 'lost-luggage',
@@ -58,8 +62,14 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     isFree: false,
     personaPreview: 'Ms. Kim · Korean · distressed',
     durationMinutes: 8,
+    courseLevels: ['intermediate'],
   },
 ];
+
+/** Scenarios visible to a given course level. */
+export function scenariosForLevel(level: CourseLevel): ScenarioMeta[] {
+  return SCENARIO_CATALOG.filter(s => s.courseLevels.includes(level));
+}
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 

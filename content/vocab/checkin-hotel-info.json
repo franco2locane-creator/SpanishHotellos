@@ -1,42 +1,362 @@
 [
-  { "id": "ci-001", "termEs": "Buenos días/tardes/noches, bienvenido/a", "termEn": "Good morning/afternoon/evening, welcome", "exampleSentence": "Buenos días, bienvenido al Hotel Palace Barcelona. ¿En qué puedo ayudarle?", "department": "front_office", "isFree": false },
-  { "id": "ci-002", "termEs": "¿Tiene usted una reserva?", "termEn": "Do you have a reservation?", "exampleSentence": "Buenas tardes, ¿tiene usted una reserva con nosotros?", "department": "front_office", "isFree": false },
-  { "id": "ci-003", "termEs": "¿A nombre de quién está la reserva?", "termEn": "Under what name is the reservation?", "exampleSentence": "¿A nombre de quién está hecha la reserva, por favor?", "department": "front_office", "isFree": false },
-  { "id": "ci-004", "termEs": "Tenemos una habitación reservada a su nombre", "termEn": "We have a room reserved in your name", "exampleSentence": "Perfecto, tenemos una habitación doble superior reservada a su nombre, señor García.", "department": "front_office", "isFree": false },
-  { "id": "ci-005", "termEs": "¿Me permite su pasaporte o DNI?", "termEn": "May I see your passport or ID?", "exampleSentence": "¿Me permite su pasaporte o documento de identidad, por favor?", "department": "front_office", "isFree": false },
-  { "id": "ci-006", "termEs": "la tarjeta llave / la tarjeta de habitación", "termEn": "room key card", "exampleSentence": "Aquí tiene su tarjeta llave — su habitación es la número 412.", "department": "front_office", "isFree": false },
-  { "id": "ci-007", "termEs": "su habitación es la número ___", "termEn": "your room is number ___", "exampleSentence": "Su habitación es la número 304, en la tercera planta.", "department": "front_office", "isFree": false },
-  { "id": "ci-008", "termEs": "la planta baja / la primera planta / el piso ___", "termEn": "ground floor / first floor / floor ___", "exampleSentence": "El restaurante se encuentra en la planta baja, a la derecha.", "department": "front_office", "isFree": false },
-  { "id": "ci-009", "termEs": "el desayuno está incluido / no está incluido", "termEn": "breakfast is included / not included", "exampleSentence": "El desayuno está incluido en el precio y se sirve de siete a diez y media.", "department": "front_office", "isFree": false },
-  { "id": "ci-010", "termEs": "el check-out es a las ___", "termEn": "check-out is at ___", "exampleSentence": "La hora del check-out es a las doce del mediodía.", "department": "front_office", "isFree": false },
-  { "id": "ci-011", "termEs": "¡Que disfrute su estancia!", "termEn": "Enjoy your stay!", "exampleSentence": "Si necesita cualquier cosa, no dude en llamar a recepción. ¡Que disfrute su estancia!", "department": "front_office", "isFree": false },
-  { "id": "ci-012", "termEs": "¿Cuántas noches se queda?", "termEn": "How many nights are you staying?", "exampleSentence": "¿Cuántas noches tiene previsto quedarse con nosotros?", "department": "front_office", "isFree": false },
-  { "id": "ci-013", "termEs": "¿Cuántas personas van a ocupar la habitación?", "termEn": "How many guests will be in the room?", "exampleSentence": "¿Cuántas personas van a ocupar la habitación, por favor?", "department": "front_office", "isFree": false },
-  { "id": "ci-014", "termEs": "lo sentimos, esa habitación no está disponible", "termEn": "we are sorry, that room is not available", "exampleSentence": "Lo sentimos mucho, en este momento esa habitación no está disponible.", "department": "front_office", "isFree": false },
-  { "id": "ci-015", "termEs": "podemos ofrecerle una alternativa", "termEn": "we can offer you an alternative", "exampleSentence": "Podemos ofrecerle una habitación superior con vistas al jardín a €180 la noche.", "department": "front_office", "isFree": false },
-  { "id": "ci-016", "termEs": "la habitación estándar / superior / deluxe / suite", "termEn": "standard / superior / deluxe / suite room", "exampleSentence": "Tiene reservada una habitación deluxe con vistas al mar.", "department": "front_office", "isFree": false },
-  { "id": "ci-017", "termEs": "el servicio de habitaciones", "termEn": "room service", "exampleSentence": "El servicio de habitaciones está disponible las veinticuatro horas.", "department": "front_office", "isFree": false },
-  { "id": "ci-018", "termEs": "el aparcamiento / el parking", "termEn": "parking", "exampleSentence": "El hotel dispone de aparcamiento privado a un precio de quince euros por noche.", "department": "front_office", "isFree": false },
-  { "id": "ci-019", "termEs": "la piscina / el spa", "termEn": "the pool / the spa", "exampleSentence": "La piscina se encuentra en la quinta planta y está abierta de nueve a veintidós horas.", "department": "front_office", "isFree": false },
-  { "id": "ci-020", "termEs": "el servicio de transporte / el shuttle", "termEn": "transport service / airport shuttle", "exampleSentence": "Ofrecemos un servicio de transporte al aeropuerto a treinta y dos euros por trayecto.", "department": "front_office", "isFree": false },
-  { "id": "ci-021", "termEs": "el conserjería / el conserje", "termEn": "concierge", "exampleSentence": "El conserje puede ayudarle a reservar entradas para la Alhambra con cuarenta y ocho horas de antelación.", "department": "front_office", "isFree": false },
-  { "id": "ci-022", "termEs": "con vistas al mar / a la ciudad / al jardín", "termEn": "with sea / city / garden view", "exampleSentence": "Su habitación tiene unas magníficas vistas al mar Mediterráneo.", "department": "front_office", "isFree": false },
-  { "id": "ci-023", "termEs": "la recepción está abierta las veinticuatro horas", "termEn": "reception is open 24 hours", "exampleSentence": "La recepción está abierta las veinticuatro horas — llámenos cuando lo necesite.", "department": "front_office", "isFree": false },
-  { "id": "ci-024", "termEs": "le pedimos disculpas por las molestias", "termEn": "we apologise for the inconvenience", "exampleSentence": "Le pedimos disculpas por las molestias y esperamos que disfrute su estancia.", "department": "front_office", "isFree": false },
-  { "id": "ci-025", "termEs": "el ascensor / las escaleras", "termEn": "the lift (elevator) / the stairs", "exampleSentence": "El ascensor está al fondo del pasillo a la derecha.", "department": "front_office", "isFree": false },
-  { "id": "ci-026", "termEs": "el equipaje / las maletas", "termEn": "luggage / suitcases", "exampleSentence": "El botones le ayudará con el equipaje hasta su habitación.", "department": "front_office", "isFree": false },
-  { "id": "ci-027", "termEs": "hacer el check-in / registrarse", "termEn": "to check in / to register", "exampleSentence": "¿Ha llegado a hacer el check-in? Voy a buscar su reserva.", "department": "front_office", "isFree": false },
-  { "id": "ci-028", "termEs": "la tarifa por noche / el precio de la habitación", "termEn": "the nightly rate / room price", "exampleSentence": "La tarifa por noche es de ciento ochenta euros, desayuno incluido.", "department": "front_office", "isFree": false },
-  { "id": "ci-029", "termEs": "el huésped / los huéspedes", "termEn": "the guest / the guests", "exampleSentence": "Todos nuestros huéspedes reciben una bienvenida personalizada.", "department": "front_office", "isFree": false },
-  { "id": "ci-030", "termEs": "el número de confirmación / el localizador", "termEn": "booking confirmation number", "exampleSentence": "¿Tiene el número de confirmación de su reserva?", "department": "front_office", "isFree": false },
-  { "id": "ci-031", "termEs": "la piscina está en la ___ planta / en la azotea", "termEn": "the pool is on floor ___ / on the rooftop", "exampleSentence": "La piscina está en la azotea y ofrece vistas panorámicas a la ciudad.", "department": "front_office", "isFree": false },
-  { "id": "ci-032", "termEs": "en el desayuno se sirve / el buffet", "termEn": "breakfast includes / the buffet", "exampleSentence": "En el desayuno se sirve un bufet con productos locales e internacionales.", "department": "front_office", "isFree": false },
-  { "id": "ci-033", "termEs": "la habitación doble / individual / triple", "termEn": "double / single / triple room", "exampleSentence": "Tiene reservada una habitación doble con cama de matrimonio.", "department": "front_office", "isFree": false },
-  { "id": "ci-034", "termEs": "¿desea algo más?", "termEn": "Is there anything else you need?", "exampleSentence": "¿Desea algo más antes de subir a su habitación?", "department": "front_office", "isFree": false },
-  { "id": "ci-035", "termEs": "no dude en contactarnos", "termEn": "do not hesitate to contact us", "exampleSentence": "No dude en contactarnos si necesita cualquier cosa durante su estancia.", "department": "front_office", "isFree": false },
-  { "id": "ci-036", "termEs": "el wifi / la contraseña del wifi", "termEn": "the wifi / wifi password", "exampleSentence": "El wifi del hotel es gratuito — la contraseña es su número de habitación.", "department": "front_office", "isFree": false },
-  { "id": "ci-037", "termEs": "el turno / el responsable de guardia", "termEn": "the shift / duty manager", "exampleSentence": "Si necesita hablar con alguien urgentemente, hay un responsable de guardia las veinticuatro horas.", "department": "front_office", "isFree": false },
-  { "id": "ci-038", "termEs": "guardar el equipaje", "termEn": "to store luggage", "exampleSentence": "Con mucho gusto guardamos su equipaje hasta la hora de su salida.", "department": "front_office", "isFree": false },
-  { "id": "ci-039", "termEs": "el botones / el maletero", "termEn": "bellboy / porter", "exampleSentence": "El botones le acompañará a su habitación con el equipaje.", "department": "front_office", "isFree": false },
-  { "id": "ci-040", "termEs": "bienvenido/a de nuevo", "termEn": "welcome back", "exampleSentence": "Bienvenido de nuevo al Hotel Reina Victoria — es un placer tenerle con nosotros otra vez.", "department": "front_office", "isFree": false }
+  {
+    "id": "ci-001",
+    "termEs": "Buenos días/tardes/noches, bienvenido/a",
+    "termEn": "Good morning/afternoon/evening, welcome",
+    "exampleSentence": "Buenos días, bienvenido al Hotel Palace Barcelona. ¿En qué puedo ayudarle?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-002",
+    "termEs": "¿Tiene usted una reserva?",
+    "termEn": "Do you have a reservation?",
+    "exampleSentence": "Buenas tardes, ¿tiene usted una reserva con nosotros?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-003",
+    "termEs": "¿A nombre de quién está la reserva?",
+    "termEn": "Under what name is the reservation?",
+    "exampleSentence": "¿A nombre de quién está hecha la reserva, por favor?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-004",
+    "termEs": "Tenemos una habitación reservada a su nombre",
+    "termEn": "We have a room reserved in your name",
+    "exampleSentence": "Perfecto, tenemos una habitación doble superior reservada a su nombre, señor García.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-005",
+    "termEs": "¿Me permite su pasaporte o DNI?",
+    "termEn": "May I see your passport or ID?",
+    "exampleSentence": "¿Me permite su pasaporte o documento de identidad, por favor?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-006",
+    "termEs": "la tarjeta llave / la tarjeta de habitación",
+    "termEn": "room key card",
+    "exampleSentence": "Aquí tiene su tarjeta llave — su habitación es la número 412.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-007",
+    "termEs": "su habitación es la número ___",
+    "termEn": "your room is number ___",
+    "exampleSentence": "Su habitación es la número 304, en la tercera planta.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-008",
+    "termEs": "la planta baja / la primera planta / el piso ___",
+    "termEn": "ground floor / first floor / floor ___",
+    "exampleSentence": "El restaurante se encuentra en la planta baja, a la derecha.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-009",
+    "termEs": "el desayuno está incluido / no está incluido",
+    "termEn": "breakfast is included / not included",
+    "exampleSentence": "El desayuno está incluido en el precio y se sirve de siete a diez y media.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-010",
+    "termEs": "el check-out es a las ___",
+    "termEn": "check-out is at ___",
+    "exampleSentence": "La hora del check-out es a las doce del mediodía.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-011",
+    "termEs": "¡Que disfrute su estancia!",
+    "termEn": "Enjoy your stay!",
+    "exampleSentence": "Si necesita cualquier cosa, no dude en llamar a recepción. ¡Que disfrute su estancia!",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-012",
+    "termEs": "¿Cuántas noches se queda?",
+    "termEn": "How many nights are you staying?",
+    "exampleSentence": "¿Cuántas noches tiene previsto quedarse con nosotros?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-013",
+    "termEs": "¿Cuántas personas van a ocupar la habitación?",
+    "termEn": "How many guests will be in the room?",
+    "exampleSentence": "¿Cuántas personas van a ocupar la habitación, por favor?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-014",
+    "termEs": "lo sentimos, esa habitación no está disponible",
+    "termEn": "we are sorry, that room is not available",
+    "exampleSentence": "Lo sentimos mucho, en este momento esa habitación no está disponible.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-015",
+    "termEs": "podemos ofrecerle una alternativa",
+    "termEn": "we can offer you an alternative",
+    "exampleSentence": "Podemos ofrecerle una habitación superior con vistas al jardín a €180 la noche.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-016",
+    "termEs": "la habitación estándar / superior / deluxe / suite",
+    "termEn": "standard / superior / deluxe / suite room",
+    "exampleSentence": "Tiene reservada una habitación deluxe con vistas al mar.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-017",
+    "termEs": "el servicio de habitaciones",
+    "termEn": "room service",
+    "exampleSentence": "El servicio de habitaciones está disponible las veinticuatro horas.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-018",
+    "termEs": "el aparcamiento / el parking",
+    "termEn": "parking",
+    "exampleSentence": "El hotel dispone de aparcamiento privado a un precio de quince euros por noche.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-019",
+    "termEs": "la piscina / el spa",
+    "termEn": "the pool / the spa",
+    "exampleSentence": "La piscina se encuentra en la quinta planta y está abierta de nueve a veintidós horas.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-020",
+    "termEs": "el servicio de transporte / el shuttle",
+    "termEn": "transport service / airport shuttle",
+    "exampleSentence": "Ofrecemos un servicio de transporte al aeropuerto a treinta y dos euros por trayecto.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-021",
+    "termEs": "el conserjería / el conserje",
+    "termEn": "concierge",
+    "exampleSentence": "El conserje puede ayudarle a reservar entradas para la Alhambra con cuarenta y ocho horas de antelación.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-022",
+    "termEs": "con vistas al mar / a la ciudad / al jardín",
+    "termEn": "with sea / city / garden view",
+    "exampleSentence": "Su habitación tiene unas magníficas vistas al mar Mediterráneo.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-023",
+    "termEs": "la recepción está abierta las veinticuatro horas",
+    "termEn": "reception is open 24 hours",
+    "exampleSentence": "La recepción está abierta las veinticuatro horas — llámenos cuando lo necesite.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-024",
+    "termEs": "le pedimos disculpas por las molestias",
+    "termEn": "we apologise for the inconvenience",
+    "exampleSentence": "Le pedimos disculpas por las molestias y esperamos que disfrute su estancia.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-025",
+    "termEs": "el ascensor / las escaleras",
+    "termEn": "the lift (elevator) / the stairs",
+    "exampleSentence": "El ascensor está al fondo del pasillo a la derecha.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-026",
+    "termEs": "el equipaje / las maletas",
+    "termEn": "luggage / suitcases",
+    "exampleSentence": "El botones le ayudará con el equipaje hasta su habitación.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-027",
+    "termEs": "hacer el check-in / registrarse",
+    "termEn": "to check in / to register",
+    "exampleSentence": "¿Ha llegado a hacer el check-in? Voy a buscar su reserva.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-028",
+    "termEs": "la tarifa por noche / el precio de la habitación",
+    "termEn": "the nightly rate / room price",
+    "exampleSentence": "La tarifa por noche es de ciento ochenta euros, desayuno incluido.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-029",
+    "termEs": "el huésped / los huéspedes",
+    "termEn": "the guest / the guests",
+    "exampleSentence": "Todos nuestros huéspedes reciben una bienvenida personalizada.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-030",
+    "termEs": "el número de confirmación / el localizador",
+    "termEn": "booking confirmation number",
+    "exampleSentence": "¿Tiene el número de confirmación de su reserva?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-031",
+    "termEs": "la piscina está en la ___ planta / en la azotea",
+    "termEn": "the pool is on floor ___ / on the rooftop",
+    "exampleSentence": "La piscina está en la azotea y ofrece vistas panorámicas a la ciudad.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-032",
+    "termEs": "en el desayuno se sirve / el buffet",
+    "termEn": "breakfast includes / the buffet",
+    "exampleSentence": "En el desayuno se sirve un bufet con productos locales e internacionales.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-033",
+    "termEs": "la habitación doble / individual / triple",
+    "termEn": "double / single / triple room",
+    "exampleSentence": "Tiene reservada una habitación doble con cama de matrimonio.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-034",
+    "termEs": "¿desea algo más?",
+    "termEn": "Is there anything else you need?",
+    "exampleSentence": "¿Desea algo más antes de subir a su habitación?",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-035",
+    "termEs": "no dude en contactarnos",
+    "termEn": "do not hesitate to contact us",
+    "exampleSentence": "No dude en contactarnos si necesita cualquier cosa durante su estancia.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-036",
+    "termEs": "el wifi / la contraseña del wifi",
+    "termEn": "the wifi / wifi password",
+    "exampleSentence": "El wifi del hotel es gratuito — la contraseña es su número de habitación.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-037",
+    "termEs": "el turno / el responsable de guardia",
+    "termEn": "the shift / duty manager",
+    "exampleSentence": "Si necesita hablar con alguien urgentemente, hay un responsable de guardia las veinticuatro horas.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-038",
+    "termEs": "guardar el equipaje",
+    "termEn": "to store luggage",
+    "exampleSentence": "Con mucho gusto guardamos su equipaje hasta la hora de su salida.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-039",
+    "termEs": "el botones / el maletero",
+    "termEn": "bellboy / porter",
+    "exampleSentence": "El botones le acompañará a su habitación con el equipaje.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  },
+  {
+    "id": "ci-040",
+    "termEs": "bienvenido/a de nuevo",
+    "termEn": "welcome back",
+    "exampleSentence": "Bienvenido de nuevo al Hotel Reina Victoria — es un placer tenerle con nosotros otra vez.",
+    "department": "front_office",
+    "isFree": false,
+    "courseLevel": "both"
+  }
 ]

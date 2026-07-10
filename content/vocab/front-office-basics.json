@@ -5,7 +5,8 @@
     "termEn": "reservation / booking",
     "exampleSentence": "Buenos días, tengo una reserva a nombre de García para esta noche.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-002",
@@ -13,7 +14,8 @@
     "termEn": "check-in",
     "exampleSentence": "El check-in comienza a las tres de la tarde.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-003",
@@ -21,7 +23,8 @@
     "termEn": "check-out / departure",
     "exampleSentence": "La salida debe realizarse antes de las doce del mediodía.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-004",
@@ -30,7 +33,8 @@
     "termEn": "security deposit",
     "exampleSentence": "Necesitamos un depósito de cien euros para confirmar la reserva.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-005",
@@ -38,7 +42,8 @@
     "termEn": "key card / room key",
     "exampleSentence": "Aquí tiene su tarjeta llave para la habitación trescientos quince.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-006",
@@ -46,7 +51,8 @@
     "termEn": "late check-out",
     "exampleSentence": "¿Sería posible solicitar una salida tardía hasta las dos de la tarde?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-007",
@@ -54,7 +60,8 @@
     "termEn": "invoice / bill",
     "exampleSentence": "¿Podría revisar su factura antes de proceder al pago?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-008",
@@ -63,7 +70,8 @@
     "termEn": "receipt",
     "exampleSentence": "Le daré su recibo en cuanto procese el pago.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-009",
@@ -72,7 +80,8 @@
     "termEn": "lobby",
     "exampleSentence": "Le espero en el vestíbulo del hotel junto a los ascensores.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-010",
@@ -80,7 +89,8 @@
     "termEn": "receptionist / front desk agent",
     "exampleSentence": "El recepcionista le explicará todos los servicios disponibles.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-011",
@@ -88,7 +98,8 @@
     "termEn": "double room",
     "exampleSentence": "¿Prefiere una habitación doble con cama de matrimonio o con dos camas?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-012",
@@ -97,7 +108,8 @@
     "termEn": "single room",
     "exampleSentence": "Solo me queda una habitación individual disponible para esa noche.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-013",
@@ -105,7 +117,8 @@
     "termEn": "suite",
     "exampleSentence": "La suite presidencial dispone de terraza privada y vistas al mar.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-014",
@@ -113,7 +126,8 @@
     "termEn": "room service",
     "exampleSentence": "El servicio de habitaciones está disponible las veinticuatro horas del día.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-015",
@@ -121,7 +135,8 @@
     "termEn": "do not disturb",
     "exampleSentence": "Ha colocado el cartel de no molestar en la puerta de su habitación.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-016",
@@ -129,7 +144,8 @@
     "termEn": "wake-up call",
     "exampleSentence": "¿Le programo una llamada de despertar para las siete de la mañana?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-017",
@@ -137,7 +153,8 @@
     "termEn": "towel",
     "exampleSentence": "¿Necesita más toallas para su habitación? Con mucho gusto se las envío.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-018",
@@ -145,7 +162,8 @@
     "termEn": "pillow",
     "exampleSentence": "¿Prefiere almohadas de plumas o de fibra hipoalergénica?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-019",
@@ -153,7 +171,8 @@
     "termEn": "minibar",
     "exampleSentence": "Los artículos del minibar se cobrarán en su factura al hacer la salida.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-020",
@@ -161,7 +180,8 @@
     "termEn": "safe / safe deposit box",
     "exampleSentence": "Le recomendamos guardar su pasaporte y objetos de valor en la caja fuerte.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-021",
@@ -169,7 +189,8 @@
     "termEn": "air conditioning",
     "exampleSentence": "Puede ajustar el aire acondicionado con el mando situado junto a la cama.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-022",
@@ -177,7 +198,8 @@
     "termEn": "reservation number / confirmation number",
     "exampleSentence": "¿Podría facilitarme su número de reserva, por favor?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-023",
@@ -185,7 +207,8 @@
     "termEn": "payment method / form of payment",
     "exampleSentence": "¿Cuál será su forma de pago: tarjeta de crédito o efectivo?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-024",
@@ -193,7 +216,8 @@
     "termEn": "credit card",
     "exampleSentence": "Aceptamos todas las tarjetas de crédito principales sin cargo adicional.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-025",
@@ -201,7 +225,8 @@
     "termEn": "cash",
     "exampleSentence": "Si desea pagar en efectivo, necesitaremos una preautorización en tarjeta.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-026",
@@ -209,7 +234,8 @@
     "termEn": "currency exchange",
     "exampleSentence": "La oficina de cambio de divisas se encuentra junto a la recepción principal.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-027",
@@ -217,7 +243,8 @@
     "termEn": "luggage / baggage",
     "exampleSentence": "Nuestro botones le ayudará a subir el equipaje a su habitación.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-028",
@@ -226,7 +253,8 @@
     "termEn": "bellhop / bellboy",
     "exampleSentence": "El botones se encargará de llevar su equipaje directamente a la habitación.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-029",
@@ -235,7 +263,8 @@
     "termEn": "valet parking attendant",
     "exampleSentence": "Puede dejar su vehículo con el aparcacoches en la entrada principal.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-030",
@@ -243,7 +272,8 @@
     "termEn": "complimentary / free of charge",
     "exampleSentence": "El desayuno de mañana es de cortesía por parte de la dirección del hotel.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-031",
@@ -252,7 +282,8 @@
     "termEn": "room upgrade",
     "exampleSentence": "Tenemos el placer de ofrecerle una mejora de categoría sin coste adicional.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-032",
@@ -260,7 +291,8 @@
     "termEn": "availability",
     "exampleSentence": "En este momento no tenemos disponibilidad para esas fechas, lo lamento.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-033",
@@ -268,7 +300,8 @@
     "termEn": "rate / tariff",
     "exampleSentence": "La tarifa por noche incluye el desayuno buffet y el acceso al spa.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-034",
@@ -276,7 +309,8 @@
     "termEn": "breakfast included",
     "exampleSentence": "Todas nuestras habitaciones estándar cuentan con el desayuno incluido.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-035",
@@ -284,7 +318,8 @@
     "termEn": "cancellation policy",
     "exampleSentence": "Nuestra política de cancelación permite cancelar sin cargo hasta cuarenta y ocho horas antes.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-036",
@@ -292,7 +327,8 @@
     "termEn": "early check-in",
     "exampleSentence": "La entrada anticipada está sujeta a disponibilidad el día de su llegada.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-037",
@@ -300,7 +336,8 @@
     "termEn": "passport",
     "exampleSentence": "Necesito ver su pasaporte para completar el proceso de registro.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-038",
@@ -309,7 +346,8 @@
     "termEn": "identity document / ID",
     "exampleSentence": "¿Podría mostrarme algún documento de identidad con fotografía?",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-039",
@@ -317,7 +355,8 @@
     "termEn": "housekeeping service",
     "exampleSentence": "El servicio de limpieza pasará por su habitación entre las diez y las doce.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   },
   {
     "id": "fo-040",
@@ -325,6 +364,7 @@
     "termEn": "guest",
     "exampleSentence": "Todos nuestros huéspedes disfrutan de acceso gratuito al gimnasio y a la piscina.",
     "department": "front_office",
-    "isFree": true
+    "isFree": true,
+    "courseLevel": "both"
   }
 ]

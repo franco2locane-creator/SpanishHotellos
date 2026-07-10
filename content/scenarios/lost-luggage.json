@@ -7,7 +7,9 @@
   "difficulty": 3,
   "isFree": false,
   "durationMinutes": 8,
-  "examFormats": ["roleplay"],
+  "examFormats": [
+    "roleplay"
+  ],
   "guestPersona": {
     "name": "Ms. Ji-Young Kim",
     "nationality": "Korean",
@@ -16,12 +18,30 @@
     "description": "Exhausted long-haul traveller; distressed and needs guidance"
   },
   "objectives": [
-    { "id": "empathize",          "label": "Express genuine empathy" },
-    { "id": "take_report",        "label": "Take complete lost luggage details" },
-    { "id": "contact_airline",    "label": "Offer to contact the airline on their behalf" },
-    { "id": "provide_essentials", "label": "Offer essential items (toiletries, clothing allowance)" },
-    { "id": "set_expectations",   "label": "Explain next steps and timeline clearly" },
-    { "id": "follow_up",          "label": "Offer proactive follow-up / reference number" }
+    {
+      "id": "empathize",
+      "label": "Express genuine empathy"
+    },
+    {
+      "id": "take_report",
+      "label": "Take complete lost luggage details"
+    },
+    {
+      "id": "contact_airline",
+      "label": "Offer to contact the airline on their behalf"
+    },
+    {
+      "id": "provide_essentials",
+      "label": "Offer essential items (toiletries, clothing allowance)"
+    },
+    {
+      "id": "set_expectations",
+      "label": "Explain next steps and timeline clearly"
+    },
+    {
+      "id": "follow_up",
+      "label": "Offer proactive follow-up / reference number"
+    }
   ],
   "systemContext": "You have just arrived from Seoul via a connecting flight in Amsterdam, a 14-hour journey. The airline's baggage carousel produced nothing for you — two checked suitcases containing all your clothes, medication, and business materials for a week-long conference are missing. You filed a PIR (Property Irregularity Report) at the airport but the airline staff were unhelpful and spoke only Dutch. You speak Spanish imperfectly — you sometimes mix up vocabulary or use simple sentences. You are tired, anxious, and close to tears. You respond very positively to calm, empathetic, and practical assistance. You need the following information: what essentials the hotel can provide tonight, whether the hotel can help contact the airline, and when you might expect news. If the student handles this with professionalism and compassion, you gradually calm down. Occasionally ask a follow-up question or clarify a detail to make the conversation feel realistic.",
   "openingLine": "Disculpe... perdone. Necesito ayuda urgente. He llegado del aeropuerto hace una hora y... mis maletas no están. Dos maletas. No aparecen. No sé qué hacer.",
@@ -29,7 +49,10 @@
     "fluency": 0.15,
     "vocabulary": 0.2,
     "grammar": 0.15,
-    "taskCompletion": 0.35,
-    "register": 0.15
-  }
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
 }

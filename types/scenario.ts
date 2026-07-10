@@ -1,4 +1,4 @@
-import type { Department, ExamFormat, RubricWeights } from './shared';
+import type { Department, ExamFormat, RubricWeights, CourseLevel } from './shared';
 
 export type Difficulty = 1 | 2 | 3;
 
@@ -44,4 +44,6 @@ export type Scenario = {
   rubricWeights: RubricWeights;
   isFree: boolean;
   durationMinutes: number;
+  /** Which course levels this scenario is appropriate for. */
+  courseLevels: CourseLevel[];
 };
