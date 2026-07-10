@@ -1,0 +1,20 @@
+{
+  "id": "presente-regular",
+  "title": "Present Tense — Regular Verbs",
+  "titleEs": "Presente — verbos regulares",
+  "topic": "presente_regular",
+  "courseLevel": "both",
+  "isFree": true,
+  "questions": [
+    { "id": "pr-1", "prompt": "Yo ___ (trabajar) en la recepción del hotel.", "answer": "trabajo", "hint": "-ar, yo" },
+    { "id": "pr-2", "prompt": "Nosotros ___ (confirmar) su reserva ahora mismo.", "answer": "confirmamos", "hint": "-ar, nosotros" },
+    { "id": "pr-3", "prompt": "¿Usted ___ (necesitar) algo más, señor?", "answer": "necesita", "hint": "-ar, usted" },
+    { "id": "pr-4", "prompt": "El camarero ___ (servir) el desayuno a las siete.", "answer": "sirve", "hint": "-ir, e>i, él/ella" },
+    { "id": "pr-5", "prompt": "Ellos ___ (comer) en el restaurante del hotel.", "answer": "comen", "hint": "-er, ellos" },
+    { "id": "pr-6", "prompt": "¿Ustedes ___ (recibir) el equipaje en la entrada?", "answer": "reciben", "hint": "-ir, ustedes" },
+    { "id": "pr-7", "prompt": "Yo siempre ___ (escribir) la nota del huésped en el sistema.", "answer": "escribo", "hint": "-ir, yo" },
+    { "id": "pr-8", "prompt": "El hotel ___ (abrir) la piscina en verano.", "answer": "abre", "hint": "-ir, él/ella" },
+    { "id": "pr-9", "prompt": "Nosotros ___ (limpiar) las habitaciones cada mañana.", "answer": "limpiamos", "hint": "-ar, nosotros" },
+    { "id": "pr-10", "prompt": "¿Tú ___ (vivir) cerca del hotel?", "answer": "vives", "hint": "-ir, tú" }
+  ]
+}

@@ -5,8 +5,9 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
-import { SCENARIO_CATALOG, DEPT_LABELS, MOOD_ICONS, type ScenarioMeta } from '@/lib/scenarios/catalog';
-import { DECK_CATALOG, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '@/lib/vocab/decks';
+import { scenariosForLevel, DEPT_LABELS, MOOD_ICONS, type ScenarioMeta } from '@/lib/scenarios/catalog';
+import { decksForLevel, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '@/lib/vocab/decks';
+import { drillsForLevel } from '@/lib/grammar/drills';
 import { getDueCount } from '@/lib/db/vocab';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
@@ -99,10 +100,16 @@ export default function PracticeScreen() {
   const isPremium = usePremium();
   const [dueCounts, setDueCounts] = useState<Record<string, number | null>>({});
 
+  const level = user?.mockLevel ?? 'basic';
+  const scenarios = scenariosForLevel(level);
+  const decks = decksForLevel(level);
+  const drills = drillsForLevel(level);
+  const freeDrillCount = drills.filter(d => d.isFree).length;
+
   useEffect(() => {
     if (!user) return;
     async function loadCounts() {
-      for (const deck of DECK_CATALOG) {
+      for (const deck of decks) {
         if (!deck.isFree && !isPremium) continue;
         const ids = loadDeckCards(deck.id).map(c => c.id);
         const count = await getDueCount(user!.id, ids);
@@ -110,7 +117,7 @@ export default function PracticeScreen() {
       }
     }
     loadCounts();
-  }, [user?.id]);
+  }, [user?.id, level]);
 
   const totalDue = Object.values(dueCounts).reduce<number>((s, n) => s + (n ?? 0), 0);
 
@@ -124,7 +131,7 @@ export default function PracticeScreen() {
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Role-Play Scenarios</Text>
       </View>
-      {SCENARIO_CATALOG.map(s => (
+      {scenarios.map(s => (
         <ScenarioCard
           key={s.id}
           s={s}
@@ -134,13 +141,32 @@ export default function PracticeScreen() {
         />
       ))}
 
+      {/* Grammar drills */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Gramática</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.grammarCard}
+        onPress={() => router.push('/grammar' as any)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.grammarIcon}><Text style={{ fontSize: 20 }}>✏️</Text></View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.grammarTitle}>Timed conjugation drills</Text>
+          <Text style={styles.grammarSub}>
+            {drills.length} drill sets · {isPremium ? 'all unlocked' : `${freeDrillCount} free`}
+          </Text>
+        </View>
+        <Text style={styles.grammarArrow}>→</Text>
+      </TouchableOpacity>
+
       {/* Vocabulary decks */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
           Vocabulary{totalDue > 0 ? ` · ${totalDue} due today` : ''}
         </Text>
       </View>
-      {DECK_CATALOG.map(d => (
+      {decks.map(d => (
         <DeckRow
           key={d.id}
           d={d}
@@ -191,4 +217,15 @@ const styles = StyleSheet.create({
   deckDept: { fontSize: Typography.caption, color: Colors.textMuted },
   dueBadge: { backgroundColor: Colors.gold, borderRadius: 10, minWidth: 22, paddingHorizontal: 5, paddingVertical: 2, alignItems: 'center' },
   dueText: { color: '#fff', fontSize: 11, fontWeight: Typography.bold },
+  // Grammar
+  grammarCard: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.md,
+    marginHorizontal: Spacing.lg, marginBottom: Spacing.md,
+    backgroundColor: Colors.surface, borderRadius: Radii.lg,
+    padding: Spacing.md, ...Shadows.sm,
+  },
+  grammarIcon: { width: 44, height: 44, borderRadius: Radii.md, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  grammarTitle: { fontSize: Typography.body, fontWeight: Typography.semibold, color: Colors.textPrimary },
+  grammarSub: { fontSize: Typography.caption, color: Colors.textMuted, marginTop: 2 },
+  grammarArrow: { fontSize: 18, color: Colors.textMuted },
 });

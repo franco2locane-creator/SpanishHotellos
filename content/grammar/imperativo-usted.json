@@ -1,0 +1,20 @@
+{
+  "id": "imperativo-usted",
+  "title": "Formal Commands — Usted/Ustedes",
+  "titleEs": "Imperativo — usted/ustedes",
+  "topic": "imperativo_usted",
+  "courseLevel": "both",
+  "isFree": false,
+  "questions": [
+    { "id": "iu-1", "prompt": "(esperar, usted) ___ un momento, por favor.", "answer": "espere", "hint": "-ar → -e" },
+    { "id": "iu-2", "prompt": "(firmar, usted) ___ aquí, por favor.", "answer": "firme", "hint": "-ar → -e" },
+    { "id": "iu-3", "prompt": "(tomar, ustedes) ___ asiento, por favor.", "answer": "tomen", "hint": "-ar → -en" },
+    { "id": "iu-4", "prompt": "(seguir, usted) ___ por este pasillo hasta el ascensor.", "answer": "siga", "hint": "seguir, e>i irregular" },
+    { "id": "iu-5", "prompt": "(disculpar, usted) ___ la espera, señor.", "answer": "disculpe", "hint": "-ar → -e" },
+    { "id": "iu-6", "prompt": "No (preocuparse, usted) ___, ya lo solucionamos.", "answer": "se preocupe", "hint": "reflexive + negative imperative" },
+    { "id": "iu-7", "prompt": "(venir, usted) ___ conmigo, le acompaño a su habitación.", "answer": "venga", "hint": "venir irregular imperative" },
+    { "id": "iu-8", "prompt": "(poner, usted) ___ su equipaje aquí, se lo subimos enseguida.", "answer": "ponga", "hint": "poner irregular imperative" },
+    { "id": "iu-9", "prompt": "(salir, ustedes) ___ por la puerta principal, por favor.", "answer": "salgan", "hint": "salir irregular imperative" },
+    { "id": "iu-10", "prompt": "(decirme, usted) ___ si necesita algo más.", "answer": "dígame", "hint": "decir irregular + pronoun" }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "ser-estar",
+  "title": "Ser vs. Estar",
+  "titleEs": "Ser vs. estar",
+  "topic": "ser_estar",
+  "courseLevel": "both",
+  "isFree": false,
+  "questions": [
+    { "id": "se-1", "prompt": "Su habitación ___ (estar) en el tercer piso.", "answer": "está", "hint": "location → estar" },
+    { "id": "se-2", "prompt": "El desayuno ___ (ser) de siete a diez.", "answer": "es", "hint": "time/schedule → ser" },
+    { "id": "se-3", "prompt": "Lo siento, la piscina ___ (estar) cerrada por mantenimiento.", "answer": "está", "hint": "temporary condition → estar" },
+    { "id": "se-4", "prompt": "Yo ___ (ser) el recepcionista de turno esta noche.", "answer": "soy", "hint": "identity/role → ser" },
+    { "id": "se-5", "prompt": "El agua de la piscina ___ (estar) muy fría hoy.", "answer": "está", "hint": "temporary state → estar" },
+    { "id": "se-6", "prompt": "Este hotel ___ (ser) de cuatro estrellas.", "answer": "es", "hint": "characteristic → ser" },
+    { "id": "se-7", "prompt": "¿Usted ___ (estar) satisfecho con la habitación, señor?", "answer": "está", "hint": "temporary state → estar" },
+    { "id": "se-8", "prompt": "La reunión ___ (ser) en la sala de conferencias del segundo piso.", "answer": "es", "hint": "event location → ser" },
+    { "id": "se-9", "prompt": "Disculpe, el ascensor ___ (estar) fuera de servicio.", "answer": "está", "hint": "temporary condition → estar" },
+    { "id": "se-10", "prompt": "El check-out ___ (ser) a las doce del mediodía.", "answer": "es", "hint": "time/rule → ser" }
+  ]
+}

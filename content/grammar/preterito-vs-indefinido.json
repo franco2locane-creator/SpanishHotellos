@@ -1,0 +1,20 @@
+{
+  "id": "preterito-vs-indefinido",
+  "title": "Present Perfect vs. Simple Past",
+  "titleEs": "Pretérito perfecto vs. indefinido",
+  "topic": "preterito_vs_indefinido",
+  "courseLevel": "intermediate",
+  "isFree": false,
+  "questions": [
+    { "id": "pvi-1", "prompt": "Esta mañana el huésped (perder) ___ su llave.", "answer": "ha perdido", "hint": "hoy → pretérito perfecto" },
+    { "id": "pvi-2", "prompt": "El año pasado el hotel (renovar) ___ todas las habitaciones.", "answer": "renovó", "hint": "el año pasado → indefinido" },
+    { "id": "pvi-3", "prompt": "Todavía no (llegar) ___ el autobús del aeropuerto.", "answer": "ha llegado", "hint": "todavía no → pretérito perfecto" },
+    { "id": "pvi-4", "prompt": "Ayer nosotros (recibir) ___ un grupo de treinta personas.", "answer": "recibimos", "hint": "ayer → indefinido" },
+    { "id": "pvi-5", "prompt": "¿Alguna vez (tener, usted) ___ un problema con su reserva?", "answer": "ha tenido", "hint": "alguna vez → pretérito perfecto" },
+    { "id": "pvi-6", "prompt": "En 2022 el restaurante (ganar) ___ un premio culinario.", "answer": "ganó", "hint": "año concreto → indefinido" },
+    { "id": "pvi-7", "prompt": "Esta semana (haber) ___ muchas quejas por el ruido.", "answer": "ha habido", "hint": "esta semana → pretérito perfecto" },
+    { "id": "pvi-8", "prompt": "Anoche el cliente (pedir) ___ el servicio de habitaciones dos veces.", "answer": "pidió", "hint": "anoche → indefinido" },
+    { "id": "pvi-9", "prompt": "Nunca (estar, yo) ___ en un hotel tan elegante.", "answer": "he estado", "hint": "nunca (hasta ahora) → pretérito perfecto" },
+    { "id": "pvi-10", "prompt": "La semana pasada (llegar) ___ una tormenta que canceló varios vuelos.", "answer": "llegó", "hint": "la semana pasada → indefinido" }
+  ]
+}

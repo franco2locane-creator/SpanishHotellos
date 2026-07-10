@@ -1,0 +1,20 @@
+{
+  "id": "reflexivos",
+  "title": "Reflexive Verbs",
+  "titleEs": "Verbos reflexivos",
+  "topic": "reflexivos",
+  "courseLevel": "both",
+  "isFree": false,
+  "questions": [
+    { "id": "rf-1", "prompt": "¿Cómo ___ (llamarse, usted)?", "answer": "se llama", "hint": "llamarse, usted" },
+    { "id": "rf-2", "prompt": "Yo ___ (disculparse) por la confusión con su reserva.", "answer": "me disculpo", "hint": "disculparse, yo" },
+    { "id": "rf-3", "prompt": "Los huéspedes ___ (quedarse) tres noches más.", "answer": "se quedan", "hint": "quedarse, ellos" },
+    { "id": "rf-4", "prompt": "Por favor, ___ (sentarse, usted) mientras preparo su factura.", "answer": "siéntese", "hint": "sentarse, imperativo usted" },
+    { "id": "rf-5", "prompt": "Nosotros ___ (encargarse) de subir el equipaje enseguida.", "answer": "nos encargamos", "hint": "encargarse, nosotros" },
+    { "id": "rf-6", "prompt": "¿A qué hora ___ (despertarse, usted) normalmente, señor?", "answer": "se despierta", "hint": "despertarse, e>ie, usted" },
+    { "id": "rf-7", "prompt": "El personal ___ (ponerse) el uniforme antes del turno.", "answer": "se pone", "hint": "ponerse, él/ella" },
+    { "id": "rf-8", "prompt": "Yo ___ (preocuparse) por darle la mejor atención posible.", "answer": "me preocupo", "hint": "preocuparse, yo" },
+    { "id": "rf-9", "prompt": "¿Ustedes ___ (registrarse) ya en recepción?", "answer": "se registran", "hint": "registrarse, ustedes" },
+    { "id": "rf-10", "prompt": "No ___ (preocuparse, usted), lo solucionamos ahora mismo.", "answer": "se preocupe", "hint": "preocuparse, imperativo negativo usted" }
+  ]
+}

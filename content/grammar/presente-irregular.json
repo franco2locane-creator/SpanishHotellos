@@ -1,0 +1,20 @@
+{
+  "id": "presente-irregular",
+  "title": "Present Tense — Irregular Verbs",
+  "titleEs": "Presente — verbos irregulares",
+  "topic": "presente_irregular",
+  "courseLevel": "both",
+  "isFree": false,
+  "questions": [
+    { "id": "pi-1", "prompt": "Yo ___ (tener) una reserva a nombre de García.", "answer": "tengo", "hint": "tener, yo" },
+    { "id": "pi-2", "prompt": "¿Usted ___ (ser) el señor Anderson?", "answer": "es", "hint": "ser, usted" },
+    { "id": "pi-3", "prompt": "Nosotros ___ (ir) a cambiarle de habitación ahora.", "answer": "vamos", "hint": "ir, nosotros" },
+    { "id": "pi-4", "prompt": "Yo no ___ (poder) confirmar eso sin ver su identificación.", "answer": "puedo", "hint": "poder, yo" },
+    { "id": "pi-5", "prompt": "¿Qué ___ (querer) tomar de desayuno, señora?", "answer": "quiere", "hint": "querer, usted" },
+    { "id": "pi-6", "prompt": "El gerente ___ (decir) que la habitación estará lista a las tres.", "answer": "dice", "hint": "decir, él/ella" },
+    { "id": "pi-7", "prompt": "Yo ___ (hacer) la reserva de inmediato.", "answer": "hago", "hint": "hacer, yo" },
+    { "id": "pi-8", "prompt": "¿Ustedes ___ (venir) directamente del aeropuerto?", "answer": "vienen", "hint": "venir, ustedes" },
+    { "id": "pi-9", "prompt": "Yo le ___ (dar) la llave y la información del hotel.", "answer": "doy", "hint": "dar, yo" },
+    { "id": "pi-10", "prompt": "Nosotros ___ (saber) que usted llega tarde por el vuelo.", "answer": "sabemos", "hint": "saber, nosotros" }
+  ]
+}

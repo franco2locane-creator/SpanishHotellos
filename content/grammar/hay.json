@@ -1,0 +1,20 @@
+{
+  "id": "hay",
+  "title": "Hay / Haber",
+  "titleEs": "Hay",
+  "topic": "hay",
+  "courseLevel": "both",
+  "isFree": false,
+  "questions": [
+    { "id": "h-1", "prompt": "___ (haber) una piscina y un gimnasio en el hotel.", "answer": "hay", "hint": "existence → hay (invariable)" },
+    { "id": "h-2", "prompt": "Lo siento, no ___ (haber) habitaciones disponibles esta noche.", "answer": "hay", "hint": "negative existence → hay" },
+    { "id": "h-3", "prompt": "¿___ (haber) algún restaurante cerca del hotel?", "answer": "hay", "hint": "question → hay" },
+    { "id": "h-4", "prompt": "___ (haber) dos ascensores: uno para huéspedes y otro de servicio.", "answer": "hay", "hint": "existence, plural noun still uses hay" },
+    { "id": "h-5", "prompt": "Anoche ___ (haber) una fiesta privada en el salón.", "answer": "hubo", "hint": "past, specific event → hubo (indefinido)" },
+    { "id": "h-6", "prompt": "Esta semana ___ (haber) mucho trabajo por el congreso.", "answer": "ha habido", "hint": "recent past → ha habido" },
+    { "id": "h-7", "prompt": "___ (haber) que confirmar la reserva antes de las seis.", "answer": "hay", "hint": "hay que + infinitive = obligation" },
+    { "id": "h-8", "prompt": "No ___ (haber) toallas limpias en el armario, lo revisamos ahora.", "answer": "hay", "hint": "existence, negative → hay" },
+    { "id": "h-9", "prompt": "___ (haber) un problema con la reserva del señor López.", "answer": "hay", "hint": "existence, singular → hay" },
+    { "id": "h-10", "prompt": "El año pasado ___ (haber) una reforma completa del vestíbulo.", "answer": "hubo", "hint": "specific past event → hubo" }
+  ]
+}

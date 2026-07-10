@@ -1,0 +1,20 @@
+{
+  "id": "gustar",
+  "title": "Gustar-Type Verbs",
+  "titleEs": "Verbos como gustar",
+  "topic": "gustar",
+  "courseLevel": "both",
+  "isFree": false,
+  "questions": [
+    { "id": "gu-1", "prompt": "¿Le ___ (gustar) esta habitación con vista al mar, señor?", "answer": "gusta", "hint": "gustar + singular noun, usted/él" },
+    { "id": "gu-2", "prompt": "A los huéspedes les ___ (encantar) el desayuno buffet.", "answer": "encanta", "hint": "encantar, sujeto singular 'el desayuno'" },
+    { "id": "gu-3", "prompt": "¿Le ___ (interesar) alguna excursión organizada por el hotel?", "answer": "interesan", "hint": "interesar + plural 'excursiones' implícito" },
+    { "id": "gu-4", "prompt": "A mí me ___ (apetecer) recomendarle nuestro restaurante de la terraza.", "answer": "apetece", "hint": "apetecer, a mí" },
+    { "id": "gu-5", "prompt": "A ella le ___ (molestar) el ruido de la calle.", "answer": "molesta", "hint": "molestar, singular 'el ruido'" },
+    { "id": "gu-6", "prompt": "¿Les ___ (parecer) bien la hora de salida, once de la mañana?", "answer": "parece", "hint": "parecer + singular 'la hora'" },
+    { "id": "gu-7", "prompt": "A nosotros nos ___ (quedar) dos habitaciones libres esta noche.", "answer": "quedan", "hint": "quedar, plural 'dos habitaciones'" },
+    { "id": "gu-8", "prompt": "A los clientes les ___ (hacer falta) más información sobre el transporte.", "answer": "hace falta", "hint": "hacer falta + singular 'información'" },
+    { "id": "gu-9", "prompt": "¿Le ___ (importar) esperar cinco minutos, señora?", "answer": "importa", "hint": "importar + infinitivo = singular" },
+    { "id": "gu-10", "prompt": "A mí me ___ (encantar) trabajar en un hotel tan internacional.", "answer": "encanta", "hint": "encantar + infinitivo = singular" }
+  ]
+}
