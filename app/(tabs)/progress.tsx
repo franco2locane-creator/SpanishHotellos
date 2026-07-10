@@ -1,29 +1,46 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { SCENARIO_CATALOG, DEPT_LABELS } from '@/lib/scenarios/catalog';
+import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
+import { getVocabStats } from '@/lib/db/vocab';
+import { getStreak } from '@/lib/today';
 import Skeleton from '@/components/Skeleton';
+import ReadinessCard from '@/components/progress/ReadinessCard';
+import LastMockCard from '@/components/progress/LastMockCard';
+import VocabStatsCard from '@/components/progress/VocabStatsCard';
+import AssignmentMasteryCard, { type MasteryRow } from '@/components/progress/AssignmentMasteryCard';
+import CriterionTrend, { type CriterionKey } from '@/components/progress/CriterionTrend';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 type Attempt = {
   id: string;
   scenario_id: string;
   total_score: number;
-  scores: { fluency: number; vocabulary: number; grammar: number; taskCompletion: number; register: number };
+  scores: Record<CriterionKey, number>;
   completed_at: string;
 };
 
-type CriterionKey = 'fluency' | 'vocabulary' | 'grammar' | 'taskCompletion' | 'register';
-const CRITERION_KEYS: CriterionKey[] = ['fluency', 'vocabulary', 'grammar', 'taskCompletion', 'register'];
+type MockAttemptRow = {
+  id: string;
+  mock_id: string;
+  combined_score: number;
+  passed: boolean;
+  gate_passed: boolean;
+  assignment_results: { assignmentType: string; score: number | null }[];
+  completed_at: string;
+};
+
+const CRITERION_KEYS: CriterionKey[] = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
 const CRITERION_LABELS: Record<CriterionKey, string> = {
   fluency: 'Fluency', vocabulary: 'Vocabulary', grammar: 'Grammar',
-  taskCompletion: 'Task', register: 'Register',
+  pronunciation: 'Pronunciation', content: 'Content',
 };
 
 const CHART_W = 280;
@@ -75,10 +92,7 @@ function AvgBar({ label, avg }: { label: string; avg: number }) {
   const color = pct >= 75 ? '#16A34A' : pct >= 55 ? '#CA8A04' : '#DC2626';
 
   return (
-    <View
-      style={styles.avgRow}
-      accessibilityLabel={`${label}: ${pct}%`}
-    >
+    <View style={styles.avgRow} accessibilityLabel={`${label}: ${pct}%`}>
       <Text style={styles.avgLabel}>{label}</Text>
       <View style={styles.avgBarBg}>
         <View style={[styles.avgBarFill, { width: `${pct}%`, backgroundColor: color }]} />
@@ -104,20 +118,52 @@ export default function ProgressScreen() {
   const { user } = useAuthStore();
   const { devPremiumOverride, setDevPremiumOverride } = usePurchaseStore();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
+  const [mockAttempts, setMockAttempts] = useState<MockAttemptRow[]>([]);
+  const [vocabStats, setVocabStats] = useState({ learned: 0, due: 0, total: 0 });
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from('exam_attempts')
-      .select('id, scenario_id, total_score, scores, completed_at')
-      .order('completed_at', { ascending: true })
-      .limit(20)
-      .then(({ data }) => {
-        setAttempts((data as Attempt[]) ?? []);
+  // Refetch every time this tab gains focus — a just-graded session or vocab
+  // review must never show stale numbers.
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      let cancelled = false;
+
+      async function load() {
+        const level = user!.mockLevel ?? 'basic';
+        const decks = decksForLevel(level).filter(d => d.isFree || user!.isPremium);
+        const allCardIds = decks.flatMap(d => loadDeckCards(d.id).map(c => c.id));
+
+        const [{ data: attemptData }, { data: mockData }, vStats, s] = await Promise.all([
+          supabase
+            .from('exam_attempts')
+            .select('id, scenario_id, total_score, scores, completed_at')
+            .eq('user_id', user!.id)
+            .order('completed_at', { ascending: true })
+            .limit(20),
+          supabase
+            .from('mock_attempts')
+            .select('id, mock_id, combined_score, passed, gate_passed, assignment_results, completed_at')
+            .eq('user_id', user!.id)
+            .order('completed_at', { ascending: false })
+            .limit(10),
+          getVocabStats(user!.id, allCardIds),
+          getStreak(),
+        ]);
+
+        if (cancelled) return;
+        setAttempts((attemptData as Attempt[]) ?? []);
+        setMockAttempts((mockData as MockAttemptRow[]) ?? []);
+        setVocabStats(vStats);
+        setStreak(s);
         setLoading(false);
-      });
-  }, [user?.id]);
+      }
+      load();
+
+      return () => { cancelled = true; };
+    }, [user?.id, user?.mockLevel, user?.isPremium])
+  );
 
   const avgScores = CRITERION_KEYS.reduce<Record<CriterionKey, number>>((acc, k) => {
     const vals = attempts.map(a => a.scores?.[k] ?? 0).filter(v => v > 0);
@@ -136,6 +182,30 @@ export default function ProgressScreen() {
   }
 
   const recentTrend = attempts.slice(-8);
+  const criterionSeries = attempts.slice(-8).map(a => a.scores);
+
+  // Readiness = average combined_score of the last 3 mocks, if any.
+  const recentMocks = mockAttempts.slice(0, 3);
+  const avgMockScore = recentMocks.length
+    ? recentMocks.reduce((s, m) => s + m.combined_score, 0) / recentMocks.length
+    : null;
+
+  // Mastery by assignment type, aggregated across all mock attempts.
+  const masteryAcc: Record<string, { sum: number; count: number }> = {};
+  for (const m of mockAttempts) {
+    for (const a of m.assignment_results) {
+      if (a.score === null) continue;
+      const acc = (masteryAcc[a.assignmentType] ??= { sum: 0, count: 0 });
+      acc.sum += a.score;
+      acc.count += 1;
+    }
+  }
+  const masteryRows: MasteryRow[] = Object.entries(masteryAcc)
+    .map(([type, { sum, count }]) => ({ type, avgScore: sum / count, attempts: count }))
+    .sort((a, b) => a.avgScore - b.avgScore);
+
+  const lastMock = mockAttempts[0] ?? null;
+  const hasAnyData = attempts.length > 0 || mockAttempts.length > 0;
 
   if (loading) {
     return (
@@ -163,7 +233,23 @@ export default function ProgressScreen() {
           </View>
         )}
 
-        {attempts.length === 0 ? (
+        <ReadinessCard avgMockScore={avgMockScore} />
+        <VocabStatsCard {...vocabStats} streak={streak} />
+
+        {lastMock && (
+          <LastMockCard
+            mockId={lastMock.mock_id}
+            combinedScore={lastMock.combined_score}
+            passed={lastMock.passed}
+            gatePassed={lastMock.gate_passed}
+            completedAt={lastMock.completed_at}
+            assignmentResults={lastMock.assignment_results}
+          />
+        )}
+
+        <AssignmentMasteryCard rows={masteryRows} />
+
+        {!hasAnyData ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>📊</Text>
             <Text style={styles.emptyTitle}>Your first session is the hardest</Text>
@@ -189,6 +275,8 @@ export default function ProgressScreen() {
                 <TrendChart attempts={recentTrend} />
               </View>
             </View>
+
+            <CriterionTrend series={criterionSeries} />
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Criterion Averages</Text>
@@ -243,7 +331,7 @@ const styles = StyleSheet.create({
   cardSub: { fontSize: Typography.caption, color: Colors.textMuted },
   chartWrap: { alignItems: 'center', marginTop: Spacing.sm },
   avgRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  avgLabel: { width: 72, fontSize: Typography.caption, color: Colors.textSecondary },
+  avgLabel: { width: 90, fontSize: Typography.caption, color: Colors.textSecondary },
   avgBarBg: { flex: 1, height: 8, backgroundColor: '#EDE9E3', borderRadius: 4, overflow: 'hidden' },
   avgBarFill: { height: '100%', borderRadius: 4 },
   avgPct: { width: 36, fontSize: Typography.caption, fontWeight: Typography.bold, textAlign: 'right' },
@@ -254,7 +342,7 @@ const styles = StyleSheet.create({
   deptRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   deptLabel: { fontSize: Typography.caption, color: Colors.textSecondary },
   deptCount: { fontSize: Typography.caption, fontWeight: Typography.bold, color: Colors.navy },
-  emptyState: { alignItems: 'center', paddingTop: 64, gap: Spacing.md },
+  emptyState: { alignItems: 'center', paddingTop: 32, gap: Spacing.md },
   emptyEmoji: { fontSize: 60 },
   emptyTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
   emptyText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, paddingHorizontal: Spacing.md },

@@ -52,6 +52,38 @@ export async function getDueCount(
   return result?.count ?? 0;
 }
 
+export type VocabStats = { learned: number; due: number; total: number };
+
+/** learned = reviewed successfully at least once (repetitions >= 1). */
+export async function getVocabStats(
+  userId: string,
+  cardIds: string[],
+): Promise<VocabStats> {
+  if (Platform.OS === 'web' || !cardIds.length) return { learned: 0, due: 0, total: cardIds.length };
+  const db = await getDb();
+  const today = isoToday();
+  const placeholders = cardIds.map(() => '?').join(',');
+
+  const [learnedRow, dueRow] = await Promise.all([
+    db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM vocab_progress
+       WHERE user_id = ? AND card_id IN (${placeholders}) AND repetitions >= 1`,
+      [userId, ...cardIds],
+    ),
+    db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM vocab_progress
+       WHERE user_id = ? AND card_id IN (${placeholders}) AND due_date <= ?`,
+      [userId, ...cardIds, today],
+    ),
+  ]);
+
+  return {
+    learned: learnedRow?.count ?? 0,
+    due: dueRow?.count ?? 0,
+    total: cardIds.length,
+  };
+}
+
 /** Returns due card IDs (overdue + new), capped at 20 per session. */
 export async function getDueCardIds(
   userId: string,
