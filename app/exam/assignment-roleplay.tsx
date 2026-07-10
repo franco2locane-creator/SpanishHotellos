@@ -13,7 +13,9 @@ import { loadMock, assignmentToScenario } from '@/lib/mockExam/loader';
 import { useMockExamStore } from '@/stores/mockExamStore';
 import { sendRolePlayTurn, type WireMessage } from '@/lib/api/roleplay';
 import { gradeMockAssignment } from '@/lib/api/grade';
+import { ApiCallError } from '@/lib/api/apiError';
 import { useAuthStore } from '@/stores/authStore';
+import { usePremium } from '@/hooks/usePremium';
 import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
 import { Haptics } from '@/lib/haptics';
 import ChatBubble from '@/components/roleplay/ChatBubble';
@@ -32,13 +34,18 @@ export default function AssignmentRoleplay() {
   const { mockId, assignmentIdx: idxStr } = useLocalSearchParams<{ mockId: string; assignmentIdx: string }>();
   const router = useRouter();
   const { user } = useAuthStore();
+  const isPremium = usePremium();
   const { exam, saveResult, advance, currentIdx, keywordNotes } = useMockExamStore();
 
   const idx = parseInt(idxStr ?? '0', 10);
   const currentMock = exam ?? loadMock(mockId ?? '');
   const assignment = currentMock?.assignments[idx];
+  // usePremium() (not the raw auth-store value) — it's the same source of truth
+  // mock-exam.tsx used to decide this assignment was unlockable in the first
+  // place; using a different signal here would make free entitlement checks
+  // disagree with what the picker screen already promised the student.
   const scenario = assignment && assignment.type !== 'personal_presentation'
-    ? assignmentToScenario(assignment, mockId ?? '', user?.isPremium ?? false)
+    ? assignmentToScenario(assignment, mockId ?? '', isPremium)
     : null;
   const keywords = keywordNotes[idx] ?? '';
 
@@ -50,6 +57,7 @@ export default function AssignmentRoleplay() {
   const [errorMsg, setErrorMsg] = useState('');
   const wireHistoryRef = useRef<WireMessage[]>([]);
   const lastGradingMessagesRef = useRef<WireMessage[]>([]);
+  const lastTurnRef = useRef<{ wireHistory: WireMessage[]; turnsSoFar: number }>({ wireHistory: [], turnsSoFar: 0 });
   const sessionStartRef = useRef(Date.now());
   const liveRef = useRef('');
   const scrollRef = useRef<ScrollView>(null);
@@ -124,6 +132,37 @@ export default function AssignmentRoleplay() {
     ExpoSpeechRecognitionModule.stop();
   }
 
+  // Sends one already-built wire history to the roleplay function. Split out
+  // from handleStudentFinished so a failed send can be retried verbatim —
+  // without re-appending the student's turn or making them re-record.
+  const sendTurnToServer = useCallback(async (wireHistory: WireMessage[], turnsSoFar: number) => {
+    if (!scenario) return;
+    lastTurnRef.current = { wireHistory, turnsSoFar };
+    updatePhase('sending');
+    setErrorMsg('');
+
+    try {
+      const result = await sendRolePlayTurn({ scenario, messages: wireHistory });
+      setCompletedIds(prev => {
+        const next = new Set(prev);
+        result.objectivesCompleted.forEach(id => next.add(id));
+        return next;
+      });
+      appendTurn({ role: 'guest', text: result.guestReply });
+      wireHistoryRef.current = [...wireHistory, { role: 'assistant', content: result.guestReply }];
+
+      if (result.sessionShouldEnd || turnsSoFar >= MAX_TURNS) {
+        await triggerGrading([...wireHistoryRef.current]);
+      } else {
+        speakGuest(result.guestReply);
+      }
+    } catch (e) {
+      const apiError = e instanceof ApiCallError ? e : null;
+      setErrorMsg(apiError?.message ?? 'Something went wrong. Please try again.');
+      updatePhase('error');
+    }
+  }, [scenario]);
+
   const handleStudentFinished = useCallback(async (raw: string) => {
     if (!scenario || !assignment) return;
     const text = raw.trim();
@@ -139,36 +178,21 @@ export default function AssignmentRoleplay() {
       return;
     }
 
-    updatePhase('sending');
-
+    // Build wire history: skip leading guest turns (the opening line is
+    // already embedded in the system prompt and must not appear as an
+    // assistant message at position 0 — the Edge Function requires
+    // messages[0].role === 'user').
     const wireHistory: WireMessage[] = [];
+    let seenStudent = false;
     for (const t of turns) {
+      if (t.role === 'student') seenStudent = true;
+      if (!seenStudent) continue;
       wireHistory.push({ role: t.role === 'student' ? 'user' : 'assistant', content: t.text });
     }
     wireHistory.push({ role: 'user', content: text });
-    wireHistoryRef.current = wireHistory;
 
-    try {
-      const result = await sendRolePlayTurn({ scenario, messages: wireHistory });
-      setCompletedIds(prev => {
-        const next = new Set(prev);
-        result.objectivesCompleted.forEach(id => next.add(id));
-        return next;
-      });
-      appendTurn({ role: 'guest', text: result.guestReply });
-      wireHistoryRef.current.push({ role: 'assistant', content: result.guestReply });
-
-      const totalTurns = turns.length + 2;
-      if (result.sessionShouldEnd || totalTurns >= MAX_TURNS) {
-        await triggerGrading([...wireHistoryRef.current]);
-      } else {
-        speakGuest(result.guestReply);
-      }
-    } catch {
-      setErrorMsg('Connection issue. Check your signal and try again.');
-      updatePhase('error');
-    }
-  }, [scenario, turns, assignment]);
+    await sendTurnToServer(wireHistory, turns.length + 2);
+  }, [scenario, turns, assignment, sendTurnToServer]);
 
   async function triggerGrading(messages: WireMessage[]) {
     if (!assignment || !currentMock || !user) return;
@@ -197,7 +221,9 @@ export default function AssignmentRoleplay() {
       });
       Haptics.success();
       updatePhase('done');
-    } catch {
+    } catch (e) {
+      const apiError = e instanceof ApiCallError ? e : null;
+      setErrorMsg(apiError?.message ?? 'Something went wrong while grading. Please try again.');
       updatePhase('grading_error');
     }
   }
@@ -256,9 +282,7 @@ export default function AssignmentRoleplay() {
         <View style={styles.center}>
           <Text style={{ fontSize: 48 }}>⚠️</Text>
           <Text style={styles.centerTitle}>Couldn't grade this assignment</Text>
-          <Text style={styles.centerText}>
-            Your recording is saved — this was a connection issue while grading it. Try again.
-          </Text>
+          <Text style={styles.centerText}>{errorMsg || 'Something went wrong while grading. Try again.'}</Text>
           <TouchableOpacity style={styles.nextBtn} onPress={() => triggerGrading(lastGradingMessagesRef.current)}>
             <Text style={styles.nextBtnText}>Retry grading</Text>
           </TouchableOpacity>
@@ -322,7 +346,10 @@ export default function AssignmentRoleplay() {
       {phase === 'error' && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{errorMsg}</Text>
-          <TouchableOpacity onPress={() => updatePhase('student_turn')} style={styles.retryBtn}>
+          <TouchableOpacity
+            onPress={() => sendTurnToServer(lastTurnRef.current.wireHistory, lastTurnRef.current.turnsSoFar)}
+            style={styles.retryBtn}
+          >
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>

@@ -15,6 +15,7 @@ import { useFeedbackStore } from '@/stores/feedbackStore';
 import { loadScenario } from '@/lib/scenarios/catalog';
 import { sendRolePlayTurn, type WireMessage } from '@/lib/api/roleplay';
 import { gradeSession } from '@/lib/api/grade';
+import { ApiCallError } from '@/lib/api/apiError';
 import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
 import { Haptics } from '@/lib/haptics';
 import ChatBubble from '@/components/roleplay/ChatBubble';
@@ -59,6 +60,7 @@ export default function RoleplayScreen() {
   const sessionStartRef = useRef<number>(Date.now());
   const liveRef = useRef('');
   const wireHistoryRef = useRef<WireMessage[]>([]);
+  const lastTurnRef = useRef<{ wireHistory: WireMessage[]; turnsSoFar: number }>({ wireHistory: [], turnsSoFar: 0 });
   const scrollRef = useRef<ScrollView>(null);
 
   function updatePhase(p: Phase) {
@@ -141,6 +143,39 @@ export default function RoleplayScreen() {
     handleStudentFinished(text);
   }
 
+  // Sends one already-built wire history to the roleplay function. Split out
+  // from handleStudentFinished so a failed send can be retried verbatim —
+  // without re-appending the student's turn or making them re-record.
+  const sendTurnToServer = useCallback(async (wireHistory: WireMessage[], turnsSoFar: number) => {
+    if (!scenario) return;
+    lastTurnRef.current = { wireHistory, turnsSoFar };
+    updatePhase('sending');
+    setErrorMsg('');
+
+    try {
+      const result = await sendRolePlayTurn({ scenario, messages: wireHistory });
+
+      setCompletedIds(prev => {
+        const next = new Set(prev);
+        result.objectivesCompleted.forEach(id => next.add(id));
+        return next;
+      });
+
+      appendTurn({ role: 'guest', text: result.guestReply });
+      wireHistoryRef.current = [...wireHistory, { role: 'assistant', content: result.guestReply }];
+
+      if (result.sessionShouldEnd || turnsSoFar >= MAX_TURNS) {
+        await triggerGrading([...wireHistoryRef.current]);
+      } else {
+        speakGuest(result.guestReply);
+      }
+    } catch (e) {
+      const apiError = e instanceof ApiCallError ? e : null;
+      setErrorMsg(apiError?.message ?? 'Something went wrong. Please try again.');
+      updatePhase('error');
+    }
+  }, [scenario]);
+
   const handleStudentFinished = useCallback(async (raw: string) => {
     if (!scenario || !user) return;
     const text = raw.trim();
@@ -154,9 +189,6 @@ export default function RoleplayScreen() {
       return;
     }
 
-    updatePhase('sending');
-    wireHistoryRef.current.push({ role: 'user', content: text });
-
     // Build wire history: skip leading guest turns (the opening line is already
     // embedded in the system prompt and must not appear as an assistant message
     // at position 0 — the Edge Function requires messages[0].role === 'user').
@@ -169,29 +201,8 @@ export default function RoleplayScreen() {
     }
     wireHistory.push({ role: 'user', content: text });
 
-    try {
-      const result = await sendRolePlayTurn({ scenario, messages: wireHistory });
-
-      setCompletedIds(prev => {
-        const next = new Set(prev);
-        result.objectivesCompleted.forEach(id => next.add(id));
-        return next;
-      });
-
-      appendTurn({ role: 'guest', text: result.guestReply });
-      wireHistoryRef.current.push({ role: 'assistant', content: result.guestReply });
-
-      const totalTurns = turns.length + 2;
-      if (result.sessionShouldEnd || totalTurns >= MAX_TURNS) {
-        await triggerGrading([...wireHistoryRef.current]);
-      } else {
-        speakGuest(result.guestReply);
-      }
-    } catch {
-      setErrorMsg('Connection issue. Check your signal and try again.');
-      updatePhase('error');
-    }
-  }, [scenario, turns, user]);
+    await sendTurnToServer(wireHistory, turns.length + 2);
+  }, [scenario, turns, user, sendTurnToServer]);
 
   const lastGradingMessagesRef = useRef<WireMessage[]>([]);
 
@@ -209,7 +220,9 @@ export default function RoleplayScreen() {
       Haptics.success();
       setResult(gradeResult);
       router.replace(`/feedback/${gradeResult.attemptId}` as any);
-    } catch {
+    } catch (e) {
+      const apiError = e instanceof ApiCallError ? e : null;
+      setErrorMsg(apiError?.message ?? 'Something went wrong while grading. Please try again.');
       updatePhase('grading_error');
     }
   }
@@ -260,9 +273,7 @@ export default function RoleplayScreen() {
         <View style={styles.gradingWrap}>
           <Text style={{ fontSize: 48 }}>⚠️</Text>
           <Text style={styles.gradingTitle}>Couldn't grade this session</Text>
-          <Text style={styles.gradingText}>
-            Your conversation is saved — this was a connection issue while grading it. Try again.
-          </Text>
+          <Text style={styles.gradingText}>{errorMsg || 'Something went wrong while grading. Try again.'}</Text>
           <TouchableOpacity
             style={styles.startBtn}
             onPress={() => triggerGrading(lastGradingMessagesRef.current)}
@@ -345,7 +356,10 @@ export default function RoleplayScreen() {
       {phase === 'error' && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{errorMsg}</Text>
-          <TouchableOpacity onPress={() => updatePhase('student_turn')} style={styles.retryBtn}>
+          <TouchableOpacity
+            onPress={() => sendTurnToServer(lastTurnRef.current.wireHistory, lastTurnRef.current.turnsSoFar)}
+            style={styles.retryBtn}
+          >
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>

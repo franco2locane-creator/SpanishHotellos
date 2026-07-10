@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpaci
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { loadScenario } from '@/lib/scenarios/catalog';
 import { gradeExamSession } from '@/lib/api/grade';
+import { ApiCallError } from '@/lib/api/apiError';
 import { useFeedbackStore } from '@/stores/feedbackStore';
 import { useAuthStore } from '@/stores/authStore';
 import { randomTopic, randomPhoto, randomQuestions } from '@/lib/mockExam/content';
@@ -79,9 +80,10 @@ export default function ExamSession() {
       });
       setResult(result, PASS_MARK);
       router.replace(`/feedback/${result.attemptId}` as any);
-    } catch {
+    } catch (e) {
       setGrading(false);
-      setError('Grading failed — your session was not saved. Check your connection.');
+      const apiError = e instanceof ApiCallError ? e : null;
+      setError(apiError?.message ?? 'Grading failed. Please try again.');
     }
   }
 

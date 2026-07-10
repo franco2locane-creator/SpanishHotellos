@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import type { Scenario, ExamFormat, ScenarioObjective, AssignmentType, CourseLevel, HospitalityGateResult } from '@/types';
 import type { WireMessage } from './roleplay';
+import { toApiCallError, ApiCallError } from './apiError';
+import { checkFunctionsVersion } from './functionsVersion';
 
 // ── Types returned by the grade Edge Function ─────────────────────────────────
 
@@ -54,6 +56,14 @@ function toGradeResult(a: AttemptPayload): GradeResult {
   };
 }
 
+async function invokeGrade(body: Record<string, unknown>): Promise<GradeResult> {
+  const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload; _version?: string }>('grade', { body });
+  if (error) throw await toApiCallError(error);
+  if (!data) throw new ApiCallError('Empty response from grade function', 'server');
+  checkFunctionsVersion('grade', data._version);
+  return toGradeResult(data.attempt);
+}
+
 // ── Client ────────────────────────────────────────────────────────────────────
 
 export async function gradeSession(args: {
@@ -62,23 +72,18 @@ export async function gradeSession(args: {
   durationSeconds: number;
   level: CourseLevel;
 }): Promise<GradeResult> {
-  const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
-    body: {
-      scenario: {
-        id:            args.scenario.id,
-        title:         args.scenario.title,
-        objectives:    args.scenario.objectives,
-        rubricWeights: args.scenario.rubricWeights,
-        format:        'roleplay',
-      },
-      messages: args.messages,
-      durationSeconds: args.durationSeconds,
-      level: args.level,
+  return invokeGrade({
+    scenario: {
+      id:            args.scenario.id,
+      title:         args.scenario.title,
+      objectives:    args.scenario.objectives,
+      rubricWeights: args.scenario.rubricWeights,
+      format:        'roleplay',
     },
+    messages: args.messages,
+    durationSeconds: args.durationSeconds,
+    level: args.level,
   });
-
-  if (error) throw new Error(error.message ?? 'Grade function error');
-  return toGradeResult(data!.attempt);
 }
 
 // ── Mock exam grading (simplified args) ───────────────────────────────────────
@@ -93,23 +98,18 @@ export async function gradeExamSession(args: {
   durationSeconds: number;
   level: CourseLevel;
 }): Promise<GradeResult> {
-  const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
-    body: {
-      scenario: {
-        id: `mock-${args.format}`,
-        title: args.title,
-        objectives: args.objectives,
-        rubricWeights: DEFAULT_WEIGHTS,
-        format: args.format,
-      },
-      messages: args.messages,
-      durationSeconds: args.durationSeconds,
-      level: args.level,
+  return invokeGrade({
+    scenario: {
+      id: `mock-${args.format}`,
+      title: args.title,
+      objectives: args.objectives,
+      rubricWeights: DEFAULT_WEIGHTS,
+      format: args.format,
     },
+    messages: args.messages,
+    durationSeconds: args.durationSeconds,
+    level: args.level,
   });
-
-  if (error) throw new Error(error.message ?? 'Grade function error');
-  return toGradeResult(data!.attempt);
 }
 
 // ── Mock assignment grading ───────────────────────────────────────────────────
@@ -123,22 +123,17 @@ export async function gradeMockAssignment(args: {
   durationSeconds: number;
   level: CourseLevel;
 }): Promise<GradeResult> {
-  const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
-    body: {
-      scenario: {
-        id: `mock-${args.mockId}-${args.assignmentType}-${args.assignmentIdx}`,
-        title: args.assignmentType,
-        objectives: args.objectives,
-        rubricWeights: DEFAULT_WEIGHTS,
-        format: 'roleplay',
-      },
-      messages: args.messages,
-      durationSeconds: args.durationSeconds,
-      allowTu: args.assignmentType === 'personal_presentation',
-      level: args.level,
+  return invokeGrade({
+    scenario: {
+      id: `mock-${args.mockId}-${args.assignmentType}-${args.assignmentIdx}`,
+      title: args.assignmentType,
+      objectives: args.objectives,
+      rubricWeights: DEFAULT_WEIGHTS,
+      format: 'roleplay',
     },
+    messages: args.messages,
+    durationSeconds: args.durationSeconds,
+    allowTu: args.assignmentType === 'personal_presentation',
+    level: args.level,
   });
-
-  if (error) throw new Error(error.message ?? 'Grade function error');
-  return toGradeResult(data!.attempt);
 }

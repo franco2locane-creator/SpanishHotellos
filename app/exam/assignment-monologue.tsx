@@ -12,6 +12,7 @@ import {
 import { loadMock } from '@/lib/mockExam/loader';
 import { useMockExamStore } from '@/stores/mockExamStore';
 import { gradeMockAssignment } from '@/lib/api/grade';
+import { ApiCallError } from '@/lib/api/apiError';
 import { useAuthStore } from '@/stores/authStore';
 import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
 import { Haptics } from '@/lib/haptics';
@@ -233,7 +234,9 @@ export default function AssignmentMonologue() {
       });
       Haptics.success();
       updatePhase('done');
-    } catch {
+    } catch (e) {
+      const apiError = e instanceof ApiCallError ? e : null;
+      setErrorMsg(apiError?.message ?? 'Something went wrong while grading. Please try again.');
       updatePhase('grading_error');
     }
   }
@@ -297,9 +300,7 @@ export default function AssignmentMonologue() {
         <View style={styles.center}>
           <Text style={{ fontSize: 48 }}>⚠️</Text>
           <Text style={styles.centerTitle}>Couldn't grade this presentation</Text>
-          <Text style={styles.centerText}>
-            Your recording is saved — this was a connection issue while grading it. Try again.
-          </Text>
+          <Text style={styles.centerText}>{errorMsg || 'Something went wrong while grading. Try again.'}</Text>
           <TouchableOpacity style={styles.nextBtn} onPress={handleGrade}>
             <Text style={styles.nextBtnText}>Retry grading</Text>
           </TouchableOpacity>
