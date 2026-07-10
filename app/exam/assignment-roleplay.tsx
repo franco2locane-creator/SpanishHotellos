@@ -24,7 +24,7 @@ const MAX_TURNS = 14;
 const SPEED_RATE: Record<string, number> = { slow: 0.7, normal: 0.9, fast: 1.1 };
 
 type Turn = { role: 'guest' | 'student'; text: string };
-type Phase = 'idle' | 'guest_speaking' | 'student_turn' | 'recording' | 'sending' | 'grading' | 'error' | 'done' | 'interrupted';
+type Phase = 'idle' | 'guest_speaking' | 'student_turn' | 'recording' | 'sending' | 'grading' | 'error' | 'grading_error' | 'done' | 'interrupted';
 
 const ACTIVE_PHASES: Phase[] = ['guest_speaking', 'student_turn', 'recording', 'sending'];
 
@@ -32,7 +32,7 @@ export default function AssignmentRoleplay() {
   const { mockId, assignmentIdx: idxStr } = useLocalSearchParams<{ mockId: string; assignmentIdx: string }>();
   const router = useRouter();
   const { user } = useAuthStore();
-  const { exam, saveResult, advance, currentIdx } = useMockExamStore();
+  const { exam, saveResult, advance, currentIdx, keywordNotes } = useMockExamStore();
 
   const idx = parseInt(idxStr ?? '0', 10);
   const currentMock = exam ?? loadMock(mockId ?? '');
@@ -40,13 +40,16 @@ export default function AssignmentRoleplay() {
   const scenario = assignment && assignment.type !== 'personal_presentation'
     ? assignmentToScenario(assignment, mockId ?? '', user?.isPremium ?? false)
     : null;
+  const keywords = keywordNotes[idx] ?? '';
 
   const [phase, setPhase] = useState<Phase>('idle');
   const phaseRef = useRef<Phase>('idle');
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [liveTranscript, setLiveTranscript] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const wireHistoryRef = useRef<WireMessage[]>([]);
+  const lastGradingMessagesRef = useRef<WireMessage[]>([]);
   const sessionStartRef = useRef(Date.now());
   const liveRef = useRef('');
   const scrollRef = useRef<ScrollView>(null);
@@ -147,6 +150,11 @@ export default function AssignmentRoleplay() {
 
     try {
       const result = await sendRolePlayTurn({ scenario, messages: wireHistory });
+      setCompletedIds(prev => {
+        const next = new Set(prev);
+        result.objectivesCompleted.forEach(id => next.add(id));
+        return next;
+      });
       appendTurn({ role: 'guest', text: result.guestReply });
       wireHistoryRef.current.push({ role: 'assistant', content: result.guestReply });
 
@@ -163,7 +171,8 @@ export default function AssignmentRoleplay() {
   }, [scenario, turns, assignment]);
 
   async function triggerGrading(messages: WireMessage[]) {
-    if (!assignment || !currentMock) return;
+    if (!assignment || !currentMock || !user) return;
+    lastGradingMessagesRef.current = messages;
     updatePhase('grading');
     const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
@@ -176,14 +185,20 @@ export default function AssignmentRoleplay() {
         objectives,
         messages,
         durationSeconds: Math.max(durationSeconds, 1),
+        level: user.mockLevel,
       });
 
-      saveResult(idx, { assignmentType: assignment.type, score: gradeResult.totalScore, gradeResult });
+      saveResult(idx, {
+        assignmentType: assignment.type,
+        score: gradeResult.totalScore,
+        gradeResult,
+        checklistHit: [...completedIds],
+        checklistTotal: objectives,
+      });
       Haptics.success();
       updatePhase('done');
     } catch {
-      updatePhase('error');
-      setErrorMsg('Grading failed. You can still continue to the next assignment.');
+      updatePhase('grading_error');
     }
   }
 
@@ -235,6 +250,28 @@ export default function AssignmentRoleplay() {
     );
   }
 
+  if (phase === 'grading_error') {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.center}>
+          <Text style={{ fontSize: 48 }}>⚠️</Text>
+          <Text style={styles.centerTitle}>Couldn't grade this assignment</Text>
+          <Text style={styles.centerText}>
+            Your recording is saved — this was a connection issue while grading it. Try again.
+          </Text>
+          <TouchableOpacity style={styles.nextBtn} onPress={() => triggerGrading(lastGradingMessagesRef.current)}>
+            <Text style={styles.nextBtnText}>Retry grading</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleNext} style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.centerText, { textDecorationLine: 'underline' }]}>
+              Skip — this assignment won't be scored
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (phase === 'done') {
     const result = useMockExamStore.getState().results[idx];
     const scoreDisplay = result ? Math.round(result.score * 5) : '—';
@@ -262,6 +299,12 @@ export default function AssignmentRoleplay() {
           {turns.filter(t => t.role === 'student').length} / {MAX_TURNS / 2}
         </Text>
       </View>
+
+      {keywords.trim().length > 0 && (
+        <View style={styles.keywordBanner}>
+          <Text style={styles.keywordBannerText} numberOfLines={1}>📝 {keywords}</Text>
+        </View>
+      )}
 
       <ScrollView ref={scrollRef} style={styles.chat} contentContainerStyle={styles.chatContent} showsVerticalScrollIndicator={false}>
         {turns.map((t, i) => (
@@ -316,6 +359,11 @@ const styles = StyleSheet.create({
   },
   headerTitle: { flex: 1, color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   turnCount: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.7)' },
+  keywordBanner: {
+    backgroundColor: '#FFF8EC', paddingHorizontal: Spacing.lg, paddingVertical: 6,
+    borderBottomWidth: 1, borderBottomColor: '#F0E4C8',
+  },
+  keywordBannerText: { fontSize: Typography.caption, color: Colors.gold, fontWeight: Typography.medium },
   chat: { flex: 1 },
   chatContent: { paddingVertical: Spacing.md },
   typingRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm },

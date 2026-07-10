@@ -6,6 +6,9 @@ export type AssignmentResult = {
   assignmentType: string;
   score: number;        // 0–20
   gradeResult: GradeResult;
+  /** Objective/checklist IDs the student hit, out of checklistTotal. */
+  checklistHit: string[];
+  checklistTotal: { id: string; label: string }[];
 };
 
 type MockExamState = {

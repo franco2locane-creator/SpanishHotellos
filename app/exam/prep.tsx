@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
   TouchableOpacity, TextInput,
@@ -9,7 +9,15 @@ import { useMockExamStore } from '@/stores/mockExamStore';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { Assignment, CheckinData, RestaurantData, HotelPresentationData, JobInterviewData, ComplaintData, SayingNoData } from '@/types';
 
-const PREP_SECONDS = 120;
+const MAX_KEYWORDS = 5;
+
+/** Caps input at MAX_KEYWORDS whitespace-separated words, without truncating the word being typed. */
+function capKeywords(text: string): string {
+  if (!text.endsWith(' ')) return text; // still typing the current word — don't cap mid-word
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= MAX_KEYWORDS) return text;
+  return words.slice(0, MAX_KEYWORDS).join(' ') + ' ';
+}
 
 export default function PrepScreen() {
   const { mockId, assignmentIdx: idxStr } = useLocalSearchParams<{ mockId: string; assignmentIdx: string }>();
@@ -17,9 +25,7 @@ export default function PrepScreen() {
   const { exam, startExam, saveKeywords, keywordNotes } = useMockExamStore();
 
   const idx = parseInt(idxStr ?? '0', 10);
-  const [secondsLeft, setSecondsLeft] = useState(PREP_SECONDS);
   const [keywords, setKeywords] = useState('');
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load exam into store if navigating fresh (e.g. deep link)
   useEffect(() => {
@@ -34,25 +40,12 @@ export default function PrepScreen() {
     if (keywordNotes[idx]) setKeywords(keywordNotes[idx]);
   }, [idx]);
 
-  // Countdown timer
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current!);
-  }, []);
-
   const currentMock = exam ?? loadMock(mockId ?? '');
   const assignment = currentMock?.assignments[idx];
+  const wordCount = keywords.trim().split(/\s+/).filter(Boolean).length;
 
   function handleBegin() {
-    saveKeywords(idx, keywords);
+    saveKeywords(idx, keywords.trim());
     if (!assignment) return;
 
     const nextRoute = assignment.type === 'personal_presentation'
@@ -69,31 +62,26 @@ export default function PrepScreen() {
     );
   }
 
-  const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-  const ss = String(secondsLeft % 60).padStart(2, '0');
-
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.header}>
         <View style={styles.typeChip}>
           <Text style={styles.typeChipText}>{assignmentLabel(assignment)}</Text>
         </View>
-        <Text style={[styles.timer, secondsLeft <= 30 && styles.timerWarning]}>{mm}:{ss}</Text>
-        <Text style={styles.prepLabel}>prep time</Text>
+        <Text style={styles.prepLabel}>Take your time — begin when you're ready</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <ReferenceCard assignment={assignment} />
 
         <View style={styles.noteSection}>
-          <Text style={styles.noteTitle}>Keyword notes (max 5 words)</Text>
+          <Text style={styles.noteTitle}>Keyword notes ({wordCount}/{MAX_KEYWORDS} words)</Text>
           <TextInput
             style={styles.noteInput}
-            placeholder="e.g. bienvenida · reserva · desayuno · piscina · llave"
+            placeholder="e.g. bienvenida reserva desayuno piscina llave"
             placeholderTextColor={Colors.textMuted}
             value={keywords}
-            onChangeText={setKeywords}
-            maxLength={80}
+            onChangeText={(t) => setKeywords(capKeywords(t))}
             multiline
           />
         </View>
@@ -102,13 +90,13 @@ export default function PrepScreen() {
           <Text style={styles.examRulesTitle}>Exam conditions</Text>
           <Text style={styles.examRulesText}>
             {'• Reference card hidden once you begin\n'}
-            {'• No hints or objectives shown\n'}
+            {'• Your keyword notes stay visible during the assignment\n'}
             {'• Speak Spanish only — formal register (usted)'}
           </Text>
         </View>
 
         <TouchableOpacity style={styles.beginBtn} onPress={handleBegin} activeOpacity={0.85}>
-          <Text style={styles.beginBtnText}>Begin Assignment {idx + 1}</Text>
+          <Text style={styles.beginBtnText}>Empezar</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -284,9 +272,7 @@ const styles = StyleSheet.create({
   header: { backgroundColor: Colors.navy, padding: Spacing.lg, alignItems: 'center', gap: 4 },
   typeChip: { backgroundColor: Colors.gold, borderRadius: Radii.full, paddingHorizontal: Spacing.md, paddingVertical: 4 },
   typeChipText: { color: '#fff', fontWeight: Typography.bold, fontSize: Typography.caption },
-  timer: { fontSize: 48, fontWeight: Typography.bold, color: '#fff', letterSpacing: 2 },
-  timerWarning: { color: '#FF6B6B' },
-  prepLabel: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 1 },
+  prepLabel: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
   scroll: { padding: Spacing.lg, paddingBottom: 60 },
   card: { backgroundColor: Colors.surface, borderRadius: Radii.lg, padding: Spacing.lg, marginBottom: Spacing.md, ...Shadows.sm },
   cardTitle: { fontSize: Typography.caption, fontWeight: Typography.bold, color: Colors.navy, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: Spacing.sm },
