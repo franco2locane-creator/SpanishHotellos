@@ -12,11 +12,12 @@ type GradeConfig = {
   a11y: string;
 };
 
+// Two-button UI mapping to SM-2 grades under the hood: fail -> Again (0),
+// success -> Good (2). Hard/Easy (1/3) stay valid in nextSrsState() but
+// aren't exposed here — this keeps the review flow fast and unambiguous.
 const GRADES: GradeConfig[] = [
-  { grade: 0, label: 'Again', sublabel: '<1d',  color: Colors.error,   bg: '#FEE2E2', a11y: 'Again — review in less than a day' },
-  { grade: 1, label: 'Hard',  sublabel: '~1d',  color: Colors.warning, bg: '#FEF3C7', a11y: 'Hard — review in about a day' },
-  { grade: 2, label: 'Good',  sublabel: '~6d',  color: Colors.success, bg: '#D1FAE5', a11y: 'Good — review in about 6 days' },
-  { grade: 3, label: 'Easy',  sublabel: '+10d', color: Colors.info,    bg: '#DBEAFE', a11y: 'Easy — review in 10 or more days' },
+  { grade: 0, label: 'No lo sabía', sublabel: 'review again soon', color: Colors.error,   bg: '#FEE2E2', a11y: 'No lo sabía — review again soon' },
+  { grade: 2, label: 'Lo sabía',    sublabel: '~6 days',            color: Colors.success, bg: '#D1FAE5', a11y: 'Lo sabía — review in about 6 days' },
 ];
 
 type Props = {
@@ -27,7 +28,6 @@ type Props = {
 export default function ReviewControls({ onGrade, disabled = false }: Props) {
   function handleGrade(grade: SrsGrade) {
     if (grade >= 2) Haptics.success();
-    else if (grade === 1) Haptics.light();
     else Haptics.error();
     onGrade(grade);
   }
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   btn: {
     flex: 1,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
     borderRadius: Radii.md,
     borderWidth: 1.5,
     alignItems: 'center',
