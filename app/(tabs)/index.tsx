@@ -4,16 +4,36 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
+import { usePremium } from '@/hooks/usePremium';
 import {
   getDaysUntilExam, isFinalWeek, getStreak,
   getTodayChecked, toggleTile, getStudyPlanData, type StudyPlanData,
 } from '@/lib/today';
-import { scenariosForLevel } from '@/lib/scenarios/catalog';
+import { dailySeededPick } from '@/lib/dailySeed';
+import { scenariosForLevel, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
 import StudyTile from '@/components/today/StudyTile';
 import Skeleton from '@/components/Skeleton';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
+import type { Department, RubricCriterion } from '@/types';
+
+const ALL_CRITERIA: RubricCriterion[] = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
+
+/** Candidate scenarios for today's pick — biased toward the weaker half of
+ *  departments the student has actually practised, falling back to the full
+ *  level-appropriate list for a new student with no history yet. */
+function buildScenarioPool(scenarios: ScenarioMeta[], rankedWeakDepts: Department[]): ScenarioMeta[] {
+  if (rankedWeakDepts.length === 0) return scenarios;
+  const weakHalf = rankedWeakDepts.slice(0, Math.max(1, Math.ceil(rankedWeakDepts.length / 2)));
+  const pool = scenarios.filter(s => weakHalf.includes(s.department));
+  return pool.length > 0 ? pool : scenarios;
+}
+
+/** Candidate drill criteria for today's pick — the weakest 3 of 5. */
+function buildCriterionPool(rankedCriteria: RubricCriterion[]): RubricCriterion[] {
+  return rankedCriteria.length > 0 ? rankedCriteria.slice(0, 3) : ALL_CRITERIA;
+}
 
 const CRITERION_LABELS: Record<string, string> = {
   fluency: 'Fluency', vocabulary: 'Vocabulary', grammar: 'Grammar',
@@ -60,6 +80,7 @@ const skStyles = StyleSheet.create({ wrap: { padding: Spacing.lg } });
 export default function TodayScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const isPremium = usePremium();
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
   const [checked, setChecked] = useState<string[]>([]);
@@ -117,11 +138,25 @@ export default function TodayScreen() {
     );
   }
 
+  // Premium: today's session is picked fresh each calendar day, seeded by
+  // date + user so it's stable all day but different tomorrow, biased toward
+  // whichever departments/criteria are actually weak. Free: always the single
+  // weakest pick, same every day — the daily-refresh CTA below explains why.
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const dailyScenario = isPremium && !finalWeek
+    ? dailySeededPick(buildScenarioPool(scenarios, planData?.rankedWeakDepts ?? []), user!.id, 'scenario', todayISO)
+    : null;
+  const dailyCriterion = isPremium && !finalWeek
+    ? dailySeededPick(buildCriterionPool(planData?.rankedCriteria ?? []), user!.id, 'drill', todayISO)
+    : null;
+
   const scenarioId = finalWeek
     ? (planData?.lowestScenarioId ?? planData?.weakestScenarioId ?? scenarios[0]?.id)
-    : (planData?.weakestScenarioId ?? scenarios[0]?.id);
+    : (dailyScenario?.id ?? planData?.weakestScenarioId ?? scenarios[0]?.id);
   const scenario = scenarios.find(s => s.id === scenarioId) ?? scenarios[0];
-  const criterion = planData?.weakestCriterion ?? 'content';
+  const criterion = finalWeek
+    ? (planData?.weakestCriterion ?? 'content')
+    : (dailyCriterion ?? planData?.weakestCriterion ?? 'content');
 
   const tilesChecked = new Set(checked);
   const allChecked = tilesChecked.size >= 3;
@@ -173,9 +208,27 @@ export default function TodayScreen() {
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>
-          {allChecked ? "Today's session complete ✓" : "Today's 15-minute session"}
-        </Text>
+        <View style={styles.sessionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {allChecked ? "Today's session complete ✓" : "Today's 15-minute session"}
+          </Text>
+          {!finalWeek && (
+            isPremium ? (
+              <View style={styles.refreshBadge} accessibilityLabel="Refreshed for today">
+                <Text style={styles.refreshBadgeText}>🔄 Fresh today</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.refreshLockBadge}
+                onPress={() => router.push('/paywall' as any)}
+                accessibilityRole="button"
+                accessibilityLabel="Unlock daily refreshed exercises with Premium"
+              >
+                <Text style={styles.refreshLockText}>🔒 Nuevos ejercicios cada día con Premium</Text>
+              </TouchableOpacity>
+            )
+          )}
+        </View>
 
         <StudyTile
           id="vocab"
@@ -258,10 +311,24 @@ const styles = StyleSheet.create({
   },
   calmTitle: { fontSize: Typography.body, fontWeight: '700', color: '#5B21B6' },
   calmText: { fontSize: Typography.caption, color: '#6D28D9', lineHeight: 18 },
+  sessionHeaderRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: Spacing.sm, gap: Spacing.sm, flexWrap: 'wrap',
+  },
   sectionTitle: {
     fontSize: Typography.caption, fontWeight: '700', color: Colors.textMuted,
-    textTransform: 'uppercase', letterSpacing: 1, marginBottom: Spacing.sm,
+    textTransform: 'uppercase', letterSpacing: 1,
   },
+  refreshBadge: {
+    backgroundColor: '#F0FDF4', borderRadius: Radii.full,
+    paddingHorizontal: Spacing.sm, paddingVertical: 3,
+  },
+  refreshBadgeText: { fontSize: 10, fontWeight: '700', color: '#16A34A' },
+  refreshLockBadge: {
+    backgroundColor: '#FFF8EC', borderRadius: Radii.full,
+    paddingHorizontal: Spacing.sm, paddingVertical: 4, borderWidth: 1, borderColor: '#F0E4C8',
+  },
+  refreshLockText: { fontSize: 10, fontWeight: '700', color: Colors.gold },
   doneCard: {
     backgroundColor: '#F0FDF4', borderRadius: Radii.lg, padding: Spacing.md,
     marginTop: Spacing.sm, gap: 4, borderLeftWidth: 3, borderLeftColor: '#16A34A',

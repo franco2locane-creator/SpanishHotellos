@@ -91,6 +91,10 @@ export type StudyPlanData = {
   weakestCriterion: RubricCriterion;
   lowestScenarioId: string | null;
   weakestScenarioId: string | null;
+  /** All departments seen in the user's history, weakest average score first. */
+  rankedWeakDepts: Department[];
+  /** All 5 rubric criteria, weakest average score first. */
+  rankedCriteria: RubricCriterion[];
 };
 
 export async function getStudyPlanData(userId: string, level: CourseLevel = 'basic'): Promise<StudyPlanData> {
@@ -104,36 +108,35 @@ export async function getStudyPlanData(userId: string, level: CourseLevel = 'bas
   const rows = (data ?? []) as AttemptRow[];
   const availableScenarios = scenariosForLevel(level);
 
-  // Weakest department
+  // Departments ranked weakest-first
   const deptScores: Record<string, number[]> = {};
   for (const r of rows) {
     const dept = SCENARIO_CATALOG.find(s => s.id === r.scenario_id)?.department ?? 'front_office';
     (deptScores[dept] ??= []).push(r.total_score);
   }
-  let weakestDept: Department = 'front_office';
-  let minDeptAvg = Infinity;
-  for (const [dept, scores] of Object.entries(deptScores)) {
-    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-    if (avg < minDeptAvg) { minDeptAvg = avg; weakestDept = dept as Department; }
-  }
+  const deptAvgs = Object.entries(deptScores).map(([dept, scores]) => ({
+    dept: dept as Department,
+    avg: scores.reduce((a, b) => a + b, 0) / scores.length,
+  }));
+  deptAvgs.sort((a, b) => a.avg - b.avg);
+  const rankedWeakDepts = deptAvgs.map(d => d.dept);
+  const weakestDept: Department = rankedWeakDepts[0] ?? 'front_office';
 
-  // Weakest criterion
+  // Criteria ranked weakest-first
   const critSums: Record<string, number[]> = {};
   for (const r of rows) {
     for (const [k, v] of Object.entries(r.scores ?? {})) {
       (critSums[k] ??= []).push(v);
     }
   }
-  const criteria: RubricCriterion[] = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
-  let weakestCriterion: RubricCriterion = 'content';
-  let minCrit = Infinity;
-  for (const k of criteria) {
+  const allCriteria: RubricCriterion[] = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
+  const critAvgs = allCriteria.map(k => {
     const vals = critSums[k] ?? [];
-    if (vals.length > 0) {
-      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-      if (avg < minCrit) { minCrit = avg; weakestCriterion = k; }
-    }
-  }
+    return { key: k, avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : Infinity };
+  });
+  critAvgs.sort((a, b) => a.avg - b.avg);
+  const rankedCriteria = critAvgs.map(c => c.key);
+  const weakestCriterion: RubricCriterion = rankedCriteria[0] ?? 'content';
 
   // Lowest-scoring scenario (for final-week re-run) — must still be offered at this level
   const lowestAttempt = rows
@@ -148,6 +151,8 @@ export async function getStudyPlanData(userId: string, level: CourseLevel = 'bas
     weakestCriterion,
     lowestScenarioId: lowestAttempt?.scenario_id ?? null,
     weakestScenarioId: weakestScenario?.id ?? null,
+    rankedWeakDepts,
+    rankedCriteria,
   };
 }
 
