@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Scenario, ExamFormat, ScenarioObjective, AssignmentType } from '@/types';
+import type { Scenario, ExamFormat, ScenarioObjective, AssignmentType, CourseLevel, HospitalityGateResult } from '@/types';
 import type { WireMessage } from './roleplay';
 
 // ── Types returned by the grade Edge Function ─────────────────────────────────
@@ -10,30 +10,49 @@ export type CriterionDetail = {
   note: string;
 };
 
-export type RegisterDetail = CriterionDetail & { tuForms: string[] };
-
 export type GradeDetail = {
   fluency: CriterionDetail;
   vocabulary: CriterionDetail;
   grammar: CriterionDetail;
-  taskCompletion: CriterionDetail;
-  register: RegisterDetail;
+  pronunciation: CriterionDetail;
+  content: CriterionDetail;
 };
 
 export type FixItem = {
   label: string;
-  drillType: 'register' | 'vocabulary' | 'grammar' | 'fluency' | 'taskCompletion';
+  drillType: 'register' | 'vocabulary' | 'grammar' | 'fluency' | 'pronunciation' | 'content';
 };
 
 export type GradeResult = {
   attemptId: string;
   totalScore: number;       // 0–20 weighted average; display as ×5 out of 100
   completedAt: string;
-  numericScores: { fluency: number; vocabulary: number; grammar: number; taskCompletion: number; register: number };
+  numericScores: { fluency: number; vocabulary: number; grammar: number; pronunciation: number; content: number };
   detail: GradeDetail;
+  hospitalityGate: HospitalityGateResult;
   topThingsFix: FixItem[];
   feedback: string;
 };
+
+type AttemptPayload = {
+  id: string; totalScore: number; completedAt: string;
+  numericScores: GradeResult['numericScores'];
+  detail: GradeDetail; hospitalityGate: HospitalityGateResult;
+  topThingsFix: FixItem[]; feedback: string;
+};
+
+function toGradeResult(a: AttemptPayload): GradeResult {
+  return {
+    attemptId:       a.id,
+    totalScore:      a.totalScore,
+    completedAt:     a.completedAt,
+    numericScores:   a.numericScores,
+    detail:          a.detail,
+    hospitalityGate: a.hospitalityGate,
+    topThingsFix:    a.topThingsFix,
+    feedback:        a.feedback,
+  };
+}
 
 // ── Client ────────────────────────────────────────────────────────────────────
 
@@ -41,16 +60,9 @@ export async function gradeSession(args: {
   scenario: Scenario;
   messages: WireMessage[];
   durationSeconds: number;
+  level: CourseLevel;
 }): Promise<GradeResult> {
-  const { data, error } = await supabase.functions.invoke<{ attempt: {
-    id: string;
-    totalScore: number;
-    completedAt: string;
-    numericScores: GradeResult['numericScores'];
-    detail: GradeDetail;
-    topThingsFix: FixItem[];
-    feedback: string;
-  } }>('grade', {
+  const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
     body: {
       scenario: {
         id:            args.scenario.id,
@@ -61,32 +73,17 @@ export async function gradeSession(args: {
       },
       messages: args.messages,
       durationSeconds: args.durationSeconds,
+      level: args.level,
     },
   });
 
   if (error) throw new Error(error.message ?? 'Grade function error');
-
-  const a = data!.attempt;
-  return {
-    attemptId:    a.id,
-    totalScore:   a.totalScore,
-    completedAt:  a.completedAt,
-    numericScores: a.numericScores,
-    detail:       a.detail,
-    topThingsFix: a.topThingsFix,
-    feedback:     a.feedback,
-  };
+  return toGradeResult(data!.attempt);
 }
 
 // ── Mock exam grading (simplified args) ───────────────────────────────────────
 
-const DEFAULT_WEIGHTS = { fluency: 0.2, vocabulary: 0.2, grammar: 0.2, taskCompletion: 0.2, register: 0.2 };
-
-type AttemptPayload = {
-  id: string; totalScore: number; completedAt: string;
-  numericScores: GradeResult['numericScores'];
-  detail: GradeDetail; topThingsFix: FixItem[]; feedback: string;
-};
+const DEFAULT_WEIGHTS = { fluency: 0.2, vocabulary: 0.2, grammar: 0.2, pronunciation: 0.2, content: 0.2 };
 
 export async function gradeExamSession(args: {
   title: string;
@@ -94,6 +91,7 @@ export async function gradeExamSession(args: {
   format: ExamFormat;
   messages: WireMessage[];
   durationSeconds: number;
+  level: CourseLevel;
 }): Promise<GradeResult> {
   const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
     body: {
@@ -106,17 +104,12 @@ export async function gradeExamSession(args: {
       },
       messages: args.messages,
       durationSeconds: args.durationSeconds,
+      level: args.level,
     },
   });
 
   if (error) throw new Error(error.message ?? 'Grade function error');
-
-  const a = data!.attempt;
-  return {
-    attemptId: a.id, totalScore: a.totalScore, completedAt: a.completedAt,
-    numericScores: a.numericScores, detail: a.detail,
-    topThingsFix: a.topThingsFix, feedback: a.feedback,
-  };
+  return toGradeResult(data!.attempt);
 }
 
 // ── Mock assignment grading ───────────────────────────────────────────────────
@@ -128,6 +121,7 @@ export async function gradeMockAssignment(args: {
   objectives: ScenarioObjective[];
   messages: WireMessage[];
   durationSeconds: number;
+  level: CourseLevel;
 }): Promise<GradeResult> {
   const { data, error } = await supabase.functions.invoke<{ attempt: AttemptPayload }>('grade', {
     body: {
@@ -141,15 +135,10 @@ export async function gradeMockAssignment(args: {
       messages: args.messages,
       durationSeconds: args.durationSeconds,
       allowTu: args.assignmentType === 'personal_presentation',
+      level: args.level,
     },
   });
 
   if (error) throw new Error(error.message ?? 'Grade function error');
-
-  const a = data!.attempt;
-  return {
-    attemptId: a.id, totalScore: a.totalScore, completedAt: a.completedAt,
-    numericScores: a.numericScores, detail: a.detail,
-    topThingsFix: a.topThingsFix, feedback: a.feedback,
-  };
+  return toGradeResult(data!.attempt);
 }

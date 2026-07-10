@@ -46,7 +46,7 @@ export function isMockFree(mockId: string): boolean {
 
 // ── Build Scenario from an Assignment (for the existing roleplay Edge Function) ─
 
-const EQUAL_WEIGHTS = { fluency: 0.2, vocabulary: 0.2, grammar: 0.2, taskCompletion: 0.2, register: 0.2 };
+const EQUAL_WEIGHTS = { fluency: 0.2, vocabulary: 0.2, grammar: 0.2, pronunciation: 0.2, content: 0.2 };
 
 export function assignmentToScenario(assignment: Assignment, mockId: string, isPremium: boolean): Scenario {
   const base = {
@@ -60,6 +60,9 @@ export function assignmentToScenario(assignment: Assignment, mockId: string, isP
     rubricWeights: EQUAL_WEIGHTS,
     isFree: isMockFree(mockId) || isPremium,
     durationMinutes: 8,
+    // Generated on the fly from mock content, already gated by the mock's own
+    // level — not shown in a level-filtered picker, so both levels are fine here.
+    courseLevels: ['basic', 'intermediate'] as Scenario['courseLevels'],
   };
 
   switch (assignment.type) {

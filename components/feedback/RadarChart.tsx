@@ -6,8 +6,8 @@ const CY = SIZE / 2;
 const MAX_R = 82;
 const LABEL_R = 105;
 
-const CRITERIA = ['fluency', 'vocabulary', 'grammar', 'taskCompletion', 'register'] as const;
-const LABELS = ['Fluency', 'Vocab', 'Grammar', 'Task', 'Register'];
+const CRITERIA = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'] as const;
+const LABELS = ['Fluency', 'Vocab', 'Grammar', 'Pronunc.', 'Content'];
 const ANGLES = CRITERIA.map((_, i) => -Math.PI / 2 + (2 * Math.PI * i) / 5);
 
 function pt(angle: number, r: number) {
@@ -19,7 +19,7 @@ function poly(radii: number[]) {
 }
 
 type Props = {
-  scores: { fluency: number; vocabulary: number; grammar: number; taskCompletion: number; register: number };
+  scores: { fluency: number; vocabulary: number; grammar: number; pronunciation: number; content: number };
 };
 
 export default function RadarChart({ scores }: Props) {

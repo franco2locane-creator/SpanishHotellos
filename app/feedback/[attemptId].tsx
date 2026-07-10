@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFeedbackStore } from '@/stores/feedbackStore';
@@ -8,17 +8,18 @@ import { usePremium } from '@/hooks/usePremium';
 import RadarChart from '@/components/feedback/RadarChart';
 import CriterionCard from '@/components/feedback/CriterionCard';
 import FixCard from '@/components/feedback/FixCard';
+import HospitalityGateCard from '@/components/feedback/HospitalityGateCard';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { RubricCriterion } from '@/types';
 
 // ── Criterion display metadata ────────────────────────────────────────────────
 
 const CRITERIA: { key: RubricCriterion; label: string; icon: string; color: string }[] = [
-  { key: 'fluency',        label: 'Fluency',        icon: '🎙️', color: '#EBF3FB' },
-  { key: 'vocabulary',     label: 'Vocabulary',     icon: '📖', color: '#FEF9EC' },
-  { key: 'grammar',        label: 'Grammar',        icon: '✏️', color: '#F0FDF4' },
-  { key: 'taskCompletion', label: 'Task Completion', icon: '✅', color: '#FDF4FF' },
-  { key: 'register',       label: 'Register',       icon: '👔', color: '#FFF7ED' },
+  { key: 'fluency',       label: 'Fluency',       icon: '🎙️', color: '#EBF3FB' },
+  { key: 'vocabulary',    label: 'Vocabulary',    icon: '📖', color: '#FEF9EC' },
+  { key: 'grammar',       label: 'Grammar',       icon: '✏️', color: '#F0FDF4' },
+  { key: 'pronunciation', label: 'Pronunciation', icon: '🗣️', color: '#FDF4FF' },
+  { key: 'content',       label: 'Content',       icon: '✅', color: '#FFF7ED' },
 ];
 
 function scoreLabel(pct: number): string {
@@ -48,7 +49,17 @@ export default function FeedbackScreen() {
   if (!result) {
     return (
       <SafeAreaView style={styles.screen}>
-        <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+        <View style={styles.emptyWrap}>
+          <Text style={{ fontSize: 48 }}>⚠️</Text>
+          <Text style={styles.emptyTitle}>No feedback to show</Text>
+          <Text style={styles.emptyText}>
+            This can happen if you navigated here directly. Your score, if this session
+            finished grading, is already saved in your Progress tab.
+          </Text>
+          <TouchableOpacity style={styles.doneBtn} onPress={() => router.replace('/(tabs)/practice')}>
+            <Text style={styles.doneBtnText}>Back to Practice</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -90,6 +101,11 @@ export default function FeedbackScreen() {
         {/* Radar chart */}
         <View style={styles.chartWrap}>
           <RadarChart scores={result.numericScores} />
+        </View>
+
+        {/* Hospitality register gate */}
+        <View style={{ marginBottom: Spacing.md }}>
+          <HospitalityGateCard gate={result.hospitalityGate} />
         </View>
 
         {/* Per-criterion breakdown */}
@@ -170,6 +186,9 @@ const styles = StyleSheet.create({
     lineHeight: 22, marginTop: Spacing.sm, paddingHorizontal: Spacing.md,
   },
   chartWrap: { alignItems: 'center', marginVertical: Spacing.lg },
+  emptyWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.md, padding: Spacing.xl },
+  emptyTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
+  emptyText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
   sectionTitle: {
     fontSize: Typography.caption, fontWeight: Typography.bold,
     color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 1,

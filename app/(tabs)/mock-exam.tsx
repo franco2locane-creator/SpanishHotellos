@@ -124,10 +124,11 @@ export default function MockExamScreen() {
             <View style={styles.infoBox}>
               <Text style={styles.infoTitle}>How mock exams work</Text>
               <Text style={styles.infoText}>
-                {'• 2-min prep time with reference card\n'}
+                {'• Prep time with reference card — start when ready\n'}
                 {'• 5-word keyword notepad allowed\n'}
                 {'• Role-play with AI guest — usted required\n'}
-                {'• Graded on 5 criteria: fluency, vocab, grammar, task, register\n'}
+                {'• Graded on 5 criteria: fluency, vocabulary, grammar, pronunciation, content\n'}
+                {'• Formal register (usted) is a pass/fail gate — failing it caps the exam at 10/100\n'}
                 {'• Pass mark: 60/100'}
               </Text>
             </View>

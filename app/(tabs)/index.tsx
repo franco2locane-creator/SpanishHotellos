@@ -8,8 +8,8 @@ import {
   getDaysUntilExam, isFinalWeek, getStreak,
   getTodayChecked, toggleTile, getStudyPlanData, type StudyPlanData,
 } from '@/lib/today';
-import { SCENARIO_CATALOG } from '@/lib/scenarios/catalog';
-import { DECK_CATALOG, loadDeckCards } from '@/lib/vocab/decks';
+import { scenariosForLevel } from '@/lib/scenarios/catalog';
+import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
 import StudyTile from '@/components/today/StudyTile';
 import Skeleton from '@/components/Skeleton';
@@ -17,14 +17,14 @@ import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 
 const CRITERION_LABELS: Record<string, string> = {
   fluency: 'Fluency', vocabulary: 'Vocabulary', grammar: 'Grammar',
-  taskCompletion: 'Task Completion', register: 'Register',
+  pronunciation: 'Pronunciation', content: 'Content',
 };
 const DRILL_SUBTITLES: Record<string, string> = {
-  fluency:        '5 rapid-response prompts',
-  vocabulary:     '5 hospitality vocabulary fill-ins',
-  grammar:        '5 verb conjugation challenges',
-  taskCompletion: '5 service scenario completions',
-  register:       '5 usted-transformation prompts',
+  fluency:       '5 rapid-response prompts',
+  vocabulary:    '5 hospitality vocabulary fill-ins',
+  grammar:       '5 verb conjugation challenges',
+  pronunciation: '5 tricky-sound pronunciation drills',
+  content:       '5 service scenario completions',
 };
 
 function greeting(): string {
@@ -69,6 +69,9 @@ export default function TodayScreen() {
 
   const days = getDaysUntilExam(user?.examDate);
   const finalWeek = isFinalWeek(user?.examDate);
+  const level = user?.mockLevel ?? 'basic';
+  const decks = decksForLevel(level);
+  const scenarios = scenariosForLevel(level);
 
   useEffect(() => {
     if (!user) return;
@@ -76,16 +79,16 @@ export default function TodayScreen() {
       const [s, ch, plan] = await Promise.all([
         getStreak(),
         getTodayChecked(),
-        getStudyPlanData(user!.id),
+        getStudyPlanData(user!.id, level),
       ]);
       setStreak(s);
       setChecked(ch);
       setPlanData(plan);
 
       let totalDue = 0;
-      let bestDeck = 'front-office-basics';
+      let bestDeck = decks.find(d => d.isFree)?.id ?? decks[0]?.id ?? 'front-office-basics';
       let bestCount = 0;
-      for (const deck of DECK_CATALOG) {
+      for (const deck of decks) {
         if (!deck.isFree && !user!.isPremium) continue;
         const ids = loadDeckCards(deck.id).map(c => c.id);
         const n = await getDueCount(user!.id, ids);
@@ -97,7 +100,7 @@ export default function TodayScreen() {
       setLoading(false);
     }
     load();
-  }, [user?.id]);
+  }, [user?.id, level]);
 
   const handleCheck = useCallback(async (id: string) => {
     const next = await toggleTile(id);
@@ -115,10 +118,10 @@ export default function TodayScreen() {
   }
 
   const scenarioId = finalWeek
-    ? (planData?.lowestScenarioId ?? planData?.weakestScenarioId ?? SCENARIO_CATALOG[0].id)
-    : (planData?.weakestScenarioId ?? SCENARIO_CATALOG[0].id);
-  const scenario = SCENARIO_CATALOG.find(s => s.id === scenarioId) ?? SCENARIO_CATALOG[0];
-  const criterion = planData?.weakestCriterion ?? 'register';
+    ? (planData?.lowestScenarioId ?? planData?.weakestScenarioId ?? scenarios[0]?.id)
+    : (planData?.weakestScenarioId ?? scenarios[0]?.id);
+  const scenario = scenarios.find(s => s.id === scenarioId) ?? scenarios[0];
+  const criterion = planData?.weakestCriterion ?? 'content';
 
   const tilesChecked = new Set(checked);
   const allChecked = tilesChecked.size >= 3;

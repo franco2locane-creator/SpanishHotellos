@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
-import type { CriterionDetail, RegisterDetail } from '@/lib/api/grade';
+import type { CriterionDetail } from '@/lib/api/grade';
 
 type Props = {
   label: string;
   icon: string;
-  detail: CriterionDetail | RegisterDetail;
+  detail: CriterionDetail;
   color: string;
 };
 
@@ -19,7 +19,6 @@ function scoreColor(score: number): string {
 export default function CriterionCard({ label, icon, detail, color }: Props) {
   const [open, setOpen] = useState(false);
   const pct = Math.round((detail.score / 20) * 100);
-  const tuForms = (detail as RegisterDetail).tuForms;
 
   return (
     <TouchableOpacity style={styles.card} onPress={() => setOpen(o => !o)} activeOpacity={0.85}>
@@ -45,15 +44,6 @@ export default function CriterionCard({ label, icon, detail, color }: Props) {
             <View style={styles.examplesBlock}>
               {detail.examples.map((ex, i) => (
                 <Text key={i} style={styles.example}>"{ex}"</Text>
-              ))}
-            </View>
-          )}
-
-          {tuForms && tuForms.length > 0 && (
-            <View style={styles.tuBlock}>
-              <Text style={styles.tuTitle}>Tú-forms detected ({tuForms.length}):</Text>
-              {tuForms.map((f, i) => (
-                <Text key={i} style={styles.tuItem}>• {f}</Text>
               ))}
             </View>
           )}
@@ -97,10 +87,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF3F9', borderRadius: Radii.sm,
     paddingHorizontal: Spacing.sm, paddingVertical: 4,
   },
-  tuBlock: {
-    backgroundColor: '#FEF2F2', borderRadius: Radii.sm,
-    padding: Spacing.sm, gap: 2,
-  },
-  tuTitle: { fontSize: Typography.caption, fontWeight: Typography.semibold, color: '#DC2626' },
-  tuItem: { fontSize: Typography.caption, color: '#DC2626' },
 });

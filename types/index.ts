@@ -11,6 +11,8 @@ export type {
   RubricCriterion,
   RubricScore,
   RubricWeights,
+  HospitalityGateResult,
+  CourseLevel,
 } from './shared';
 
 export type {
@@ -58,3 +60,9 @@ export type {
   Assignment,
   MockExamData,
 } from './mock';
+
+export type {
+  GrammarTopic,
+  GrammarQuestion,
+  GrammarDrillSet,
+} from './grammar';

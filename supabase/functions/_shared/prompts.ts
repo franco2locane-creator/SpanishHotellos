@@ -89,24 +89,33 @@ type GradingPromptArgs = {
   transcript: string;
 };
 
-export function buildGradingSystemPrompt(opts: { allowTu?: boolean } = {}): string {
-  const registerNote = opts.allowTu
-    ? `REGISTER NOTE: This is a personal presentation about the student themselves — tú-forms are grammatically acceptable and should NOT be penalised in the register score. Only flag register issues if the student uses extremely informal slang inappropriate for an exam context.`
-    : `REGISTER — CRITICAL: scan EVERY student line for tú-forms. Flag ALL instances.`;
+export type CourseLevel = 'basic' | 'intermediate';
 
-  const hospitalityGate = `HOSPITALITY GATE: If the student's total output across ALL their lines is fewer than 10 words, or is completely incoherent/incomprehensible, assign a maximum score of 3 across all criteria and note that meaningful communication was not demonstrated.`;
+// Level-specific expectations injected into every criterion's anchor text.
+// Basic = A1 (hotel-school first year): simple complete sentences, core fixed
+// formulas are enough for full marks. Intermediate = A2+/B1 (second year):
+// elaborated, sales-oriented answers and handling complications are expected
+// for full marks — the same "correct but minimal" answer that scores 20 at
+// basic only scores mid-range at intermediate.
+const LEVEL_EXPECTATIONS: Record<CourseLevel, string> = {
+  basic: `COURSE LEVEL: BASIC (1st year, A1 expectations)
+Grade against A1 expectations. Simple, complete, grammatically correct sentences using
+core fixed hospitality formulas ("Buenos días, bienvenido", "¿Tiene usted una reserva?",
+"Aquí tiene su llave") are enough for a TOP score on every criterion. Do not penalise
+short, formulaic answers — that is the expected register of performance at this level.
+Only mark down for actual errors, silence, or failure to attempt the task.`,
+  intermediate: `COURSE LEVEL: INTERMEDIATE (2nd year, A2+/B1 expectations)
+Grade against A2+/B1 expectations. A top score requires elaborated, sales-oriented
+answers (e.g. actively upselling a room feature, not just confirming it) and evidence
+the student can handle a complication gracefully (an objection, an unexpected request,
+a change mid-conversation) rather than only executing a scripted exchange. A student who
+only produces short, correct-but-minimal formulas should score mid-range, not top marks —
+that performance is A1-level, below what this course level expects.`,
+};
 
-  return `You are a senior examiner for hotel school Spanish oral exams.
-
-Your task is to grade the STUDENT's Spanish performance — ONLY the "STAFF (student)" lines. Completely ignore the AI guest lines.
-
-GRADING PRINCIPLES
-- Be rigorous but fair. Base every score strictly on transcript evidence.
-- Quote exact phrases from the transcript as examples (copy them verbatim).
-- Temperature for scoring: be consistent. The same performance should score the same every time.
-- Give concrete, actionable feedback that directly references what the student said.
-
-SCORE ANCHORS — what each benchmark looks like:
+// Register/formality is graded separately as a binary gate, not one of the five
+// scored criteria — see buildHospitalityGateInstructions.
+const CRITERION_ANCHORS = `SCORE ANCHORS — what each benchmark looks like:
 
 FLUENCY (natural flow, pace, confidence, minimal hesitation)
   20: Completely natural delivery — no audible hesitation, smooth transitions, native-like pacing.
@@ -120,30 +129,75 @@ VOCABULARY (range and precision of hospitality-specific Spanish)
   10: Basic but sufficient — mostly high-frequency words, minimal specialised terms; some circumlocutions.
    5: Very limited; constantly substitutes with English or very basic words; cannot express hospitality concepts.
 
-GRAMMAR (conjugation accuracy, gender/number agreement, tense use)
+GRAMMAR / SYNTAX (conjugation accuracy, gender/number agreement, tense use, sentence structure)
   20: Near-perfect grammar; any errors are trivial and do not affect comprehension.
   15: Minor recurring errors (e.g., ser/estar confusion, wrong tense once or twice) but generally accurate.
   10: Frequent errors but the message is usually intelligible; listener can infer meaning.
    5: Severe grammatical breakdown — most utterances contain multiple errors; comprehension often fails.
 
-TASK COMPLETION (all scenario objectives accomplished professionally)
+PRONUNCIATION (estimated from transcript evidence only — no audio is available)
+  You cannot hear the student. Estimate pronunciation risk from TEXT artifacts only:
+  repeated self-corrections/restarts around specific words, consistent avoidance of
+  phonetically hard sounds (substituting simpler synonyms for words with rr/j/ñ),
+  or speech-to-text transcript garbling around specific words (a sign the ASR engine
+  struggled, which often correlates with unclear pronunciation). Do NOT penalise
+  vocabulary choice here — only patterns suggestive of articulation difficulty.
+  20: No transcript evidence of articulation difficulty — words used are varied and
+      unavoidable-hard-sound words appear cleanly transcribed.
+  15: Occasional restart/self-correction around a specific word, otherwise clean.
+  10: Several restarts or transcript garbling clustered around specific sounds/words.
+   5: Frequent transcript garbling or heavy avoidance of any phonetically demanding vocabulary.
+  If there is truly no evidence either way (short transcript), default to 15 and say so in the note.
+
+MESSAGE / CONTENT (task objectives covered, relevance and completeness of the answer)
   20: All objectives met fully and handled in a professional, service-minded way.
   15: Most objectives met; one may be partially fulfilled or handled awkwardly.
   10: At least half the objectives attempted; some key tasks left incomplete.
-   5: Few or no objectives attempted; student could not guide the conversation to the required outcomes.
+   5: Few or no objectives attempted; student could not guide the conversation to the required outcomes.`;
 
-REGISTER (formal register: "usted", professional hospitality language throughout)
-  20: Perfect formal register — always "usted", "su", "le"; professional courtesies ("con mucho gusto", "a sus órdenes"); never casual.
-  15: Mostly formal — 1–2 isolated tú-forms or informal expressions, otherwise correct.
-  10: Obvious mixing — uses "tú" / "tu" / "te" several times alongside "usted"; inconsistent.
-   5: Predominantly informal — mostly "tú" forms; registers entirely inappropriate for hospitality.
-
-${registerNote}
+function buildHospitalityGateInstructions(allowTu: boolean): string {
+  if (allowTu) {
+    return `HOSPITALITY GATE — NOT APPLICABLE
+This is a personal presentation about the student themselves — tú-forms are grammatically
+correct and expected here. Set hospitalityGate.applicable = false, hospitalityGate.passed = true,
+hospitalityGate.tuForms = [], and note "Not applicable — personal presentation uses tú."`;
+  }
+  return `HOSPITALITY GATE — CRITICAL, separate from the five scored criteria
+This is a hospitality service interaction. Formal register ("usted") is mandatory throughout.
+Scan EVERY student line for tú-forms:
 - Verb forms: eres, estás, tienes, quieres, puedes, necesitas, haces, etc.
 - Pronouns: te, tu (possessive), ti
-- Example: "¿Qué quieres?" → flag as tú-form violation
+- Example: "¿Qué quieres?" → flag as a tú-form violation
+Set hospitalityGate.applicable = true. Set hospitalityGate.passed = false if you find ANY
+tú-form used toward the guest, list every instance found in hospitalityGate.tuForms (empty
+array only if truly none found), and explain the finding in hospitalityGate.note. This gate
+does not affect the five criterion scores directly — grade grammar/fluency/etc. on their own
+merits — but a failed gate has serious consequences for the overall exam result.`;
+}
 
-${hospitalityGate}
+const MINIMAL_OUTPUT_GATE = `MINIMAL OUTPUT CHECK: If the student's total output across ALL their lines is fewer than 10 words, or is completely incoherent/incomprehensible, assign a maximum score of 3 across all five criteria and note that meaningful communication was not demonstrated.`;
+
+export function buildGradingSystemPrompt(opts: { allowTu?: boolean; level?: CourseLevel } = {}): string {
+  const allowTu = opts.allowTu ?? false;
+  const level = opts.level ?? 'basic';
+
+  return `You are a senior examiner for hotel school Spanish oral exams.
+
+Your task is to grade the STUDENT's Spanish performance — ONLY the "STAFF (student)" lines. Completely ignore the AI guest lines.
+
+${LEVEL_EXPECTATIONS[level]}
+
+GRADING PRINCIPLES
+- Be rigorous but fair. Base every score strictly on transcript evidence.
+- Quote exact phrases from the transcript as examples (copy them verbatim).
+- Temperature for scoring: be consistent. The same performance should score the same every time.
+- Give concrete, actionable feedback that directly references what the student said.
+
+${CRITERION_ANCHORS}
+
+${buildHospitalityGateInstructions(allowTu)}
+
+${MINIMAL_OUTPUT_GATE}
 
 Return your evaluation using the submit_grade tool.`;
 }
@@ -163,8 +217,8 @@ ${transcript}
 
 INSTRUCTIONS:
 1. Read every "STAFF (student)" line carefully. Ignore "GUEST (AI)" lines completely.
-2. For each criterion, assign a score 0–20 and quote 2–3 exact student phrases as examples.
-3. For REGISTER: list EVERY tú-form you find in the student's lines (empty array if none found).
+2. For each of the five criteria (fluency, vocabulary, grammar, pronunciation, content), assign a score 0–20 and quote 2–3 exact student phrases as examples.
+3. Separately evaluate the hospitalityGate per the instructions above.
 4. Identify the top 3 most impactful things the student should fix before their exam.
 5. Call submit_grade with your complete evaluation.`;
 }

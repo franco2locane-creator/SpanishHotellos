@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { loadScenario } from '@/lib/scenarios/catalog';
 import { gradeExamSession } from '@/lib/api/grade';
 import { useFeedbackStore } from '@/stores/feedbackStore';
+import { useAuthStore } from '@/stores/authStore';
 import { randomTopic, randomPhoto, randomQuestions } from '@/lib/mockExam/content';
 import MonologueCard from '@/components/exam/MonologueCard';
 import PictureCard from '@/components/exam/PictureCard';
@@ -52,14 +53,17 @@ const PASS_MARK = 60;
 export default function ExamSession() {
   const { format, scenarioId } = useLocalSearchParams<{ format: string; scenarioId?: string }>();
   const router = useRouter();
+  const { user } = useAuthStore();
   const { setResult } = useFeedbackStore();
   const [grading, setGrading] = useState(false);
   const [error, setError] = useState('');
+  const lastAttemptRef = useRef<{ messages: WireMessage[]; durationSeconds: number } | null>(null);
 
   const examFormat = format as ExamFormat;
   const scenario = scenarioId ? loadScenario(scenarioId) : null;
 
   async function handleComplete(messages: WireMessage[], durationSeconds: number) {
+    lastAttemptRef.current = { messages, durationSeconds };
     setGrading(true);
     setError('');
     try {
@@ -71,12 +75,19 @@ export default function ExamSession() {
         format: examFormat,
         messages,
         durationSeconds: Math.max(durationSeconds, 1),
+        level: user?.mockLevel ?? 'basic',
       });
       setResult(result, PASS_MARK);
       router.replace(`/feedback/${result.attemptId}` as any);
     } catch {
       setGrading(false);
       setError('Grading failed — your session was not saved. Check your connection.');
+    }
+  }
+
+  function handleRetryGrading() {
+    if (lastAttemptRef.current) {
+      handleComplete(lastAttemptRef.current.messages, lastAttemptRef.current.durationSeconds);
     }
   }
 
@@ -101,6 +112,12 @@ export default function ExamSession() {
       <SafeAreaView style={styles.screen}>
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={handleRetryGrading}>
+            <Text style={styles.retryBtnText}>Retry grading</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleExit} style={{ marginTop: Spacing.sm }}>
+            <Text style={styles.exitText}>Give up and go back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -137,4 +154,7 @@ const styles = StyleSheet.create({
   gradingTitle: { fontSize: Typography.heading, fontWeight: '700', color: Colors.navy },
   gradingText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
   errorText: { fontSize: Typography.body, color: Colors.error, textAlign: 'center' },
+  retryBtn: { backgroundColor: Colors.navy, borderRadius: 12, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
+  retryBtnText: { color: '#fff', fontWeight: '600', fontSize: Typography.body },
+  exitText: { fontSize: Typography.body, color: Colors.textSecondary, textDecorationLine: 'underline' },
 });

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
-import { SCENARIO_CATALOG } from './scenarios/catalog';
-import type { Department, RubricCriterion } from '@/types';
+import { SCENARIO_CATALOG, scenariosForLevel } from './scenarios/catalog';
+import type { CourseLevel, Department, RubricCriterion } from '@/types';
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
@@ -93,7 +93,7 @@ export type StudyPlanData = {
   weakestScenarioId: string | null;
 };
 
-export async function getStudyPlanData(userId: string): Promise<StudyPlanData> {
+export async function getStudyPlanData(userId: string, level: CourseLevel = 'basic'): Promise<StudyPlanData> {
   const { data } = await supabase
     .from('exam_attempts')
     .select('scenario_id, total_score, format, scores')
@@ -102,6 +102,7 @@ export async function getStudyPlanData(userId: string): Promise<StudyPlanData> {
     .limit(30);
 
   const rows = (data ?? []) as AttemptRow[];
+  const availableScenarios = scenariosForLevel(level);
 
   // Weakest department
   const deptScores: Record<string, number[]> = {};
@@ -123,8 +124,8 @@ export async function getStudyPlanData(userId: string): Promise<StudyPlanData> {
       (critSums[k] ??= []).push(v);
     }
   }
-  const criteria: RubricCriterion[] = ['fluency', 'vocabulary', 'grammar', 'taskCompletion', 'register'];
-  let weakestCriterion: RubricCriterion = 'register';
+  const criteria: RubricCriterion[] = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
+  let weakestCriterion: RubricCriterion = 'content';
   let minCrit = Infinity;
   for (const k of criteria) {
     const vals = critSums[k] ?? [];
@@ -134,13 +135,13 @@ export async function getStudyPlanData(userId: string): Promise<StudyPlanData> {
     }
   }
 
-  // Lowest-scoring scenario (for final-week re-run)
-  const lowestAttempt = rows.length
-    ? rows.reduce((a, b) => a.total_score < b.total_score ? a : b)
-    : null;
+  // Lowest-scoring scenario (for final-week re-run) — must still be offered at this level
+  const lowestAttempt = rows
+    .filter(r => availableScenarios.some(s => s.id === r.scenario_id))
+    .reduce<AttemptRow | null>((lowest, r) => (!lowest || r.total_score < lowest.total_score) ? r : lowest, null);
 
-  // Best scenario for weakest dept (first catalog entry in that dept)
-  const weakestScenario = SCENARIO_CATALOG.find(s => s.department === weakestDept);
+  // Best scenario for weakest dept, restricted to this level (first catalog entry in that dept)
+  const weakestScenario = availableScenarios.find(s => s.department === weakestDept) ?? availableScenarios[0];
 
   return {
     weakestDept,

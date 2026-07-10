@@ -4,11 +4,12 @@ import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 import type { FixItem } from '@/lib/api/grade';
 
 const DRILL_ICONS: Record<FixItem['drillType'], string> = {
-  register:       '👔',
-  vocabulary:     '📖',
-  grammar:        '✏️',
-  fluency:        '🎙️',
-  taskCompletion: '✅',
+  register:      '👔',
+  vocabulary:    '📖',
+  grammar:       '✏️',
+  fluency:       '🎙️',
+  pronunciation: '🗣️',
+  content:       '✅',
 };
 
 type Props = {

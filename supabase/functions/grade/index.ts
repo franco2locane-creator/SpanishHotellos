@@ -5,6 +5,7 @@ import {
   buildGradingSystemPrompt,
   buildGradingUserPrompt,
   type RubricWeights,
+  type CourseLevel,
 } from '../_shared/prompts.ts';
 
 type Message = { role: 'user' | 'assistant'; content: string };
@@ -19,7 +20,8 @@ type GradeRequest = {
   };
   messages: Message[];
   durationSeconds: number;
-  allowTu?: boolean;  // true for personal_presentation — tú-forms are acceptable
+  allowTu?: boolean;         // true for personal_presentation — tú-forms are acceptable
+  level?: CourseLevel;       // basic (A1) or intermediate (A2+/B1) grading expectations
 };
 
 type CriterionDetail = {
@@ -28,14 +30,22 @@ type CriterionDetail = {
   note: string;
 };
 
+type HospitalityGate = {
+  applicable: boolean;
+  passed: boolean;
+  tuForms: string[];
+  note: string;
+};
+
 type GradeInput = {
   scores: {
     fluency: CriterionDetail;
     vocabulary: CriterionDetail;
     grammar: CriterionDetail;
-    taskCompletion: CriterionDetail;
-    register: CriterionDetail & { tuForms: string[] };
+    pronunciation: CriterionDetail;
+    content: CriterionDetail;
   };
+  hospitalityGate: HospitalityGate;
   topThingsFix: { label: string; drillType: string }[];
   feedback: string;
 };
@@ -59,28 +69,31 @@ const submitGradeTool: Anthropic.Tool = {
   description: 'Submit graded scores with evidence and actionable feedback for an exam attempt.',
   input_schema: {
     type: 'object' as const,
-    required: ['scores', 'topThingsFix', 'feedback'],
+    required: ['scores', 'hospitalityGate', 'topThingsFix', 'feedback'],
     properties: {
       scores: {
         type: 'object' as const,
-        required: ['fluency', 'vocabulary', 'grammar', 'taskCompletion', 'register'],
+        required: ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'],
         properties: {
           fluency: criterionSchema,
           vocabulary: criterionSchema,
           grammar: criterionSchema,
-          taskCompletion: criterionSchema,
-          register: {
-            type: 'object' as const,
-            required: ['score', 'examples', 'note', 'tuForms'],
-            properties: {
-              ...criterionSchema.properties,
-              tuForms: {
-                type: 'array' as const,
-                items: { type: 'string' as const },
-                description: 'Every tu-form used with the guest. Empty array if none found.',
-              },
-            },
+          pronunciation: criterionSchema,
+          content: criterionSchema,
+        },
+      },
+      hospitalityGate: {
+        type: 'object' as const,
+        required: ['applicable', 'passed', 'tuForms', 'note'],
+        properties: {
+          applicable: { type: 'boolean' as const, description: 'false only for personal_presentation.' },
+          passed: { type: 'boolean' as const },
+          tuForms: {
+            type: 'array' as const,
+            items: { type: 'string' as const },
+            description: 'Every tú-form used toward the guest. Empty array if none found.',
           },
+          note: { type: 'string' as const, description: 'One sentence explaining the gate result.' },
         },
       },
       topThingsFix: {
@@ -93,7 +106,7 @@ const submitGradeTool: Anthropic.Tool = {
             label: { type: 'string' as const, description: 'Specific actionable fix in one sentence.' },
             drillType: {
               type: 'string' as const,
-              enum: ['register', 'vocabulary', 'grammar', 'fluency', 'taskCompletion'],
+              enum: ['register', 'vocabulary', 'grammar', 'fluency', 'pronunciation', 'content'],
             },
           },
         },
@@ -117,21 +130,21 @@ function formatTranscript(messages: Message[]): string {
 
 function extractNumericScores(scores: GradeInput['scores']) {
   return {
-    fluency:        scores.fluency.score,
-    vocabulary:     scores.vocabulary.score,
-    grammar:        scores.grammar.score,
-    taskCompletion: scores.taskCompletion.score,
-    register:       scores.register.score,
+    fluency:       scores.fluency.score,
+    vocabulary:    scores.vocabulary.score,
+    grammar:       scores.grammar.score,
+    pronunciation: scores.pronunciation.score,
+    content:       scores.content.score,
   };
 }
 
 function computeTotalScore(numeric: Record<string, number>, weights: RubricWeights): number {
   const weighted =
-    numeric.fluency        * (weights.fluency        ?? 0.2) +
-    numeric.vocabulary     * (weights.vocabulary     ?? 0.2) +
-    numeric.grammar        * (weights.grammar        ?? 0.2) +
-    numeric.taskCompletion * (weights.taskCompletion ?? 0.2) +
-    numeric.register       * (weights.register       ?? 0.2);
+    numeric.fluency       * (weights.fluency       ?? 0.2) +
+    numeric.vocabulary    * (weights.vocabulary    ?? 0.2) +
+    numeric.grammar       * (weights.grammar       ?? 0.2) +
+    numeric.pronunciation * (weights.pronunciation ?? 0.2) +
+    numeric.content       * (weights.content       ?? 0.2);
   return Math.round(weighted * 10) / 10;
 }
 
@@ -158,7 +171,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return err('Invalid JSON body');
   }
 
-  const { scenario, messages, durationSeconds, allowTu = false } = body;
+  const { scenario, messages, durationSeconds, allowTu = false, level = 'basic' } = body;
   if (!scenario || !Array.isArray(messages) || messages.length < 2) {
     return err('scenario, messages (min 2), and durationSeconds are required');
   }
@@ -176,7 +189,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       temperature: 0.2,
-      system: buildGradingSystemPrompt({ allowTu }),
+      system: buildGradingSystemPrompt({ allowTu, level }),
       messages: [{
         role: 'user',
         content: buildGradingUserPrompt({
@@ -224,13 +237,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   return json({
     attempt: {
-      id:           attempt.id,
+      id:             attempt.id,
       totalScore,
-      completedAt:  attempt.completed_at,
+      completedAt:    attempt.completed_at,
       numericScores,
-      detail:       gradeInput.scores,
-      topThingsFix: gradeInput.topThingsFix,
-      feedback:     gradeInput.feedback,
+      detail:         gradeInput.scores,
+      hospitalityGate: gradeInput.hospitalityGate,
+      topThingsFix:   gradeInput.topThingsFix,
+      feedback:       gradeInput.feedback,
     },
   });
 });

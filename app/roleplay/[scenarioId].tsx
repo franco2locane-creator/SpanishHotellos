@@ -36,6 +36,7 @@ type Phase =
   | 'sending'
   | 'error'
   | 'grading'
+  | 'grading_error'
   | 'done'
   | 'interrupted';
 
@@ -192,18 +193,24 @@ export default function RoleplayScreen() {
     }
   }, [scenario, turns, user]);
 
+  const lastGradingMessagesRef = useRef<WireMessage[]>([]);
+
   async function triggerGrading(messages: WireMessage[]) {
     if (!scenario || !user) { updatePhase('done'); return; }
+    lastGradingMessagesRef.current = messages;
     updatePhase('grading');
     const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
     try {
-      const gradeResult = await gradeSession({ scenario, messages, durationSeconds });
+      const gradeResult = await gradeSession({
+        scenario, messages, durationSeconds,
+        level: user.mockLevel,
+      });
       Haptics.success();
       setResult(gradeResult);
       router.replace(`/feedback/${gradeResult.attemptId}` as any);
     } catch {
-      updatePhase('done');
+      updatePhase('grading_error');
     }
   }
 
@@ -241,7 +248,30 @@ export default function RoleplayScreen() {
         <View style={styles.gradingWrap}>
           <ActivityIndicator size="large" color={Colors.gold} />
           <Text style={styles.gradingTitle}>Grading your session…</Text>
-          <Text style={styles.gradingText}>Analysing fluency, vocabulary, grammar, task completion and register.</Text>
+          <Text style={styles.gradingText}>Analysing fluency, vocabulary, grammar, pronunciation and content.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (phase === 'grading_error') {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.gradingWrap}>
+          <Text style={{ fontSize: 48 }}>⚠️</Text>
+          <Text style={styles.gradingTitle}>Couldn't grade this session</Text>
+          <Text style={styles.gradingText}>
+            Your conversation is saved — this was a connection issue while grading it. Try again.
+          </Text>
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={() => triggerGrading(lastGradingMessagesRef.current)}
+          >
+            <Text style={styles.startBtnText}>Retry grading</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Give up and go back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );

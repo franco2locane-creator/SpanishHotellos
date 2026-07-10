@@ -60,8 +60,19 @@ const DRILLS: Record<FixItem['drillType'], { title: string; instruction: string;
       { prompt: 'Guest asks: "¿Tienen aparcamiento?" Give the complete answer.', answer: 'Sí, disponemos de aparcamiento en el sótano. El precio es de diez euros por noche.', hint: 'Include: yes/no + details' },
     ],
   },
-  taskCompletion: {
-    title: 'Task Completion Drill — Scenario Steps',
+  pronunciation: {
+    title: 'Pronunciation Drill — Tricky Sounds',
+    instruction: 'Say each phrase clearly, focusing on the marked sound',
+    questions: [
+      { prompt: 'Practise the rolled RR: "Le recomiendo la habitación con terraza."', answer: 'Le recomiendo la habitación con terraza', hint: 'rr in "recomiendo" and "terraza"' },
+      { prompt: 'Practise the soft J: "El equipaje llegará enseguida, señor jefe."', answer: 'El equipaje llegará enseguida, señor jefe', hint: 'j in "equipaje" and "jefe"' },
+      { prompt: 'Practise the Ñ: "Mañana por la mañana servimos el baño y la piscina."', answer: 'Mañana por la mañana servimos el baño y la piscina', hint: 'ñ in "mañana" and "baño"' },
+      { prompt: 'Practise linking words smoothly: "¿Le importaría esperar un momento, por favor?"', answer: 'Le importaría esperar un momento, por favor', hint: 'no pauses between words' },
+      { prompt: 'Practise the double L: "La llave de la habitación está en el bolsillo."', answer: 'La llave de la habitación está en el bolsillo', hint: 'll in "llave" and "bolsillo"' },
+    ],
+  },
+  content: {
+    title: 'Content Drill — Complete the Task',
     instruction: 'Say the key phrase that accomplishes the task step',
     questions: [
       { prompt: 'Task: Apologise to a frustrated guest professionally.', answer: 'Disculpe las molestias que le hemos causado. Le pido sinceras disculpas.', hint: 'Two sentences: disculpe + le pido' },

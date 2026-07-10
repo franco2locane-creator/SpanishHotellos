@@ -63,13 +63,27 @@ export type ExamFormat =
   | 'spontaneous_qa';
 
 // The five rubric criteria scored by the AI grader (0–20 each).
+// Register/formality is NOT scored here — it's a pass/fail hospitality gate
+// (see HospitalityGateResult) applied separately per the real exam rules.
 export type RubricCriterion =
   | 'fluency'
   | 'vocabulary'
   | 'grammar'
-  | 'taskCompletion'
-  | 'register';
+  | 'pronunciation'
+  | 'content';
 
 // Per-criterion score map. Values are 0–20; weights sum to 1.0.
 export type RubricScore = Record<RubricCriterion, number>;
 export type RubricWeights = Record<RubricCriterion, number>;
+
+// Binary formal-register check, evaluated on hospitality assignments only
+// (never on personal_presentation, where tú is correct). A failed gate caps
+// the whole mock exam at 10/100, mirroring the real oral exam's rules.
+export type HospitalityGateResult = {
+  applicable: boolean;   // false for personal_presentation (tú allowed)
+  passed: boolean;
+  tuForms: string[];
+  note: string;
+};
+
+export type CourseLevel = 'basic' | 'intermediate';
