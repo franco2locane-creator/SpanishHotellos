@@ -1,0 +1,54 @@
+{
+  "id": "hotel-presentation-family-suite",
+  "title": "Family Suite Presentation",
+  "titleEs": "Presentación de suite familiar",
+  "description": "A prospective guest tours the family suite and asks a question that must be politely declined.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Kowalski",
+    "nationality": "Polish",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Mother of two, evaluating whether the family suite suits her children"
+  },
+  "objectives": [
+    {
+      "id": "present_suite_features",
+      "label": "Present the suite's bedrooms, layout, and amenities"
+    },
+    {
+      "id": "highlight_family_facilities",
+      "label": "Highlight family facilities such as the pool or kids' club"
+    },
+    {
+      "id": "answer_guest_questions",
+      "label": "Answer the guest's questions"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Politely decline the free extra rollaway bed request"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer a reasonable alternative"
+    }
+  ],
+  "systemContext": "You are considering booking the family suite for a week with your husband and two young children and are being shown around by a staff member. You ask about the layout, whether there's a kids' club, and — hopefully — whether an extra rollaway bed can be added at no additional charge, since you're already paying a premium rate. The hotel's policy is that rollaway beds carry a nightly fee with no exceptions. You are friendly and reasonable — if the staff member explains the policy politely and perhaps offers a reasonable alternative, such as a discount elsewhere or noting the suite already sleeps four comfortably, you accept it well. You react poorly only to a blunt, unexplained refusal.",
+  "openingLine": "Hola, nos interesa mucho esta suite familiar. Por cierto, ¿sería posible añadir una cama supletoria sin coste adicional? Ya vamos a pagar bastante por la estancia.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "complaint-broken-ac",
+  "title": "Broken Air Conditioning Complaint",
+  "titleEs": "Queja por aire acondicionado averiado",
+  "description": "A guest complains that the air conditioning has not worked all night.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Farouk",
+    "nationality": "Egyptian",
+    "mood": "frustrated",
+    "speakingSpeed": "fast",
+    "description": "Guest who barely slept due to a stifling, malfunctioning room"
+  },
+  "objectives": [
+    {
+      "id": "listen_fully",
+      "label": "Listen fully without interrupting"
+    },
+    {
+      "id": "empathize_genuinely",
+      "label": "Empathize genuinely"
+    },
+    {
+      "id": "apologize_sincerely",
+      "label": "Apologize sincerely"
+    },
+    {
+      "id": "explain_and_solve",
+      "label": "Send maintenance immediately or offer a room change"
+    },
+    {
+      "id": "offer_compensation",
+      "label": "Offer late checkout, a discount, or an upgrade"
+    },
+    {
+      "id": "confirm_satisfaction",
+      "label": "Confirm the guest is satisfied"
+    }
+  ],
+  "systemContext": "The air conditioning in your room stopped working sometime in the night and you barely slept in the heat. You are tired, hot, and frustrated first thing in the morning. You will calm down if the staff member takes the problem seriously immediately, either sends maintenance right away or moves you to a working room without delay, and offers fair compensation for the disrupted night — a late checkout, a discount, or a room upgrade. You get more agitated if they seem to downplay how bad the night was.",
+  "openingLine": "El aire acondicionado de mi habitación ha estado averiado toda la noche. No he podido dormir prácticamente nada con este calor.",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

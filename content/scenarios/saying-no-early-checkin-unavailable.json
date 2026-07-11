@@ -1,0 +1,54 @@
+{
+  "id": "saying-no-early-checkin-unavailable",
+  "title": "Early Check-In Not Available",
+  "titleEs": "Check-in anticipado no disponible",
+  "description": "A guest requests check-in hours before the room is ready and must be told no, with an alternative offered.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Johansson",
+    "nationality": "Norwegian",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Guest arriving straight from the airport, hoping to check in early"
+  },
+  "objectives": [
+    {
+      "id": "acknowledge_request",
+      "label": "Acknowledge the request warmly"
+    },
+    {
+      "id": "explain_reason",
+      "label": "Explain the room is still occupied or being cleaned"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Decline the early check-in politely"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer luggage storage and use of facilities in the meantime"
+    },
+    {
+      "id": "set_clear_expectation",
+      "label": "Give a clear, realistic time the room will be ready"
+    }
+  ],
+  "systemContext": "You have just arrived from a red-eye flight at 9 a.m., far earlier than the standard 3 p.m. check-in time, and would love to get into your room now to shower and rest. The room is still occupied by the previous guest and won't be ready until early afternoon. You are tired but reasonable. You accept the situation well if the receptionist explains clearly why it isn't possible, offers to store your luggage, lets you use the pool or breakfast area in the meantime, and gives you a realistic time to expect the room.",
+  "openingLine": "Buenos días, acabo de llegar del aeropuerto. Sé que es pronto, pero ¿habría alguna posibilidad de hacer el check-in ya?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

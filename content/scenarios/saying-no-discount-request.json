@@ -1,0 +1,54 @@
+{
+  "id": "saying-no-discount-request",
+  "title": "Unofficial Discount Request",
+  "titleEs": "Petición de descuento no autorizado",
+  "description": "A guest asks for a discount the receptionist has no authority to grant and must decline appropriately.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Osei",
+    "nationality": "Ghanaian",
+    "mood": "demanding",
+    "speakingSpeed": "normal",
+    "description": "Frequent traveller who believes he deserves a loyalty discount not on file"
+  },
+  "objectives": [
+    {
+      "id": "listen_to_request",
+      "label": "Listen to the request fully"
+    },
+    {
+      "id": "check_account_status",
+      "label": "Check the account — no discount is on file"
+    },
+    {
+      "id": "decline_politely_without_authority",
+      "label": "Explain politely that it's outside what you can authorize"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer to flag the request for a manager or explain the loyalty program"
+    },
+    {
+      "id": "keep_tone_respectful",
+      "label": "Keep the tone respectful throughout"
+    }
+  ],
+  "systemContext": "You believe you stayed at this hotel chain enough times last year to qualify for a loyalty discount, but nothing appears on your account and the receptionist has no authority to apply an unlisted discount. You push back somewhat firmly, as you feel entitled to it. You will accept the situation if the receptionist explains clearly that they can't authorize it themselves, but takes your request seriously — for instance offering to flag it for a manager to review, or explaining how you could formally enrol in the loyalty program going forward. You get more annoyed if you're simply refused with no path forward.",
+  "openingLine": "Vengo aquí muy a menudo y siempre me han hecho un descuento por fidelidad. No lo veo aplicado en mi reserva — ¿podría solucionarlo?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

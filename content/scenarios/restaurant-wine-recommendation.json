@@ -1,0 +1,54 @@
+{
+  "id": "restaurant-wine-recommendation",
+  "title": "Wine Recommendation Request",
+  "titleEs": "Recomendación de vino",
+  "description": "A guest asks for a wine pairing recommendation for their meal.",
+  "department": "fnb",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Fernández",
+    "nationality": "Argentinian",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Wine enthusiast celebrating a special occasion, eager for a good pairing"
+  },
+  "objectives": [
+    {
+      "id": "ask_about_meal_choice",
+      "label": "Ask about the guest's meal choice"
+    },
+    {
+      "id": "recommend_wine_confidently",
+      "label": "Recommend an appropriate wine confidently"
+    },
+    {
+      "id": "explain_choice_briefly",
+      "label": "Explain briefly why it pairs well"
+    },
+    {
+      "id": "offer_tasting",
+      "label": "Offer to let the guest taste it first"
+    },
+    {
+      "id": "confirm_order",
+      "label": "Confirm the order"
+    }
+  ],
+  "systemContext": "You are celebrating an anniversary dinner and have ordered a rich meat dish. You know a little about wine but want an expert recommendation from the server — something that pairs well and isn't the cheapest option on the list, since it's a special occasion. You are warm and appreciative. You respond well to a server who asks about your meal, recommends a specific wine with a brief, confident explanation of why it pairs well, and offers to let you taste it before pouring fully.",
+  "openingLine": "Buenas noches, es nuestro aniversario y quisiera que nos recomendara un buen vino para acompañar la carne.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.25,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.25
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

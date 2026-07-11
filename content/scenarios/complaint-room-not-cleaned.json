@@ -1,0 +1,58 @@
+{
+  "id": "complaint-room-not-cleaned",
+  "title": "Room Not Cleaned Complaint",
+  "titleEs": "Queja por habitación sin limpiar",
+  "description": "A guest returns to find their room was never serviced that day.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Ms. Zhang",
+    "nationality": "Chinese",
+    "mood": "frustrated",
+    "speakingSpeed": "normal",
+    "description": "Guest returning after a long day, upset to find her room untouched by housekeeping"
+  },
+  "objectives": [
+    {
+      "id": "listen_fully",
+      "label": "Listen fully without interrupting"
+    },
+    {
+      "id": "empathize_genuinely",
+      "label": "Empathize genuinely"
+    },
+    {
+      "id": "apologize_sincerely",
+      "label": "Apologize sincerely"
+    },
+    {
+      "id": "explain_and_solve",
+      "label": "Arrange for the room to be serviced right away"
+    },
+    {
+      "id": "offer_compensation",
+      "label": "Offer a small amenity or discount for the inconvenience"
+    },
+    {
+      "id": "confirm_satisfaction",
+      "label": "Confirm the guest is satisfied"
+    }
+  ],
+  "systemContext": "You return to your room after a full day out to find the bed unmade, towels unchanged, and bins not emptied — housekeeping never came. You are tired and irritated. You will calm down if the staff member apologises sincerely, arranges for the room to be serviced right away, even if it means waiting a short while, and offers something to make up for the inconvenience, like a small amenity or a partial discount. You remain upset if they minimize the issue or blame you for being out.",
+  "openingLine": "Disculpe, pero acabo de subir a mi habitación y no la han limpiado en todo el día. Ni siquiera han cambiado las toallas.",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

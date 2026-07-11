@@ -1,0 +1,54 @@
+{
+  "id": "checkin-group-arrival",
+  "title": "Group Check-In",
+  "titleEs": "Llegada de un grupo",
+  "description": "A tour group of ten arrives at once and needs an organized, efficient check-in.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Alves",
+    "nationality": "Brazilian",
+    "mood": "neutral",
+    "speakingSpeed": "fast",
+    "description": "Tour group coordinator managing ten guests; efficient and slightly rushed"
+  },
+  "objectives": [
+    {
+      "id": "greet_coordinator",
+      "label": "Greet the group coordinator professionally"
+    },
+    {
+      "id": "confirm_group_booking",
+      "label": "Confirm the group booking and rooming list"
+    },
+    {
+      "id": "explain_process",
+      "label": "Explain how keys will be distributed efficiently"
+    },
+    {
+      "id": "address_special_requests",
+      "label": "Address adjoining rooms or special requests"
+    },
+    {
+      "id": "set_group_logistics",
+      "label": "Confirm luggage handling and group dinner time"
+    }
+  ],
+  "systemContext": "You are the coordinator for a tour group of ten guests who have just arrived by coach after a long day of sightseeing. Everyone is tired and eager to get to their rooms. You have the full rooming list and need the front desk to process check-in efficiently, confirm which rooms are adjoining as requested, and explain where the group can leave luggage and what time the group dinner is. You are professional but conscious of time — the group is waiting behind you. You respond well to a receptionist who is organized, efficient, and confirms details clearly rather than making the group wait unnecessarily.",
+  "openingLine": "Buenas tardes. Somos un grupo de diez personas, la reserva está a nombre de la agencia. Aquí tiene la lista de habitaciones — el grupo está bastante cansado, así que agradecería que fuera lo más rápido posible.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

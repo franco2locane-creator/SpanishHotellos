@@ -1,0 +1,54 @@
+{
+  "id": "saying-no-pet-not-allowed",
+  "title": "Pets Not Allowed",
+  "titleEs": "No se admiten mascotas",
+  "description": "A guest arrives with a small dog at a no-pets hotel and must be told no, with alternatives suggested.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Petrov",
+    "nationality": "Russian",
+    "mood": "frustrated",
+    "speakingSpeed": "normal",
+    "description": "Guest travelling with a small dog, unaware of the hotel's no-pets policy"
+  },
+  "objectives": [
+    {
+      "id": "acknowledge_situation",
+      "label": "Acknowledge the situation with empathy"
+    },
+    {
+      "id": "explain_policy_clearly",
+      "label": "Explain the no-pets policy clearly, without exceptions"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Decline politely"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer to help find a pet-friendly hotel or pet-sitting service"
+    },
+    {
+      "id": "remain_courteous_throughout",
+      "label": "Remain courteous throughout"
+    }
+  ],
+  "systemContext": "You have arrived with your small dog, not realising the hotel has a strict no-pets policy — the booking website didn't make it clear. You are frustrated because you have nowhere else planned and it's late. The policy truly has no exceptions, due to other guests' allergies. You calm down if the receptionist is genuinely apologetic about the confusion, explains the policy respectfully, and actively helps you find a solution — for example calling a nearby pet-friendly hotel or a local pet-sitting service — rather than just turning you away.",
+  "openingLine": "Buenas noches, aquí tiene mi reserva. Ah, y este es mi perro, es muy tranquilo, no dará ningún problema.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "hotel-presentation-spa-wellness",
+  "title": "Spa & Wellness Presentation",
+  "titleEs": "Presentación del spa y bienestar",
+  "description": "A wellness-focused guest asks for private after-hours spa access, which must be politely declined.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. van Dijk",
+    "nationality": "Dutch",
+    "mood": "demanding",
+    "speakingSpeed": "normal",
+    "description": "Wellness-focused guest who expects premium, flexible service"
+  },
+  "objectives": [
+    {
+      "id": "present_spa_facilities",
+      "label": "Present the sauna, pool, and treatments"
+    },
+    {
+      "id": "highlight_wellness_programs",
+      "label": "Highlight the wellness programs available"
+    },
+    {
+      "id": "answer_guest_questions",
+      "label": "Answer the guest's questions"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Politely decline private after-hours access"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer an early-morning private session as an alternative"
+    }
+  ],
+  "systemContext": "You are a wellness enthusiast being shown the spa and want to know if you can book the spa privately after closing hours for a late-night session, since you find it hard to relax with other guests around. Hotel policy does not allow after-hours access due to staffing and safety requirements, but an early-morning private session before the spa opens to the public can be arranged instead. You are demanding but not unreasonable — you push back if simply told no, but accept gracefully if given a clear reason and a genuine alternative.",
+  "openingLine": "Me interesa mucho el spa. ¿Sería posible reservarlo en exclusiva después del horario de cierre? Prefiero un ambiente más tranquilo.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

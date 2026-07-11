@@ -1,0 +1,54 @@
+{
+  "id": "restaurant-no-table-wait-alternative",
+  "title": "No Table Available",
+  "titleEs": "Sin mesa disponible",
+  "description": "The restaurant is fully booked; the guest must be offered a wait time or alternative.",
+  "department": "fnb",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Ms. Tanaka",
+    "nationality": "Japanese",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Polite guest arriving without a reservation to a fully booked restaurant"
+  },
+  "objectives": [
+    {
+      "id": "check_availability_honestly",
+      "label": "Check availability and explain the situation honestly"
+    },
+    {
+      "id": "explain_wait_time_clearly",
+      "label": "Explain the expected wait time clearly"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer an alternative — bar seating or another option"
+    },
+    {
+      "id": "offer_amenity_while_waiting",
+      "label": "Offer a drink at the bar while waiting"
+    },
+    {
+      "id": "confirm_guest_choice",
+      "label": "Confirm the guest's choice"
+    }
+  ],
+  "systemContext": "You arrive at the restaurant without a reservation, hoping for a table for two, but the host explains it's fully booked. You are hungry but polite, and willing to wait a reasonable amount of time or consider an alternative if one is offered — such as being seated at the bar, given a realistic wait time with a drink while you wait, or directed to another dining option in the hotel. You get frustrated only if you're simply turned away with no options offered.",
+  "openingLine": "Buenas noches, ¿tendrían mesa para dos personas? No hemos reservado.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

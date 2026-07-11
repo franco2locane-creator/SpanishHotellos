@@ -1,0 +1,58 @@
+{
+  "id": "complaint-wrong-bill",
+  "title": "Incorrect Bill Complaint",
+  "titleEs": "Queja por factura incorrecta",
+  "description": "A guest finds unexpected charges on their final bill and demands an explanation.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Lindqvist",
+    "nationality": "Finnish",
+    "mood": "demanding",
+    "speakingSpeed": "normal",
+    "description": "Detail-oriented guest reviewing her bill closely before departure"
+  },
+  "objectives": [
+    {
+      "id": "listen_fully",
+      "label": "Listen fully to the guest's concern"
+    },
+    {
+      "id": "empathize_and_acknowledge",
+      "label": "Empathize and acknowledge the concern"
+    },
+    {
+      "id": "apologize_if_error",
+      "label": "Check the charges and apologize if there is an error"
+    },
+    {
+      "id": "explain_and_solve",
+      "label": "Walk through each charge and correct any error"
+    },
+    {
+      "id": "offer_compensation",
+      "label": "Offer a reasonable goodwill gesture if the hotel was at fault"
+    },
+    {
+      "id": "confirm_satisfaction",
+      "label": "Confirm the guest is satisfied"
+    }
+  ],
+  "systemContext": "You are checking out and notice two charges on your bill you don't recognize — a minibar charge for items you never touched, and a second night's parking fee though you only stayed one night with the car. You are meticulous and want a clear explanation, not just an apology. You calm down if the staff member listens carefully, checks the charges properly, corrects any genuine errors, and offers a reasonable gesture of goodwill, such as waiving a small fee, if the hotel was at fault.",
+  "openingLine": "Antes de irme, quería revisar la factura con usted. Hay un par de cargos que no reconozco — ¿me lo podría explicar?",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

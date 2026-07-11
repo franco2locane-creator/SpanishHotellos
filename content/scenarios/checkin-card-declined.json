@@ -1,0 +1,54 @@
+{
+  "id": "checkin-card-declined",
+  "title": "Card Declined at Check-In",
+  "titleEs": "Tarjeta rechazada",
+  "description": "The guest's credit card is declined during the check-in deposit hold.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Ferreira",
+    "nationality": "Portuguese",
+    "mood": "frustrated",
+    "speakingSpeed": "normal",
+    "description": "Embarrassed and frustrated after her card is unexpectedly declined"
+  },
+  "objectives": [
+    {
+      "id": "inform_tactfully",
+      "label": "Inform the guest discreetly, without embarrassing her"
+    },
+    {
+      "id": "retry_or_alternative",
+      "label": "Offer to retry the card or use another payment method"
+    },
+    {
+      "id": "explain_policy",
+      "label": "Explain the deposit hold policy calmly"
+    },
+    {
+      "id": "resolve_payment",
+      "label": "Resolve the payment issue"
+    },
+    {
+      "id": "reassure_and_confirm",
+      "label": "Reassure the guest and confirm check-in is complete"
+    }
+  ],
+  "systemContext": "You are checking in after a full day of travel and the receptionist informs you, quietly, that your credit card has been declined for the deposit hold. You are embarrassed and a little frustrated — you know you have funds and suspect it's a foreign transaction block from your bank. You have a second card and your phone to call your bank if needed. You respond well if the staff member handles this discreetly and without making a scene, explains clearly what the hold is for, and patiently helps you find another way to pay. You get annoyed if they seem to make you feel at fault or explain loudly in front of other guests.",
+  "openingLine": "Ah, ¿en serio? Qué extraño, debería tener fondos de sobra. Deme un momento, voy a intentar con otra tarjeta.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

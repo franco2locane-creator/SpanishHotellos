@@ -1,0 +1,62 @@
+{
+  "id": "complaint-double-charge-checkout",
+  "title": "Double-Charged Card Complaint",
+  "titleEs": "Queja por cobro duplicado",
+  "description": "A guest discovers their card was charged twice after checkout.",
+  "department": "front_office",
+  "difficulty": 3,
+  "isFree": false,
+  "durationMinutes": 8,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Petrova",
+    "nationality": "Bulgarian",
+    "mood": "demanding",
+    "speakingSpeed": "normal",
+    "description": "Guest calling back after departure, upset to find a duplicate charge on her statement"
+  },
+  "objectives": [
+    {
+      "id": "listen_fully",
+      "label": "Listen fully to the concern"
+    },
+    {
+      "id": "empathize_genuinely",
+      "label": "Empathize genuinely"
+    },
+    {
+      "id": "apologize_sincerely",
+      "label": "Apologize sincerely"
+    },
+    {
+      "id": "investigate_and_confirm",
+      "label": "Check the payment system and confirm the duplicate transaction"
+    },
+    {
+      "id": "explain_and_solve",
+      "label": "Process the refund and give a clear timeline"
+    },
+    {
+      "id": "offer_compensation",
+      "label": "Offer a goodwill gesture for a future stay"
+    },
+    {
+      "id": "confirm_resolution",
+      "label": "Confirm the guest is satisfied with the resolution"
+    }
+  ],
+  "systemContext": "You checked out two days ago and have just noticed your card was charged twice for the same stay when reviewing your bank statement. You are annoyed and a little anxious about getting your money back — this is a real financial concern, not a minor inconvenience. You want confirmation that the hotel sees the error, a clear explanation of what happened, and a definite timeline for the refund. You calm down considerably if the staff member takes this seriously, checks the system, confirms the duplicate charge, processes a refund, and gives you a realistic timeframe — ideally also apologising for the stress it caused.",
+  "openingLine": "Buenos días, me alojé en su hotel hace dos días y al revisar mi cuenta he visto que me han cobrado dos veces el importe de la estancia. Necesito que lo solucionen.",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

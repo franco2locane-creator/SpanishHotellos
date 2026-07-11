@@ -1,0 +1,55 @@
+{
+  "id": "restaurant-dish-of-day-question",
+  "title": "Dish of the Day Inquiry",
+  "titleEs": "Pregunta sobre el plato del día",
+  "description": "A guest asks detailed questions about the dish of the day before ordering.",
+  "department": "fnb",
+  "difficulty": 1,
+  "isFree": false,
+  "durationMinutes": 5,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Eriksson",
+    "nationality": "Swedish",
+    "mood": "neutral",
+    "speakingSpeed": "slow",
+    "description": "Curious guest who wants to understand the dish before committing"
+  },
+  "objectives": [
+    {
+      "id": "describe_dish_clearly",
+      "label": "Describe the dish's ingredients and preparation clearly"
+    },
+    {
+      "id": "answer_followup_questions",
+      "label": "Answer follow-up questions patiently"
+    },
+    {
+      "id": "suggest_pairing",
+      "label": "Suggest a wine or drink pairing"
+    },
+    {
+      "id": "take_order",
+      "label": "Take the order"
+    },
+    {
+      "id": "confirm_order",
+      "label": "Confirm the order"
+    }
+  ],
+  "systemContext": "You noticed 'plato del día' on the menu but want to know exactly what it contains and how it is prepared before ordering, since you're a careful eater. You ask a couple of follow-up questions. You are polite and patient, speaking slowly. You respond well to a server who describes the dish clearly and patiently answers your questions.",
+  "openingLine": "Disculpe, ¿me podría explicar en qué consiste el plato del día? Me gustaría saber los ingredientes antes de decidir.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.25,
+    "grammar": 0.2,
+    "pronunciation": 0.15,
+    "content": 0.2
+  },
+  "courseLevels": [
+    "basic",
+    "intermediate"
+  ]
+}

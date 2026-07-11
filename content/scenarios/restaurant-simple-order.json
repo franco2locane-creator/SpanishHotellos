@@ -1,0 +1,55 @@
+{
+  "id": "restaurant-simple-order",
+  "title": "Simple Dinner Order",
+  "titleEs": "Pedido sencillo de cena",
+  "description": "A guest orders a straightforward three-course dinner.",
+  "department": "fnb",
+  "difficulty": 1,
+  "isFree": false,
+  "durationMinutes": 5,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Rossi",
+    "nationality": "Italian",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Relaxed solo diner enjoying a straightforward dinner"
+  },
+  "objectives": [
+    {
+      "id": "greet_and_seat",
+      "label": "Greet and seat the guest"
+    },
+    {
+      "id": "present_menu_specials",
+      "label": "Present the menu and today's specials"
+    },
+    {
+      "id": "take_order_accurately",
+      "label": "Take the order accurately"
+    },
+    {
+      "id": "confirm_drink_order",
+      "label": "Confirm the drink order"
+    },
+    {
+      "id": "thank_and_confirm",
+      "label": "Thank the guest and confirm the full order"
+    }
+  ],
+  "systemContext": "You are dining alone and want a simple, pleasant dinner: a starter, a main course, and a glass of wine. You have no allergies or special requests. You are relaxed and chatty, happy to hear the waiter's recommendations. You respond well to a server who is warm, explains the menu clearly, and takes your order accurately.",
+  "openingLine": "Buenas noches. Para empezar, ¿qué me recomienda de primero?",
+  "rubricWeights": {
+    "fluency": 0.25,
+    "vocabulary": 0.2,
+    "grammar": 0.2,
+    "pronunciation": 0.15,
+    "content": 0.2
+  },
+  "courseLevels": [
+    "basic",
+    "intermediate"
+  ]
+}

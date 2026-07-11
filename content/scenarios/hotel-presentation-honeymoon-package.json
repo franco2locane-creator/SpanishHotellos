@@ -1,0 +1,54 @@
+{
+  "id": "hotel-presentation-honeymoon-package",
+  "title": "Honeymoon Package Presentation",
+  "titleEs": "Presentación del paquete de luna de miel",
+  "description": "A guest planning her honeymoon asks for a discount that cannot be granted.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Ms. Muñoz",
+    "nationality": "Chilean",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Bride-to-be excitedly planning her honeymoon package"
+  },
+  "objectives": [
+    {
+      "id": "present_package_highlights",
+      "label": "Present the room decor, romantic dinner, and spa credit"
+    },
+    {
+      "id": "answer_guest_questions",
+      "label": "Answer the guest's questions"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Politely decline a further discount on the promotional rate"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer a complimentary add-on instead of a price reduction"
+    },
+    {
+      "id": "confirm_booking",
+      "label": "Confirm the booking warmly"
+    }
+  ],
+  "systemContext": "You are planning your honeymoon and are excited about the hotel's honeymoon package, which already includes a romantic dinner and a spa credit at a promotional rate. You ask if the price could be reduced further since you're booking a week-long stay. The rate is already the lowest available and cannot be discounted further, though the hotel can offer a complimentary extra, like breakfast in bed one morning, instead. You are cheerful and easy to please — a clear, warm explanation with a nice alternative leaves you delighted.",
+  "openingLine": "¡Es perfecto! Una pregunta, como vamos a quedarnos una semana entera, ¿sería posible conseguir algún descuento adicional sobre el paquete?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "hotel-presentation-business-traveller",
+  "title": "Business Traveller Presentation",
+  "titleEs": "Presentación para viajero de negocios",
+  "description": "A business guest tours the work facilities and asks a question that must be politely declined.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Meyer",
+    "nationality": "Swiss",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Efficiency-minded business traveller evaluating facilities for a corporate retreat"
+  },
+  "objectives": [
+    {
+      "id": "present_business_facilities",
+      "label": "Present the meeting rooms, wifi, and business centre"
+    },
+    {
+      "id": "highlight_efficiency",
+      "label": "Highlight fast check-in and check-out for groups"
+    },
+    {
+      "id": "answer_guest_questions",
+      "label": "Answer the guest's questions"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Politely decline the very late group checkout request"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer luggage storage or a day-use lounge as an alternative"
+    }
+  ],
+  "systemContext": "You are scouting the hotel for an upcoming corporate retreat and are being shown the business facilities. You're impressed but ask whether, on the retreat's final day, all thirty attendees could get a late checkout until 6 p.m. since flights aren't until evening. The hotel is fully booked that night with arriving guests, so a checkout that late isn't possible — though luggage storage and a day-use lounge could be offered instead. You are pragmatic; if the staff member explains the constraint clearly and offers a workable alternative, you're satisfied. You are unimpressed by vague answers.",
+  "openingLine": "Todo esto me parece muy adecuado para el evento. Una pregunta: el último día, ¿podríamos tener late check-out hasta las seis de la tarde para los treinta asistentes?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

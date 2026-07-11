@@ -1,0 +1,58 @@
+{
+  "id": "complaint-slow-service",
+  "title": "Slow Restaurant Service Complaint",
+  "titleEs": "Queja por servicio lento",
+  "description": "A guest complains about excessively slow service during breakfast.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Weber",
+    "nationality": "Austrian",
+    "mood": "frustrated",
+    "speakingSpeed": "normal",
+    "description": "Guest with a tight morning schedule, frustrated by a slow breakfast service"
+  },
+  "objectives": [
+    {
+      "id": "listen_fully",
+      "label": "Listen fully without interrupting"
+    },
+    {
+      "id": "empathize_genuinely",
+      "label": "Empathize genuinely"
+    },
+    {
+      "id": "apologize_sincerely",
+      "label": "Apologize sincerely"
+    },
+    {
+      "id": "explain_and_solve",
+      "label": "Explain what happened and offer a way to fix it"
+    },
+    {
+      "id": "offer_compensation",
+      "label": "Offer fair compensation"
+    },
+    {
+      "id": "confirm_satisfaction",
+      "label": "Confirm the guest is satisfied"
+    }
+  ],
+  "systemContext": "You waited over forty minutes for a simple breakfast order this morning and had to leave without eating because you had an early meeting. You are frustrated and want to be taken seriously, not brushed off. You will calm down noticeably if the staff member listens without interrupting, genuinely apologises, explains what likely went wrong, and offers a fair resolution — such as a complimentary breakfast tomorrow or a discount on today's bill. You get more upset if they seem dismissive or make excuses.",
+  "openingLine": "Necesito hablar sobre el desayuno de hoy. He esperado más de cuarenta minutos y al final he tenido que irme sin comer nada. Esto no es aceptable.",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

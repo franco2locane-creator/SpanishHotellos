@@ -1,0 +1,55 @@
+{
+  "id": "checkin-room-with-view-request",
+  "title": "Simple Check-In with a Request",
+  "titleEs": "Check-in con petición especial",
+  "description": "A guest with an existing reservation checks in and politely asks for a room with a view.",
+  "department": "front_office",
+  "difficulty": 1,
+  "isFree": false,
+  "durationMinutes": 5,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Larsen",
+    "nationality": "Danish",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Cheerful guest on a short city break with a polite extra request"
+  },
+  "objectives": [
+    {
+      "id": "confirm_reservation",
+      "label": "Confirm the reservation details"
+    },
+    {
+      "id": "verify_id",
+      "label": "Verify identification"
+    },
+    {
+      "id": "note_special_request",
+      "label": "Note the request for a room with a view"
+    },
+    {
+      "id": "explain_checkin_details",
+      "label": "Explain breakfast and checkout time"
+    },
+    {
+      "id": "hand_over_key",
+      "label": "Hand over the room key and close the check-in"
+    }
+  ],
+  "systemContext": "You have a confirmed reservation for two nights for a city break. You would love a room with a view of the street or a landmark if one is available, though you understand it may not be guaranteed. You are relaxed and friendly. You respond warmly if the receptionist checks your reservation, tries to accommodate your request (or explains kindly if it isn't possible), and gives clear information about breakfast and checkout.",
+  "openingLine": "Buenas tardes, tengo una reserva a mi nombre. Y si fuera posible, me encantaría una habitación con vistas, si hay alguna disponible.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.2,
+    "pronunciation": 0.15,
+    "content": 0.25
+  },
+  "courseLevels": [
+    "basic",
+    "intermediate"
+  ]
+}

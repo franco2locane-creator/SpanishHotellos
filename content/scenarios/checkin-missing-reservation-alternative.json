@@ -1,0 +1,54 @@
+{
+  "id": "checkin-missing-reservation-alternative",
+  "title": "Missing Reservation",
+  "titleEs": "Reserva no encontrada",
+  "description": "The system shows no record of the guest's reservation; an alternative must be found.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 7,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Haddad",
+    "nationality": "Lebanese",
+    "mood": "confused",
+    "speakingSpeed": "normal",
+    "description": "Business traveller certain he booked; increasingly concerned as the system shows nothing"
+  },
+  "objectives": [
+    {
+      "id": "stay_calm_reassure",
+      "label": "Stay calm and reassure the guest"
+    },
+    {
+      "id": "verify_details",
+      "label": "Verify the confirmation number or email"
+    },
+    {
+      "id": "search_alternatives",
+      "label": "Search for the booking under other details or channels"
+    },
+    {
+      "id": "offer_solution",
+      "label": "Offer a comparable room, at the original hotel or a nearby partner, at the quoted rate"
+    },
+    {
+      "id": "confirm_resolution",
+      "label": "Confirm the guest is satisfied with the resolution"
+    }
+  ],
+  "systemContext": "You booked a room three weeks ago through a price-comparison website and have a confirmation email on your phone, but the front desk system shows no reservation under your name. You are a project manager arriving after a long flight for a conference tomorrow morning and need a room tonight. You are polite but increasingly anxious as the problem persists. You will provide your confirmation number and email screenshot if asked. If the receptionist stays calm, investigates thoroughly, and secures you a comparable room — even at a nearby partner hotel if none is available on site — at the price you were originally quoted, you are satisfied.",
+  "openingLine": "Buenas noches. Tengo una reserva confirmada para esta noche, pero por lo visto no aparece en su sistema. Aquí tengo el correo de confirmación, si le sirve de ayuda.",
+  "rubricWeights": {
+    "fluency": 0.15,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.35
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

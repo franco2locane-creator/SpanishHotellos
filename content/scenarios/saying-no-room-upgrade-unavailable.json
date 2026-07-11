@@ -1,0 +1,54 @@
+{
+  "id": "saying-no-room-upgrade-unavailable",
+  "title": "Room Upgrade Not Available",
+  "titleEs": "Mejora de habitación no disponible",
+  "description": "A guest requests a free upgrade on a sold-out night and must be told no, with a fair alternative offered.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mrs. Petit",
+    "nationality": "Belgian",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Guest celebrating a birthday, hoping for a complimentary upgrade"
+  },
+  "objectives": [
+    {
+      "id": "acknowledge_occasion",
+      "label": "Acknowledge the birthday occasion"
+    },
+    {
+      "id": "check_availability",
+      "label": "Check availability — the hotel is fully booked"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Decline the upgrade politely"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer a thoughtful complimentary gesture instead"
+    },
+    {
+      "id": "maintain_warm_tone",
+      "label": "Maintain a warm tone throughout"
+    }
+  ],
+  "systemContext": "It's your birthday and you're hoping the hotel might upgrade you to a suite for free, but the hotel is fully booked tonight — there are genuinely no higher-category rooms available to give you. You are warm and not pushy, just hopeful. You respond very well if the receptionist acknowledges the occasion, explains honestly that no upgrade is possible tonight, and offers a thoughtful alternative gesture instead, like a complimentary bottle of cava sent to the room or a late checkout the next morning.",
+  "openingLine": "Hoy es mi cumpleaños, así que pensé en preguntar: ¿habría alguna posibilidad de una mejora de habitación?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

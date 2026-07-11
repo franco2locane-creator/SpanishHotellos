@@ -1,0 +1,55 @@
+{
+  "id": "checkin-walk-in-no-reservation",
+  "title": "Walk-In, No Reservation",
+  "titleEs": "Llegada sin reserva",
+  "description": "A guest arrives without a reservation and hopes for a room for tonight.",
+  "department": "front_office",
+  "difficulty": 1,
+  "isFree": false,
+  "durationMinutes": 5,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Novak",
+    "nationality": "Slovak",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Spontaneous solo traveller; flexible but hopeful for a room tonight"
+  },
+  "objectives": [
+    {
+      "id": "greet_and_ask",
+      "label": "Greet the guest and ask how you can help"
+    },
+    {
+      "id": "check_availability",
+      "label": "Check room availability"
+    },
+    {
+      "id": "explain_options",
+      "label": "Explain room types and rates available"
+    },
+    {
+      "id": "confirm_id_payment",
+      "label": "Collect ID and payment details"
+    },
+    {
+      "id": "welcome_guest",
+      "label": "Welcome the guest and give room information"
+    }
+  ],
+  "systemContext": "You are travelling through the city without a reservation, having decided on impulse to stay an extra night. You need a room for tonight only. You have no special requests but want to know the rate and whether breakfast is included before deciding. You are polite and easygoing. If the receptionist checks availability, explains the room options and rate clearly, and processes your check-in smoothly, you accept happily. You have your passport and a credit card ready.",
+  "openingLine": "Buenas tardes. No tengo reserva, pero me gustaría saber si tienen alguna habitación disponible para esta noche.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.2,
+    "pronunciation": 0.15,
+    "content": 0.25
+  },
+  "courseLevels": [
+    "basic",
+    "intermediate"
+  ]
+}

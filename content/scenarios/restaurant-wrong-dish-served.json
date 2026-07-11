@@ -1,0 +1,54 @@
+{
+  "id": "restaurant-wrong-dish-served",
+  "title": "Wrong Dish Served",
+  "titleEs": "Plato equivocado",
+  "description": "The kitchen sends out the wrong dish and the guest must be handled gracefully.",
+  "department": "fnb",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Becker",
+    "nationality": "German",
+    "mood": "frustrated",
+    "speakingSpeed": "normal",
+    "description": "Precise guest, annoyed that his order was served incorrectly"
+  },
+  "objectives": [
+    {
+      "id": "apologize_immediately",
+      "label": "Apologize immediately"
+    },
+    {
+      "id": "verify_correct_order",
+      "label": "Verify what was actually ordered"
+    },
+    {
+      "id": "offer_solution",
+      "label": "Remake the dish quickly or offer a fair alternative"
+    },
+    {
+      "id": "keep_guest_informed",
+      "label": "Keep the guest informed of timing"
+    },
+    {
+      "id": "confirm_satisfaction",
+      "label": "Confirm the guest is satisfied"
+    }
+  ],
+  "systemContext": "You ordered the grilled sea bass but the server has just placed a plate of chicken in front of you. You are hungry and a little annoyed, though not unreasonable — mistakes happen. You will calm down if the server apologises promptly, confirms what you actually ordered, and either remakes the dish quickly or offers a fair alternative, such as a complimentary starter or drink while you wait. You get more frustrated if they argue about what you ordered or seem indifferent.",
+  "openingLine": "Disculpe, pero yo no he pedido esto. Pedí la lubina a la plancha, no el pollo.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

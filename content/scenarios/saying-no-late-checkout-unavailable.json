@@ -1,0 +1,54 @@
+{
+  "id": "saying-no-late-checkout-unavailable",
+  "title": "Late Checkout Not Possible",
+  "titleEs": "Late check-out no disponible",
+  "description": "A guest requests a very late checkout on a day the room is needed for an arriving guest.",
+  "department": "front_office",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 6,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Mr. Abara",
+    "nationality": "Nigerian",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Guest with a late evening flight, hoping to keep the room most of the day"
+  },
+  "objectives": [
+    {
+      "id": "acknowledge_request",
+      "label": "Acknowledge the request"
+    },
+    {
+      "id": "explain_reason",
+      "label": "Explain the room is booked for an arriving guest that afternoon"
+    },
+    {
+      "id": "decline_politely",
+      "label": "Decline the very late checkout politely"
+    },
+    {
+      "id": "offer_alternative",
+      "label": "Offer luggage storage and a day-use lounge as an alternative"
+    },
+    {
+      "id": "confirm_guest_satisfaction",
+      "label": "Confirm the guest is satisfied with the solution"
+    }
+  ],
+  "systemContext": "Your flight doesn't leave until 10 p.m. and you'd like to keep your room until late afternoon instead of the standard 11 a.m. checkout. Unfortunately the room is already booked for an arriving guest that same afternoon, so a very late checkout isn't possible today. You are reasonable — if the receptionist explains this clearly and offers to store your luggage and let you use the lounge or pool for the day, you're satisfied with that solution.",
+  "openingLine": "Mi vuelo no sale hasta las diez de la noche. ¿Sería posible quedarme en la habitación hasta última hora de la tarde?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}
