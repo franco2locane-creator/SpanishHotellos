@@ -45,9 +45,11 @@ function Sparkline({ values }: { values: number[] }) {
 type Props = {
   /** Ordered oldest -> newest, one entry per attempt, each a full criterion score map. */
   series: Record<CriterionKey, number>[];
+  /** When true, the trailing numeric value renders as a lock glyph — the sparkline shape stays visible. */
+  masked?: boolean;
 };
 
-export default function CriterionTrend({ series }: Props) {
+export default function CriterionTrend({ series, masked }: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Per-Criterion Trend</Text>
@@ -59,7 +61,7 @@ export default function CriterionTrend({ series }: Props) {
             <View key={c.key} style={styles.cell}>
               <Text style={styles.cellLabel}>{c.label}</Text>
               <Sparkline values={series.map(s => s[c.key])} />
-              <Text style={styles.cellVal}>{series[series.length - 1][c.key]}/20</Text>
+              <Text style={styles.cellVal}>{masked ? '🔒' : `${series[series.length - 1][c.key]}/20`}</Text>
             </View>
           ))}
         </View>

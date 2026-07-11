@@ -13,7 +13,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export type MasteryRow = { type: string; avgScore: number; attempts: number };
 
-function MasteryBar({ row }: { row: MasteryRow }) {
+function MasteryBar({ row, masked }: { row: MasteryRow; masked?: boolean }) {
   const color = row.avgScore >= 75 ? '#16A34A' : row.avgScore >= 55 ? '#CA8A04' : '#DC2626';
   return (
     <View style={styles.row}>
@@ -21,17 +21,19 @@ function MasteryBar({ row }: { row: MasteryRow }) {
       <View style={styles.barBg}>
         <View style={[styles.barFill, { width: `${row.avgScore}%`, backgroundColor: color }]} />
       </View>
-      <Text style={[styles.pct, { color }]}>{Math.round(row.avgScore)}%</Text>
+      <Text style={[styles.pct, { color }]}>{masked ? '🔒' : `${Math.round(row.avgScore)}%`}</Text>
     </View>
   );
 }
 
-export default function AssignmentMasteryCard({ rows }: { rows: MasteryRow[] }) {
+type Props = { rows: MasteryRow[]; masked?: boolean };
+
+export default function AssignmentMasteryCard({ rows, masked }: Props) {
   if (rows.length === 0) return null;
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Mastery by Assignment Type</Text>
-      {rows.map(r => <MasteryBar key={r.type} row={r} />)}
+      {rows.map(r => <MasteryBar key={r.type} row={r} masked={masked} />)}
     </View>
   );
 }
