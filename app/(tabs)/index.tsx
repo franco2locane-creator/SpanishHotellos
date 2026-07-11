@@ -1,23 +1,28 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Animated,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePremium, usePreviewPremiumActive } from '@/hooks/usePremium';
 import {
-  getDaysUntilExam, isFinalWeek, getStreak,
-  getTodayChecked, toggleTile, getStudyPlanData, type StudyPlanData,
+  getDaysUntilExam, isFinalWeek, getStreak, getWeekCompletionDots,
+  getTodayChecked, getStudyPlanData, type StudyPlanData, type WeekDot,
 } from '@/lib/today';
 import { dailySeededPick } from '@/lib/dailySeed';
 import { FREE_LIMITS, isFinalWeekModeActive } from '@/lib/premiumGating';
+import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import { scenariosForLevel, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
-import StudyTile from '@/components/today/StudyTile';
+import ReadinessCard from '@/components/progress/ReadinessCard';
 import Skeleton from '@/components/Skeleton';
-import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
+import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { Department, RubricCriterion } from '@/types';
+
+const MILESTONES = [3, 7, 14, 30];
+const DAY_INITIALS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const ALL_CRITERIA: RubricCriterion[] = ['fluency', 'vocabulary', 'grammar', 'pronunciation', 'content'];
 
@@ -35,18 +40,6 @@ function buildScenarioPool(scenarios: ScenarioMeta[], rankedWeakDepts: Departmen
 function buildCriterionPool(rankedCriteria: RubricCriterion[]): RubricCriterion[] {
   return rankedCriteria.length > 0 ? rankedCriteria.slice(0, 3) : ALL_CRITERIA;
 }
-
-const CRITERION_LABELS: Record<string, string> = {
-  fluency: 'Fluency', vocabulary: 'Vocabulary', grammar: 'Grammar',
-  pronunciation: 'Pronunciation', content: 'Content',
-};
-const DRILL_SUBTITLES: Record<string, string> = {
-  fluency:       '5 rapid-response prompts',
-  vocabulary:    '5 hospitality vocabulary fill-ins',
-  grammar:       '5 verb conjugation challenges',
-  pronunciation: '5 tricky-sound pronunciation drills',
-  content:       '5 service scenario completions',
-};
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -85,11 +78,11 @@ export default function TodayScreen() {
   const previewPremiumActive = usePreviewPremiumActive();
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
+  const [weekDots, setWeekDots] = useState<WeekDot[]>([]);
   const [checked, setChecked] = useState<string[]>([]);
   const [planData, setPlanData] = useState<StudyPlanData | null>(null);
-  const [dueCount, setDueCount] = useState(0);
   const [bestDeckId, setBestDeckId] = useState('front-office-basics');
-  const streakScale = useRef(new Animated.Value(1)).current;
+  const [avgMockScore, setAvgMockScore] = useState<number | null>(null);
 
   const days = getDaysUntilExam(user?.examDate);
   // finalWeekEligible is pure date math; finalWeekActive additionally requires
@@ -104,46 +97,43 @@ export default function TodayScreen() {
   useEffect(() => {
     if (!user) return;
     async function load() {
-      const [s, ch, plan] = await Promise.all([
+      const [s, dots, ch, plan, { data: mockData }] = await Promise.all([
         getStreak(),
+        getWeekCompletionDots(),
         getTodayChecked(),
         getStudyPlanData(user!.id, level),
+        supabase
+          .from('mock_attempts')
+          .select('combined_score')
+          .eq('user_id', user!.id)
+          .order('completed_at', { ascending: false })
+          .limit(3),
       ]);
       setStreak(s);
+      setWeekDots(dots);
       setChecked(ch);
       setPlanData(plan);
+      setAvgMockScore(
+        mockData && mockData.length
+          ? mockData.reduce((sum: number, m: { combined_score: number }) => sum + m.combined_score, 0) / mockData.length
+          : null
+      );
 
-      let totalDue = 0;
+      // Best deck = the one with the most cards due, so the guided session's
+      // vocab step opens on whatever actually needs review today.
       let bestDeck = decks.find(d => d.isFree)?.id ?? decks[0]?.id ?? 'front-office-basics';
       let bestCount = 0;
       for (const deck of decks) {
         if (!deck.isFree && !isPremium) continue;
         const ids = loadDeckCards(deck.id).map(c => c.id);
         const n = await getDueCount(user!.id, ids);
-        totalDue += n;
         if (n > bestCount) { bestCount = n; bestDeck = deck.id; }
       }
-      setDueCount(totalDue);
       setBestDeckId(bestDeck);
       setLoading(false);
     }
     load();
   }, [user?.id, level]);
-
-  const handleCheck = useCallback(async (id: string) => {
-    const next = await toggleTile(id);
-    setChecked(next);
-    const s = await getStreak();
-    setStreak(prev => {
-      if (s > prev) {
-        Animated.sequence([
-          Animated.spring(streakScale, { toValue: 1.3, useNativeDriver: true, speed: 20, bounciness: 12 }),
-          Animated.spring(streakScale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 12 }),
-        ]).start();
-      }
-      return s;
-    });
-  }, [streakScale]);
 
   if (loading) {
     return (
@@ -180,6 +170,23 @@ export default function TodayScreen() {
 
   const tilesChecked = new Set(checked);
   const allChecked = tilesChecked.size >= 3;
+  const isMilestone = MILESTONES.includes(streak);
+
+  // Tomorrow's teaser for the hero card's done-state — same daily-seeded
+  // pick premium already uses for today, one day ahead.
+  const tomorrowISO = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const tomorrowTeaser = isPremium && user
+    ? dailySeededPick(scenarios, user.id, 'scenario', tomorrowISO).title
+    : null;
+
+  function handleStart() {
+    useGuidedSessionStore.getState().start({
+      deckId: bestDeckId,
+      scenarioId: scenario.id,
+      drillType: criterion,
+    });
+    router.push(`/vocab/${bestDeckId}?guided=1` as any);
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -208,25 +215,31 @@ export default function TodayScreen() {
           </View>
         </View>
 
-        {/* Streak headline — always rendered (even at 0) for both free and
+        {/* Streak identity — always rendered (even at 0) for both free and
             premium; was previously gated behind streak > 0, which hid it
             for exactly the accounts most likely to be checked: fresh
             installs and anyone who missed a day. Dim at 0 to invite the
             first session rather than showing a bare "0". */}
-        <Animated.View
-          style={[
-            styles.streakHeadline,
-            streak === 0 && styles.streakHeadlineDim,
-            { transform: [{ scale: streakScale }] },
-          ]}
+        <View
+          style={[styles.streakHeadline, streak === 0 && styles.streakHeadlineDim, isMilestone && styles.streakHeadlineMilestone]}
           accessibilityLabel={streak > 0 ? `${streak} day streak` : 'No streak yet — complete a session to start one'}
         >
           <Text style={styles.streakHeadlineFire}>🔥</Text>
           <Text style={styles.streakHeadlineNum}>{streak}</Text>
           <Text style={styles.streakHeadlineLabel}>{streak > 0 ? 'day streak' : 'start your streak today'}</Text>
-        </Animated.View>
+        </View>
 
-        {/* Exam countdown */}
+        {/* 7-day dot row */}
+        <View style={styles.dotRow}>
+          {weekDots.map((d, i) => (
+            <View key={d.dateISO} style={styles.dotCol}>
+              <Text style={styles.dotInitial}>{DAY_INITIALS[i]}</Text>
+              <View style={[styles.dot, d.completed && styles.dotFilled, d.isToday && styles.dotToday]} />
+            </View>
+          ))}
+        </View>
+
+        {/* Exam countdown + readiness */}
         <View
           style={[styles.countdownBar, finalWeekActive && styles.countdownFinalWeek]}
           accessibilityLabel={daysLabel(days)}
@@ -234,6 +247,7 @@ export default function TodayScreen() {
           <Text style={styles.countdownText}>{daysLabel(days)}</Text>
           {finalWeekActive && <Text style={styles.finalWeekLabel}>Final week</Text>}
         </View>
+        <ReadinessCard avgMockScore={avgMockScore} />
 
         {finalWeekActive && (
           <View style={styles.calmCard}>
@@ -259,69 +273,49 @@ export default function TodayScreen() {
           </TouchableOpacity>
         )}
 
-        <View style={styles.sessionHeaderRow}>
-          <Text style={styles.sectionTitle}>
-            {allChecked ? "Today's session complete ✓" : "Your daily session · 15 min"}
-          </Text>
-          {!finalWeekActive && (
-            isPremium ? (
-              <View style={styles.refreshBadge} accessibilityLabel="Refreshed for today">
-                <Text style={styles.refreshBadgeText}>🔄 Fresh today</Text>
-              </View>
-            ) : (
-              <TouchableOpacity
-                style={styles.refreshLockBadge}
-                onPress={() => router.push('/paywall' as any)}
-                accessibilityRole="button"
-                accessibilityLabel="Unlock daily refreshed exercises with Premium"
-              >
-                <Text style={styles.refreshLockText}>🔒 Fresh exercises every day with Premium</Text>
-              </TouchableOpacity>
-            )
-          )}
-        </View>
+        {/* Hero session card — the whole point of the tab */}
+        {allChecked ? (
+          <View style={styles.heroCardDone}>
+            <Text style={styles.heroDoneEmoji}>🎉</Text>
+            <Text style={styles.heroDoneTitle}>Today's session complete</Text>
+            <View style={styles.heroTeaserCard}>
+              <Text style={styles.heroTeaserLabel}>Tomorrow</Text>
+              <Text style={styles.heroTeaserText}>
+                {tomorrowTeaser ? `Practice: ${tomorrowTeaser}` : 'Another focused practice session — see you then.'}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.heroCard}>
+            <Text style={styles.heroTitle}>{finalWeekActive ? 'Final week re-run' : "Today's session"}</Text>
+            <Text style={styles.heroSubtitle}>15 min · vocab · role-play · drill</Text>
 
-        <StudyTile
-          id="vocab"
-          icon="📖"
-          title={dueCount > 0 ? `Review ${dueCount} due card${dueCount !== 1 ? 's' : ''}` : 'Vocab — all caught up'}
-          subtitle={dueCount > 0 ? 'Spaced-repetition review' : 'No cards due today — check back tomorrow'}
-          checked={tilesChecked.has('vocab')}
-          accent={Colors.gold}
-          onPress={() => router.push(`/vocab/${bestDeckId}` as any)}
-          onCheck={() => handleCheck('vocab')}
-        />
+            {!finalWeekActive && (
+              isPremium ? (
+                <View style={styles.refreshBadge} accessibilityLabel="Refreshed for today">
+                  <Text style={styles.refreshBadgeText}>🔄 Fresh today</Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.refreshLockBadge}
+                  onPress={() => router.push('/paywall' as any)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Unlock daily refreshed exercises with Premium"
+                >
+                  <Text style={styles.refreshLockText}>🔒 Fresh exercises every day with Premium</Text>
+                </TouchableOpacity>
+              )
+            )}
 
-        <StudyTile
-          id="scenario"
-          icon="🗣️"
-          title={finalWeekActive ? `Retry: ${scenario.title}` : `Practice: ${scenario.title}`}
-          subtitle={finalWeekActive
-            ? 'Your lowest-scoring scenario — nail it before the exam'
-            : `Targeted at your weakest area: ${scenario.department.replace('_', ' ')}`}
-          checked={tilesChecked.has('scenario')}
-          accent={Colors.navy}
-          onPress={() => router.push(`/roleplay/${scenario.id}` as any)}
-          onCheck={() => handleCheck('scenario')}
-        />
-
-        <StudyTile
-          id="drill"
-          icon="🎯"
-          title={`Drill: ${CRITERION_LABELS[criterion]}`}
-          subtitle={DRILL_SUBTITLES[criterion] ?? '5 rapid micro-exercises'}
-          checked={tilesChecked.has('drill')}
-          accent="#7C3AED"
-          onPress={() => router.push(`/drill/${criterion}` as any)}
-          onCheck={() => handleCheck('drill')}
-        />
-
-        {allChecked && (
-          <View style={styles.doneCard} accessibilityLiveRegion="polite">
-            <Text style={styles.doneTitle}>Session done — great work! 🎉</Text>
-            <Text style={styles.doneText}>
-              Rest up. Come back tomorrow to keep the streak alive.
-            </Text>
+            <TouchableOpacity
+              style={styles.startBtn}
+              onPress={handleStart}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Start today's session"
+            >
+              <Text style={styles.startBtnText}>▶  START</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -343,14 +337,55 @@ const styles = StyleSheet.create({
   },
   previewBadgeText: { color: '#fff', fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   streakHeadline: {
-    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 6,
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 8,
     backgroundColor: '#FFF8EC', borderRadius: Radii.lg,
-    paddingVertical: Spacing.sm, marginBottom: Spacing.md,
+    paddingVertical: Spacing.md, marginBottom: Spacing.sm, ...Shadows.sm,
   },
   streakHeadlineDim: { backgroundColor: '#F3F1EC', opacity: 0.7 },
-  streakHeadlineFire: { fontSize: 26 },
-  streakHeadlineNum: { fontSize: 28, fontWeight: '800', color: Colors.gold },
-  streakHeadlineLabel: { fontSize: Typography.caption, fontWeight: '600', color: Colors.textSecondary },
+  streakHeadlineMilestone: { backgroundColor: Colors.gold },
+  streakHeadlineFire: { fontSize: 34 },
+  streakHeadlineNum: { fontSize: 36, fontWeight: '800', color: Colors.gold },
+  streakHeadlineLabel: { fontSize: Typography.body, fontWeight: '700', color: Colors.textSecondary },
+  dotRow: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    marginBottom: Spacing.md, paddingHorizontal: Spacing.sm,
+  },
+  dotCol: { alignItems: 'center', gap: 4 },
+  dotInitial: { fontSize: 10, fontWeight: '700', color: Colors.textMuted },
+  dot: {
+    width: 18, height: 18, borderRadius: 9,
+    backgroundColor: '#EDE9E3', borderWidth: 1, borderColor: '#E0DAD0',
+  },
+  dotFilled: { backgroundColor: Colors.gold, borderColor: Colors.gold },
+  dotToday: { borderWidth: 2, borderColor: Colors.navy },
+  heroCard: {
+    backgroundColor: Colors.navy, borderRadius: Radii.xl, padding: Spacing.xl,
+    alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.sm, ...Shadows.md,
+  },
+  heroTitle: { fontSize: Typography.title, fontWeight: '800', color: '#fff', textAlign: 'center' },
+  heroSubtitle: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.7)', marginBottom: Spacing.xs },
+  startBtn: {
+    backgroundColor: Colors.gold, borderRadius: Radii.full,
+    paddingHorizontal: Spacing.xxl ?? 48, paddingVertical: Spacing.md,
+    marginTop: Spacing.sm, minWidth: 180, alignItems: 'center', ...Shadows.md,
+  },
+  startBtnText: { color: '#fff', fontWeight: '800', fontSize: Typography.bodyLarge ?? Typography.title, letterSpacing: 1 },
+  heroCardDone: {
+    backgroundColor: '#F0FDF4', borderRadius: Radii.xl, padding: Spacing.xl,
+    alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.sm,
+    borderWidth: 1, borderColor: '#BBF0CE',
+  },
+  heroDoneEmoji: { fontSize: 48 },
+  heroDoneTitle: { fontSize: Typography.heading, fontWeight: '800', color: '#15803D', textAlign: 'center' },
+  heroTeaserCard: {
+    backgroundColor: '#fff', borderRadius: Radii.lg, padding: Spacing.md,
+    marginTop: Spacing.sm, gap: 2, width: '100%',
+  },
+  heroTeaserLabel: {
+    fontSize: 10, fontWeight: '700', color: Colors.gold,
+    textTransform: 'uppercase', letterSpacing: 1,
+  },
+  heroTeaserText: { fontSize: Typography.body, color: Colors.navy, fontWeight: '600' },
   finalWeekLockCard: {
     backgroundColor: '#FFF8EC', borderRadius: Radii.lg, padding: Spacing.md,
     marginBottom: Spacing.md, gap: 4, borderWidth: 1, borderColor: '#F0E4C8',
@@ -375,28 +410,14 @@ const styles = StyleSheet.create({
   },
   calmTitle: { fontSize: Typography.body, fontWeight: '700', color: '#5B21B6' },
   calmText: { fontSize: Typography.caption, color: '#6D28D9', lineHeight: 18 },
-  sessionHeaderRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: Spacing.sm, gap: Spacing.sm, flexWrap: 'wrap',
-  },
-  sectionTitle: {
-    fontSize: Typography.caption, fontWeight: '700', color: Colors.textMuted,
-    textTransform: 'uppercase', letterSpacing: 1,
-  },
   refreshBadge: {
-    backgroundColor: '#F0FDF4', borderRadius: Radii.full,
+    backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: Radii.full,
     paddingHorizontal: Spacing.sm, paddingVertical: 3,
   },
-  refreshBadgeText: { fontSize: 10, fontWeight: '700', color: '#16A34A' },
+  refreshBadgeText: { fontSize: 10, fontWeight: '700', color: '#86EFAC' },
   refreshLockBadge: {
-    backgroundColor: '#FFF8EC', borderRadius: Radii.full,
-    paddingHorizontal: Spacing.sm, paddingVertical: 4, borderWidth: 1, borderColor: '#F0E4C8',
+    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: Radii.full,
+    paddingHorizontal: Spacing.sm, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
   refreshLockText: { fontSize: 10, fontWeight: '700', color: Colors.gold },
-  doneCard: {
-    backgroundColor: '#F0FDF4', borderRadius: Radii.lg, padding: Spacing.md,
-    marginTop: Spacing.sm, gap: 4, borderLeftWidth: 3, borderLeftColor: '#16A34A',
-  },
-  doneTitle: { fontSize: Typography.body, fontWeight: '700', color: '#15803D' },
-  doneText: { fontSize: Typography.caption, color: '#16A34A' },
 });
