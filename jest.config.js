@@ -8,6 +8,7 @@ module.exports = {
   },
   transformIgnorePatterns: ['/node_modules/'],
   globals: {
+    __DEV__: true,
     'ts-jest': {
       tsconfig: 'tsconfig.test.json',
     },

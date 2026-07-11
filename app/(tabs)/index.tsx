@@ -110,7 +110,7 @@ export default function TodayScreen() {
       let bestDeck = decks.find(d => d.isFree)?.id ?? decks[0]?.id ?? 'front-office-basics';
       let bestCount = 0;
       for (const deck of decks) {
-        if (!deck.isFree && !user!.isPremium) continue;
+        if (!deck.isFree && !isPremium) continue;
         const ids = loadDeckCards(deck.id).map(c => c.id);
         const n = await getDueCount(user!.id, ids);
         totalDue += n;

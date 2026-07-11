@@ -6,6 +6,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
+import { usePremium } from '@/hooks/usePremium';
 import { purchasePremium, restorePurchasesFlow, mirrorPremiumToDb } from '@/lib/purchases';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
@@ -66,6 +67,7 @@ export default function PaywallScreen() {
   const { score } = useLocalSearchParams<{ score?: string }>();
   const { user, setPremium } = useAuthStore();
   const { purchaseStatus, errorMessage, setPurchaseStatus, resetStatus } = usePurchaseStore();
+  const isPremium = usePremium();
   const [restoring, setRestoring] = useState(false);
 
   const scoreNum = score ? parseInt(score, 10) : null;
@@ -73,8 +75,8 @@ export default function PaywallScreen() {
 
   // If the user is already premium, dismiss immediately
   useEffect(() => {
-    if (user?.isPremium) router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
-  }, [user?.isPremium]);
+    if (isPremium) router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
+  }, [isPremium]);
 
   // Reset purchase status on unmount so stale state doesn't persist
   useEffect(() => () => { resetStatus(); }, []);

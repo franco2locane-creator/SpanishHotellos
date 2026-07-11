@@ -10,6 +10,11 @@
     "lib/safeJson.ts",
     "lib/scenarios/catalog.ts",
     "lib/vocab/decks.ts",
-    "types/**/*.ts"
+    "lib/grammar/drills.ts",
+    "lib/mockExam/loader.ts",
+    "lib/examDate.ts",
+    "lib/premiumGating.ts",
+    "types/**/*.ts",
+    "expo-env.d.ts"
   ]
 }

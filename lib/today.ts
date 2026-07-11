@@ -4,17 +4,10 @@ import { SCENARIO_CATALOG, scenariosForLevel } from './scenarios/catalog';
 import type { CourseLevel, Department, RubricCriterion } from '@/types';
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
+// Re-exported from lib/examDate.ts (kept dependency-free there) so existing
+// imports of getDaysUntilExam/isFinalWeek from '@/lib/today' keep working.
 
-export function getDaysUntilExam(examDate?: string): number | null {
-  if (!examDate) return null;
-  const diff = Date.parse(examDate) - Date.now();
-  return Math.ceil(diff / 86400000);
-}
-
-export function isFinalWeek(examDate?: string): boolean {
-  const days = getDaysUntilExam(examDate);
-  return days !== null && days >= 0 && days <= 7;
-}
+export { getDaysUntilExam, isFinalWeek } from './examDate';
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);

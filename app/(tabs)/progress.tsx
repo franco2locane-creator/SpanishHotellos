@@ -7,6 +7,7 @@ import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
+import { usePremium } from '@/hooks/usePremium';
 import { SCENARIO_CATALOG, DEPT_LABELS } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getVocabStats } from '@/lib/db/vocab';
@@ -117,6 +118,7 @@ export default function ProgressScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { devPremiumOverride, setDevPremiumOverride } = usePurchaseStore();
+  const isPremium = usePremium();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [mockAttempts, setMockAttempts] = useState<MockAttemptRow[]>([]);
   const [vocabStats, setVocabStats] = useState({ learned: 0, due: 0, total: 0 });
@@ -132,7 +134,7 @@ export default function ProgressScreen() {
 
       async function load() {
         const level = user!.mockLevel ?? 'basic';
-        const decks = decksForLevel(level).filter(d => d.isFree || user!.isPremium);
+        const decks = decksForLevel(level).filter(d => d.isFree || isPremium);
         const allCardIds = decks.flatMap(d => loadDeckCards(d.id).map(c => c.id));
 
         const [{ data: attemptData }, { data: mockData }, vStats, s] = await Promise.all([
@@ -162,7 +164,7 @@ export default function ProgressScreen() {
       load();
 
       return () => { cancelled = true; };
-    }, [user?.id, user?.mockLevel, user?.isPremium])
+    }, [user?.id, user?.mockLevel, isPremium])
   );
 
   const avgScores = CRITERION_KEYS.reduce<Record<CriterionKey, number>>((acc, k) => {

@@ -28,6 +28,9 @@ const MOCK_MODULES: Record<string, () => MockExamData> = {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+/** Total number of mock exams across all levels — always derived from MOCK_MODULES. */
+export const TOTAL_MOCK_COUNT = Object.keys(MOCK_MODULES).length;
+
 export function loadMock(id: string): MockExamData | null {
   return MOCK_MODULES[id]?.() ?? null;
 }

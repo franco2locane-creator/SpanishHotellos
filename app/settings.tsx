@@ -6,6 +6,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
+import { usePremium } from '@/hooks/usePremium';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { MockLevel } from '@/types';
 
@@ -28,6 +29,7 @@ function isoToParts(iso?: string): { dd: string; mm: string; yyyy: string } {
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, setExamDate, setMockLevel } = useAuthStore();
+  const isPremium = usePremium();
 
   const initial = isoToParts(user?.examDate);
   const [day, setDay] = useState(initial.dd);
@@ -115,7 +117,7 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <Text style={styles.fieldLabel}>Email</Text>
           <Text style={styles.fieldValue}>{user?.email ?? '—'}</Text>
-          {user?.isPremium && (
+          {isPremium && (
             <View style={styles.premiumBadge}>
               <Text style={styles.premiumText}>✓ Premium</Text>
             </View>
