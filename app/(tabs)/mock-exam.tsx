@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { useMockExamStore } from '@/stores/mockExamStore';
 import { getMockList } from '@/lib/mockExam/loader';
+import { getCatalogSummary } from '@/lib/premiumGating';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { MockExamData, MockLevel } from '@/types';
 
@@ -98,7 +99,7 @@ export default function MockExamScreen() {
               <View style={styles.freeNotice}>
                 <Text style={styles.freeNoticeText}>
                   Free plan: Mock {level === 'basic' ? 'Basic' : 'Intermediate'} 1 included.{' '}
-                  Upgrade to unlock all {mocks.length > 1 ? mocks.length : 10} exams.
+                  Upgrade to unlock all {getCatalogSummary().mocksPerLevel} exams.
                 </Text>
               </View>
             )}

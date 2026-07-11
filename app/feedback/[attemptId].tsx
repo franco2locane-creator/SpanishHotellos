@@ -5,6 +5,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFeedbackStore } from '@/stores/feedbackStore';
 import { usePremium } from '@/hooks/usePremium';
+import { getPaywallTeaserLine } from '@/lib/premiumGating';
 import RadarChart from '@/components/feedback/RadarChart';
 import CriterionCard from '@/components/feedback/CriterionCard';
 import FixCard from '@/components/feedback/FixCard';
@@ -140,7 +141,7 @@ export default function FeedbackScreen() {
             <View style={styles.upgradeTextWrap}>
               <Text style={styles.upgradeTitle}>Unlock unlimited practice</Text>
               <Text style={styles.upgradeSub}>
-                30+ scenarios · 6 vocab decks · unlimited exams
+                {getPaywallTeaserLine()}
               </Text>
             </View>
             <Text style={styles.upgradeArrow}>→</Text>

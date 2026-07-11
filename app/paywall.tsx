@@ -8,24 +8,34 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { usePremium } from '@/hooks/usePremium';
 import { purchasePremium, restorePurchasesFlow, mirrorPremiumToDb } from '@/lib/purchases';
+import { getCatalogSummary } from '@/lib/premiumGating';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 // ── Feature comparison data ───────────────────────────────────────────────────
+// Every number here is derived from the real content catalog at runtime — never
+// hand-typed — so this can't drift out of sync with what premium actually unlocks.
 
-const FREE_FEATURES = [
-  '2 role-play scenarios',
-  '1 vocab deck (Front Office)',
-  '1 mock exam attempt',
-];
+function buildFeatureLists() {
+  const { scenarioCount, freeScenarioCount, deckCount, mockCount, grammarDrillSetCount } = getCatalogSummary();
 
-const PREMIUM_FEATURES = [
-  'All 30+ role-play scenarios',
-  'All 6 vocabulary decks',
-  'Unlimited mock exams',
-  'Study plan & daily tiles',
-  'Final-week mode',
-  'Progress analytics',
-];
+  const freeFeatures = [
+    `${freeScenarioCount} role-play scenarios`,
+    '1 vocab deck (Front Office)',
+    '1 mock exam attempt',
+  ];
+
+  const premiumFeatures = [
+    `All ${scenarioCount} role-play scenarios`,
+    `All ${deckCount} vocabulary decks`,
+    `All ${mockCount} mock exams — unlimited attempts`,
+    `All ${grammarDrillSetCount} grammar drills`,
+    'Your daily 15-minute practice session',
+    'Final-week mode',
+    'Full progress analytics',
+  ];
+
+  return { freeFeatures, premiumFeatures };
+}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -69,6 +79,7 @@ export default function PaywallScreen() {
   const { purchaseStatus, errorMessage, setPurchaseStatus, resetStatus } = usePurchaseStore();
   const isPremium = usePremium();
   const [restoring, setRestoring] = useState(false);
+  const { freeFeatures, premiumFeatures } = buildFeatureLists();
 
   const scoreNum = score ? parseInt(score, 10) : null;
   const isLoading = purchaseStatus === 'loading';
@@ -149,13 +160,13 @@ export default function PaywallScreen() {
           {/* Free column */}
           <View style={[styles.column, styles.columnFree]}>
             <Text style={styles.columnTitle}>Free</Text>
-            {FREE_FEATURES.map(f => <FeatureRow key={f} text={f} checked={false} />)}
+            {freeFeatures.map(f => <FeatureRow key={f} text={f} checked={false} />)}
           </View>
 
           {/* Premium column */}
           <View style={[styles.column, styles.columnPremium]}>
             <View style={styles.premiumBadge}><Text style={styles.premiumBadgeText}>Premium</Text></View>
-            {PREMIUM_FEATURES.map(f => <FeatureRow key={f} text={f} checked />)}
+            {premiumFeatures.map(f => <FeatureRow key={f} text={f} checked />)}
           </View>
         </View>
 
