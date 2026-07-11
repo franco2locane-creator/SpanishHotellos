@@ -1,0 +1,58 @@
+{
+  "id": "job-interview-housekeeping-supervisor-trainee",
+  "title": "Housekeeping Supervisor Trainee Interview",
+  "titleEs": "Entrevista para prácticas de supervisor de pisos",
+  "description": "A job interview for a housekeeping supervisor trainee position with the hotel director.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 8,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Sra. Marchetti",
+    "nationality": "Italian",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Hotel director interviewing a candidate for a housekeeping supervisor trainee position"
+  },
+  "objectives": [
+    {
+      "id": "greet_professionally",
+      "label": "Greet the director professionally"
+    },
+    {
+      "id": "describe_experience",
+      "label": "Describe relevant experience, including any team coordination"
+    },
+    {
+      "id": "discuss_strengths_weakness",
+      "label": "Discuss a strength and a weakness"
+    },
+    {
+      "id": "explain_motivation",
+      "label": "Explain why you want this position"
+    },
+    {
+      "id": "confirm_availability",
+      "label": "Confirm your availability clearly"
+    },
+    {
+      "id": "ask_question_back",
+      "label": "Ask the director a question about the role or team"
+    }
+  ],
+  "systemContext": "You are the director of a hotel, interviewing a candidate for a trainee position supervising a small housekeeping team. You ask about their experience — even informal — leading or coordinating other people, their attention to detail and quality standards, a strength and a weakness, why this role interests them, and their availability including early mornings. You are professional and formal (usted), somewhat exacting since this role involves responsibility for others' work. Near the end, you expect the candidate to ask you a question about the role or the team — if enough conversation has passed and they haven't, prompt them with '¿Tiene alguna pregunta para mí?'. You respond well to candidates who demonstrate organisation and a calm, fair leadership attitude.",
+  "openingLine": "Buenos días. Este puesto de prácticas incluye coordinar a un pequeño equipo de camareras de piso. ¿Qué experiencia tiene liderando o coordinando a otras personas?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

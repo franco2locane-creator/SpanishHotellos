@@ -1,12 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { SCENARIO_CATALOG, loadScenario, scenariosForLevel } from './catalog';
+import type { AssignmentType } from '@/types';
 
 const CONTENT_DIR = path.join(__dirname, '../../content/scenarios');
 
 describe('SCENARIO_CATALOG completeness', () => {
-  it('has exactly 28 scenarios', () => {
-    expect(SCENARIO_CATALOG).toHaveLength(28);
+  it('has exactly 32 scenarios', () => {
+    expect(SCENARIO_CATALOG).toHaveLength(32);
   });
 
   it('every content/scenarios/*.json file on disk has a matching catalog entry', () => {
@@ -49,18 +50,46 @@ describe('SCENARIO_CATALOG completeness', () => {
     const checkin = ['checkin-walk-in-no-reservation', 'checkin-room-with-view-request', 'checkin-missing-reservation-alternative', 'checkin-group-arrival', 'checkin-card-declined', 'overbooking'];
     const restaurant = ['restaurant-simple-order', 'restaurant-dish-of-day-question', 'restaurant-wrong-dish-served', 'restaurant-no-table-wait-alternative', 'restaurant-wine-recommendation', 'restaurant-allergy-order'];
     const hotelPresentation = ['hotel-presentation-family-suite', 'hotel-presentation-business-traveller', 'hotel-presentation-honeymoon-package', 'hotel-presentation-spa-wellness'];
+    const jobInterview = ['job-interview-front-office-trainee', 'job-interview-fnb-waiter-trainee', 'job-interview-housekeeping-supervisor-trainee', 'job-interview-kitchen-assistant-trainee'];
     const sayingNo = ['saying-no-early-checkin-unavailable', 'saying-no-pet-not-allowed', 'saying-no-discount-request', 'saying-no-room-upgrade-unavailable', 'saying-no-late-checkout-unavailable'];
     const complaint = ['complaint-slow-service', 'complaint-wrong-bill', 'complaint-room-not-cleaned', 'complaint-broken-ac', 'complaint-double-charge-checkout', 'noisy-room-complaint'];
 
     expect(checkin).toHaveLength(6);
     expect(restaurant).toHaveLength(6);
     expect(hotelPresentation).toHaveLength(4);
+    expect(jobInterview).toHaveLength(4);
     expect(sayingNo).toHaveLength(5);
     expect(complaint).toHaveLength(6);
 
     const catalogIds = new Set(SCENARIO_CATALOG.map(s => s.id));
-    for (const id of [...checkin, ...restaurant, ...hotelPresentation, ...sayingNo, ...complaint, 'lost-luggage']) {
+    for (const id of [...checkin, ...restaurant, ...hotelPresentation, ...jobInterview, ...sayingNo, ...complaint, 'lost-luggage']) {
       expect(catalogIds.has(id)).toBe(true);
     }
+  });
+
+  it('every scenario in an assignmentType-rotation category is tagged with that assignmentType', () => {
+    const expected: Record<string, AssignmentType> = {
+      'checkin-walk-in-no-reservation': 'checkin', 'checkin-room-with-view-request': 'checkin',
+      'checkin-missing-reservation-alternative': 'checkin', 'checkin-group-arrival': 'checkin',
+      'checkin-card-declined': 'checkin', 'overbooking': 'checkin',
+      'restaurant-simple-order': 'restaurant', 'restaurant-dish-of-day-question': 'restaurant',
+      'restaurant-wrong-dish-served': 'restaurant', 'restaurant-no-table-wait-alternative': 'restaurant',
+      'restaurant-wine-recommendation': 'restaurant', 'restaurant-allergy-order': 'restaurant',
+      'hotel-presentation-family-suite': 'hotel_presentation', 'hotel-presentation-business-traveller': 'hotel_presentation',
+      'hotel-presentation-honeymoon-package': 'hotel_presentation', 'hotel-presentation-spa-wellness': 'hotel_presentation',
+      'job-interview-front-office-trainee': 'job_interview', 'job-interview-fnb-waiter-trainee': 'job_interview',
+      'job-interview-housekeeping-supervisor-trainee': 'job_interview', 'job-interview-kitchen-assistant-trainee': 'job_interview',
+      'saying-no-early-checkin-unavailable': 'saying_no', 'saying-no-pet-not-allowed': 'saying_no',
+      'saying-no-discount-request': 'saying_no', 'saying-no-room-upgrade-unavailable': 'saying_no',
+      'saying-no-late-checkout-unavailable': 'saying_no',
+      'complaint-slow-service': 'complaint', 'complaint-wrong-bill': 'complaint',
+      'complaint-room-not-cleaned': 'complaint', 'complaint-broken-ac': 'complaint',
+      'complaint-double-charge-checkout': 'complaint', 'noisy-room-complaint': 'complaint',
+    };
+    for (const [id, type] of Object.entries(expected)) {
+      const meta = SCENARIO_CATALOG.find(s => s.id === id);
+      expect(meta?.assignmentType).toBe(type);
+    }
+    expect(SCENARIO_CATALOG.find(s => s.id === 'lost-luggage')?.assignmentType).toBeUndefined();
   });
 });

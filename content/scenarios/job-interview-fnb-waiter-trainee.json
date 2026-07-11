@@ -1,0 +1,58 @@
+{
+  "id": "job-interview-fnb-waiter-trainee",
+  "title": "F&B Waiter Trainee Interview",
+  "titleEs": "Entrevista para prácticas de camarero",
+  "description": "A job interview for a restaurant waiter trainee position with the hotel director.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 8,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Sr. Almeida",
+    "nationality": "Portuguese",
+    "mood": "friendly",
+    "speakingSpeed": "normal",
+    "description": "Hotel director interviewing a candidate for a restaurant waiter trainee position"
+  },
+  "objectives": [
+    {
+      "id": "greet_professionally",
+      "label": "Greet the director professionally"
+    },
+    {
+      "id": "describe_experience",
+      "label": "Describe relevant service or hospitality experience"
+    },
+    {
+      "id": "discuss_strengths_weakness",
+      "label": "Discuss a strength and a weakness"
+    },
+    {
+      "id": "explain_motivation",
+      "label": "Explain why you want this position"
+    },
+    {
+      "id": "confirm_availability",
+      "label": "Confirm your availability clearly"
+    },
+    {
+      "id": "ask_question_back",
+      "label": "Ask the director a question about the role or restaurant"
+    }
+  ],
+  "systemContext": "You are the director of a hotel, interviewing a candidate for a trainee position serving tables in the hotel restaurant. You ask what experience they have serving customers or working in a team, under pressure during busy service. You ask about a strength and a weakness, why they're drawn to F&B specifically, and their availability, including evenings and weekends since restaurant service requires it. You are warm and approachable but still formal (usted) and evaluative. Near the end, you expect the candidate to ask you a question about the role — if enough conversation has passed and they haven't, prompt them with '¿Tiene alguna pregunta para mí?'. You respond well to candidates who show genuine enthusiasm for service and a realistic understanding of the pace of restaurant work.",
+  "openingLine": "Buenas tardes, gracias por venir. Cuénteme, ¿qué experiencia tiene sirviendo mesas o atendiendo a clientes?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "job-interview-kitchen-assistant-trainee",
+  "title": "Kitchen Assistant Trainee Interview",
+  "titleEs": "Entrevista para prácticas de ayudante de cocina",
+  "description": "A job interview for a kitchen assistant trainee position with the hotel director.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 8,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Sr. Haas",
+    "nationality": "German",
+    "mood": "demanding",
+    "speakingSpeed": "normal",
+    "description": "Hotel director interviewing a candidate for a kitchen assistant trainee position"
+  },
+  "objectives": [
+    {
+      "id": "greet_professionally",
+      "label": "Greet the director professionally"
+    },
+    {
+      "id": "describe_experience",
+      "label": "Describe relevant kitchen experience or training"
+    },
+    {
+      "id": "discuss_strengths_weakness",
+      "label": "Discuss a strength and a weakness"
+    },
+    {
+      "id": "explain_motivation",
+      "label": "Explain why you want this position"
+    },
+    {
+      "id": "confirm_availability",
+      "label": "Confirm your availability clearly"
+    },
+    {
+      "id": "ask_question_back",
+      "label": "Ask the director a question about the role or kitchen"
+    }
+  ],
+  "systemContext": "You are the director of a hotel, interviewing a candidate for a trainee position assisting in the kitchen. You ask about their culinary training or experience so far, how they handle the pace and pressure of a professional kitchen, a strength and a weakness, why they want this specific role, and their availability including split shifts. You are demanding and exacting — kitchens run on discipline — but fair, formal (usted) throughout. Near the end, you expect the candidate to ask you a question about the role or kitchen — if enough conversation has passed and they haven't, prompt them with '¿Tiene alguna pregunta para mí?'. You respond well to candidates who show discipline, humility about what they still need to learn, and genuine interest in the kitchen.",
+  "openingLine": "Buenas tardes. Empecemos por su experiencia en cocina, aunque sea a nivel formativo. ¿Qué ha aprendido hasta ahora?",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}

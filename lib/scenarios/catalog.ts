@@ -1,4 +1,4 @@
-import type { CourseLevel, Department, Scenario } from '@/types';
+import type { AssignmentType, CourseLevel, Department, Scenario } from '@/types';
 
 // ── Catalogue metadata (no card content loaded until needed) ──────────────────
 
@@ -13,6 +13,15 @@ export type ScenarioMeta = {
   personaPreview: string;
   durationMinutes: number;
   courseLevels: CourseLevel[];
+  /**
+   * Which real oral-exam assignment type this scenario is a practice
+   * equivalent of (types/mock.ts's AssignmentType) — the taxonomy the daily
+   * guided session's Step 2 rotates through, so "today's role-play" is
+   * always literally something that can appear on the exam. Undefined for
+   * scenarios that don't map cleanly onto one (e.g. lost-luggage) — those
+   * stay browsable in Practice but are excluded from the daily rotation.
+   */
+  assignmentType?: AssignmentType;
 };
 
 export const SCENARIO_CATALOG: ScenarioMeta[] = [
@@ -27,6 +36,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Anderson · British · frustrated',
     durationMinutes: 5,
     courseLevels: ['basic', 'intermediate'],
+    assignmentType: 'complaint',
   },
   {
     id: 'restaurant-allergy-order',
@@ -39,6 +49,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Madame Dupont · French · composed',
     durationMinutes: 6,
     courseLevels: ['basic', 'intermediate'],
+    assignmentType: 'restaurant',
   },
   {
     id: 'overbooking',
@@ -51,6 +62,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Don Ramírez · Mexican · demanding',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'checkin',
   },
   {
     id: 'lost-luggage',
@@ -77,6 +89,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Novak · Slovak · neutral',
     durationMinutes: 5,
     courseLevels: ['basic', 'intermediate'],
+    assignmentType: 'checkin',
   },
   {
     id: 'checkin-room-with-view-request',
@@ -89,6 +102,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Larsen · Danish · friendly',
     durationMinutes: 5,
     courseLevels: ['basic', 'intermediate'],
+    assignmentType: 'checkin',
   },
   {
     id: 'checkin-missing-reservation-alternative',
@@ -101,6 +115,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Haddad · Lebanese · confused',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'checkin',
   },
   {
     id: 'checkin-group-arrival',
@@ -113,6 +128,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Alves · Brazilian · neutral',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'checkin',
   },
   {
     id: 'checkin-card-declined',
@@ -125,6 +141,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Ferreira · Portuguese · frustrated',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'checkin',
   },
 
   // ── Restaurant ────────────────────────────────────────────────────────────
@@ -139,6 +156,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Rossi · Italian · friendly',
     durationMinutes: 5,
     courseLevels: ['basic', 'intermediate'],
+    assignmentType: 'restaurant',
   },
   {
     id: 'restaurant-dish-of-day-question',
@@ -151,6 +169,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Eriksson · Swedish · neutral',
     durationMinutes: 5,
     courseLevels: ['basic', 'intermediate'],
+    assignmentType: 'restaurant',
   },
   {
     id: 'restaurant-wrong-dish-served',
@@ -163,6 +182,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Becker · German · frustrated',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'restaurant',
   },
   {
     id: 'restaurant-no-table-wait-alternative',
@@ -175,6 +195,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Ms. Tanaka · Japanese · neutral',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'restaurant',
   },
   {
     id: 'restaurant-wine-recommendation',
@@ -187,6 +208,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Fernández · Argentinian · friendly',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'restaurant',
   },
 
   // ── Hotel presentation ────────────────────────────────────────────────────
@@ -201,6 +223,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Kowalski · Polish · friendly',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'hotel_presentation',
   },
   {
     id: 'hotel-presentation-business-traveller',
@@ -213,6 +236,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Meyer · Swiss · neutral',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'hotel_presentation',
   },
   {
     id: 'hotel-presentation-honeymoon-package',
@@ -225,6 +249,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Ms. Muñoz · Chilean · friendly',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'hotel_presentation',
   },
   {
     id: 'hotel-presentation-spa-wellness',
@@ -237,6 +262,61 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. van Dijk · Dutch · demanding',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'hotel_presentation',
+  },
+
+  // ── Job interview ─────────────────────────────────────────────────────────
+  {
+    id: 'job-interview-front-office-trainee',
+    title: 'Front Office Trainee Interview',
+    titleEs: 'Entrevista para prácticas en recepción',
+    description: 'A job interview for a front office trainee position with the hotel director.',
+    department: 'management',
+    difficulty: 2,
+    isFree: false,
+    personaPreview: 'Sra. Delgado · Spanish · neutral',
+    durationMinutes: 8,
+    courseLevels: ['intermediate'],
+    assignmentType: 'job_interview',
+  },
+  {
+    id: 'job-interview-fnb-waiter-trainee',
+    title: 'F&B Waiter Trainee Interview',
+    titleEs: 'Entrevista para prácticas de camarero',
+    description: 'A job interview for a restaurant waiter trainee position with the hotel director.',
+    department: 'management',
+    difficulty: 2,
+    isFree: false,
+    personaPreview: 'Sr. Almeida · Portuguese · friendly',
+    durationMinutes: 8,
+    courseLevels: ['intermediate'],
+    assignmentType: 'job_interview',
+  },
+  {
+    id: 'job-interview-housekeeping-supervisor-trainee',
+    title: 'Housekeeping Supervisor Trainee Interview',
+    titleEs: 'Entrevista para prácticas de supervisor de pisos',
+    description: 'A job interview for a housekeeping supervisor trainee position with the hotel director.',
+    department: 'management',
+    difficulty: 2,
+    isFree: false,
+    personaPreview: 'Sra. Marchetti · Italian · neutral',
+    durationMinutes: 8,
+    courseLevels: ['intermediate'],
+    assignmentType: 'job_interview',
+  },
+  {
+    id: 'job-interview-kitchen-assistant-trainee',
+    title: 'Kitchen Assistant Trainee Interview',
+    titleEs: 'Entrevista para prácticas de ayudante de cocina',
+    description: 'A job interview for a kitchen assistant trainee position with the hotel director.',
+    department: 'management',
+    difficulty: 2,
+    isFree: false,
+    personaPreview: 'Sr. Haas · German · demanding',
+    durationMinutes: 8,
+    courseLevels: ['intermediate'],
+    assignmentType: 'job_interview',
   },
 
   // ── Saying no ─────────────────────────────────────────────────────────────
@@ -251,6 +331,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Johansson · Norwegian · neutral',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'saying_no',
   },
   {
     id: 'saying-no-pet-not-allowed',
@@ -263,6 +344,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Petrov · Russian · frustrated',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'saying_no',
   },
   {
     id: 'saying-no-discount-request',
@@ -275,6 +357,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Osei · Ghanaian · demanding',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'saying_no',
   },
   {
     id: 'saying-no-room-upgrade-unavailable',
@@ -287,6 +370,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Petit · Belgian · friendly',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'saying_no',
   },
   {
     id: 'saying-no-late-checkout-unavailable',
@@ -299,6 +383,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Abara · Nigerian · neutral',
     durationMinutes: 6,
     courseLevels: ['intermediate'],
+    assignmentType: 'saying_no',
   },
 
   // ── Complaint handling ────────────────────────────────────────────────────
@@ -313,6 +398,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Weber · Austrian · frustrated',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'complaint',
   },
   {
     id: 'complaint-wrong-bill',
@@ -325,6 +411,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Lindqvist · Finnish · demanding',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'complaint',
   },
   {
     id: 'complaint-room-not-cleaned',
@@ -337,6 +424,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Ms. Zhang · Chinese · frustrated',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'complaint',
   },
   {
     id: 'complaint-broken-ac',
@@ -349,6 +437,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mr. Farouk · Egyptian · frustrated',
     durationMinutes: 7,
     courseLevels: ['intermediate'],
+    assignmentType: 'complaint',
   },
   {
     id: 'complaint-double-charge-checkout',
@@ -361,6 +450,7 @@ export const SCENARIO_CATALOG: ScenarioMeta[] = [
     personaPreview: 'Mrs. Petrova · Bulgarian · demanding',
     durationMinutes: 8,
     courseLevels: ['intermediate'],
+    assignmentType: 'complaint',
   },
 ];
 
@@ -393,6 +483,11 @@ const SCENARIO_MODULES: Record<string, () => Scenario> = {
   'hotel-presentation-business-traveller': () => require('@/content/scenarios/hotel-presentation-business-traveller.json') as Scenario,
   'hotel-presentation-honeymoon-package':  () => require('@/content/scenarios/hotel-presentation-honeymoon-package.json') as Scenario,
   'hotel-presentation-spa-wellness':       () => require('@/content/scenarios/hotel-presentation-spa-wellness.json') as Scenario,
+
+  'job-interview-front-office-trainee':            () => require('@/content/scenarios/job-interview-front-office-trainee.json') as Scenario,
+  'job-interview-fnb-waiter-trainee':              () => require('@/content/scenarios/job-interview-fnb-waiter-trainee.json') as Scenario,
+  'job-interview-housekeeping-supervisor-trainee': () => require('@/content/scenarios/job-interview-housekeeping-supervisor-trainee.json') as Scenario,
+  'job-interview-kitchen-assistant-trainee':       () => require('@/content/scenarios/job-interview-kitchen-assistant-trainee.json') as Scenario,
 
   'saying-no-early-checkin-unavailable':  () => require('@/content/scenarios/saying-no-early-checkin-unavailable.json') as Scenario,
   'saying-no-pet-not-allowed':            () => require('@/content/scenarios/saying-no-pet-not-allowed.json') as Scenario,

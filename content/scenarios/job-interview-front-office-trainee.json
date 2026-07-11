@@ -1,0 +1,58 @@
+{
+  "id": "job-interview-front-office-trainee",
+  "title": "Front Office Trainee Interview",
+  "titleEs": "Entrevista para prácticas en recepción",
+  "description": "A job interview for a front office trainee position with the hotel director.",
+  "department": "management",
+  "difficulty": 2,
+  "isFree": false,
+  "durationMinutes": 8,
+  "examFormats": [
+    "roleplay"
+  ],
+  "guestPersona": {
+    "name": "Sra. Delgado",
+    "nationality": "Spanish",
+    "mood": "neutral",
+    "speakingSpeed": "normal",
+    "description": "Hotel director interviewing a candidate for a front office trainee position"
+  },
+  "objectives": [
+    {
+      "id": "greet_professionally",
+      "label": "Greet the director professionally"
+    },
+    {
+      "id": "describe_experience",
+      "label": "Describe relevant previous experience or studies"
+    },
+    {
+      "id": "discuss_strengths_weakness",
+      "label": "Discuss a strength and a weakness"
+    },
+    {
+      "id": "explain_motivation",
+      "label": "Explain why you want this position"
+    },
+    {
+      "id": "confirm_availability",
+      "label": "Confirm your availability clearly"
+    },
+    {
+      "id": "ask_question_back",
+      "label": "Ask the director a question about the role or hotel"
+    }
+  ],
+  "systemContext": "You are the director of a hotel, interviewing a candidate for a front office trainee position. You ask about their previous experience (even if just studies), their strengths and one weakness, why they want to work at this hotel specifically, and their availability (dates, full-time or part-time). You are professional, formal (usted), and encouraging but evaluative. Near the end of the interview, you expect the candidate to ask you at least one question about the role or the hotel — if a reasonable amount of conversation has passed and they haven't, prompt them directly by asking '¿Tiene alguna pregunta para mí?'. You respond warmly to clear, confident, well-structured answers, and take note if the candidate seems unprepared or vague.",
+  "openingLine": "Buenos días, siéntese, por favor. Empecemos: hábleme un poco de su experiencia previa en el sector hotelero.",
+  "rubricWeights": {
+    "fluency": 0.2,
+    "vocabulary": 0.2,
+    "grammar": 0.15,
+    "pronunciation": 0.15,
+    "content": 0.3
+  },
+  "courseLevels": [
+    "intermediate"
+  ]
+}
