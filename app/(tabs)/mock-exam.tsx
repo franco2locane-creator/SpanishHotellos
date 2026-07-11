@@ -8,7 +8,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { useMockExamStore } from '@/stores/mockExamStore';
 import { getMockList } from '@/lib/mockExam/loader';
-import { getCatalogSummary } from '@/lib/premiumGating';
+import { getCatalogSummary, canStartMockExam } from '@/lib/premiumGating';
+import { getMockExamAttemptCount } from '@/lib/today';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { MockExamData, MockLevel } from '@/types';
 
@@ -56,20 +57,29 @@ export default function MockExamScreen() {
   const { startExam } = useMockExamStore();
   const [mocks, setMocks] = useState<MockExamData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [attemptCount, setAttemptCount] = useState(0);
 
   const level: MockLevel = user?.mockLevel ?? 'basic';
+  const canStart = canStartMockExam(isPremium, attemptCount);
 
   useEffect(() => {
     const list = getMockList(level, isPremium);
     setMocks(list);
-    setLoading(false);
-  }, [level, isPremium]);
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    getMockExamAttemptCount(user.id).then(count => {
+      setAttemptCount(count);
+      setLoading(false);
+    });
+  }, [level, isPremium, user?.id]);
 
   function handleStart(mock: MockExamData) {
     const isFirstMock = mock.number === 1;
-    const isFreeAllowed = isFirstMock || isPremium;
+    const isFreeAllowed = isFirstMock && canStart;
 
-    if (!isFreeAllowed) {
+    if (!isPremium && !isFreeAllowed) {
       router.push('/paywall' as any);
       return;
     }
@@ -98,14 +108,17 @@ export default function MockExamScreen() {
             {!isPremium && (
               <View style={styles.freeNotice}>
                 <Text style={styles.freeNoticeText}>
-                  Free plan: Mock {level === 'basic' ? 'Basic' : 'Intermediate'} 1 included.{' '}
-                  Upgrade to unlock all {getCatalogSummary().mocksPerLevel} exams.
+                  {canStart
+                    ? 'Free plan: 1 mock exam attempt total. Upgrade to unlock all '
+                      + `${getCatalogSummary().mocksPerLevel} ${level === 'basic' ? 'Basic' : 'Intermediate'} exams with unlimited attempts.`
+                    : "You've used your free mock exam attempt. Upgrade to unlock all "
+                      + `${getCatalogSummary().mocksPerLevel} ${level === 'basic' ? 'Basic' : 'Intermediate'} exams with unlimited attempts.`}
                 </Text>
               </View>
             )}
 
             {mocks.map((mock) => {
-              const locked = !isPremium && mock.number !== 1;
+              const locked = !isPremium && (mock.number !== 1 || !canStart);
               return (
                 <MockCard
                   key={mock.id}

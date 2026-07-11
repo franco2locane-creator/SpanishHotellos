@@ -10,6 +10,7 @@ import {
   getTodayChecked, toggleTile, getStudyPlanData, type StudyPlanData,
 } from '@/lib/today';
 import { dailySeededPick } from '@/lib/dailySeed';
+import { FREE_LIMITS } from '@/lib/premiumGating';
 import { scenariosForLevel, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
@@ -154,9 +155,14 @@ export default function TodayScreen() {
     ? (planData?.lowestScenarioId ?? planData?.weakestScenarioId ?? scenarios[0]?.id)
     : (dailyScenario?.id ?? planData?.weakestScenarioId ?? scenarios[0]?.id);
   const scenario = scenarios.find(s => s.id === scenarioId) ?? scenarios[0];
-  const criterion = finalWeek
-    ? (planData?.weakestCriterion ?? 'content')
-    : (dailyCriterion ?? planData?.weakestCriterion ?? 'content');
+  // Free tier only ever unlocks the free demo drill type (see canAccessDemoDrill
+  // in lib/premiumGating.ts) — pin the tile to it rather than a weakest-criterion
+  // pick that could resolve to a type the user can't actually open.
+  const criterion = !isPremium
+    ? FREE_LIMITS.grammarDemoDrillType
+    : finalWeek
+      ? (planData?.weakestCriterion ?? 'content')
+      : (dailyCriterion ?? planData?.weakestCriterion ?? 'content');
 
   const tilesChecked = new Set(checked);
   const allChecked = tilesChecked.size >= 3;

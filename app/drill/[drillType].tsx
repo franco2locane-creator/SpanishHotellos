@@ -8,6 +8,8 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
+import { usePremium } from '@/hooks/usePremium';
+import { canAccessDemoDrill } from '@/lib/premiumGating';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { FixItem } from '@/lib/api/grade';
 
@@ -111,8 +113,10 @@ type Phase = 'ready' | 'recording' | 'result' | 'done';
 export default function DrillScreen() {
   const { drillType } = useLocalSearchParams<{ drillType: string }>();
   const router = useRouter();
+  const isPremium = usePremium();
 
   const config = DRILLS[drillType as FixItem['drillType']];
+  const locked = !!drillType && !canAccessDemoDrill(drillType, isPremium);
   const [qi, setQi] = useState(0);
   const [phase, setPhase] = useState<Phase>('ready');
   const [spoken, setSpoken] = useState('');
@@ -169,6 +173,21 @@ export default function DrillScreen() {
     return (
       <SafeAreaView style={styles.screen}>
         <Text style={{ padding: Spacing.xl, color: Colors.error }}>Unknown drill type.</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (locked) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.doneBlock}>
+          <Text style={styles.doneEmoji}>🔒</Text>
+          <Text style={styles.doneTitle}>Premium drill</Text>
+          <Text style={styles.doneSub}>Unlock every daily drill with Spanish4Hoteleros Premium.</Text>
+          <TouchableOpacity style={styles.doneBtn} onPress={() => router.push('/paywall' as any)}>
+            <Text style={styles.doneBtnText}>Unlock — €9.99</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
