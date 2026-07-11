@@ -17,6 +17,7 @@ import { scenariosForLevel, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
 import ReadinessCard from '@/components/progress/ReadinessCard';
+import LeaderboardCard from '@/components/today/LeaderboardCard';
 import Skeleton from '@/components/Skeleton';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { Department, RubricCriterion } from '@/types';
@@ -238,6 +239,9 @@ export default function TodayScreen() {
             </View>
           ))}
         </View>
+
+        {/* Leaderboard — the daily social hook, free for both tiers */}
+        <LeaderboardCard />
 
         {/* Exam countdown + readiness */}
         <View

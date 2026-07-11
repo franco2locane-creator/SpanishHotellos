@@ -9,6 +9,7 @@ import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import { getStreak, getTodayChecked } from '@/lib/today';
 import { scenariosForLevel } from '@/lib/scenarios/catalog';
 import { dailySeededPick } from '@/lib/dailySeed';
+import { awardDailyPoints, type AwardResult } from '@/lib/api/leaderboard';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 const MILESTONES = [3, 7, 14, 30];
@@ -32,6 +33,8 @@ export default function SessionCompleteScreen() {
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
   const [fullyCompleted, setFullyCompleted] = useState(false);
+  const [awardResult, setAwardResult] = useState<AwardResult | null>(null);
+  const [awardLoading, setAwardLoading] = useState(false);
   const flameScale = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
@@ -48,6 +51,14 @@ export default function SessionCompleteScreen() {
           Animated.spring(flameScale, { toValue: 1.2, useNativeDriver: true, speed: 14, bounciness: 14 }),
           Animated.spring(flameScale, { toValue: 1, useNativeDriver: true, speed: 14, bounciness: 8 }),
         ]).start();
+
+        // Points are a nice-to-have on top of the celebration — a failed
+        // award call (offline, etc.) should never block the moment itself.
+        setAwardLoading(true);
+        awardDailyPoints(s)
+          .then(setAwardResult)
+          .catch(() => {})
+          .finally(() => setAwardLoading(false));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,6 +108,16 @@ export default function SessionCompleteScreen() {
           </View>
         )}
 
+        {awardLoading ? (
+          <ActivityIndicator size="small" color={Colors.gold} style={{ marginTop: Spacing.xs }} />
+        ) : awardResult ? (
+          <Text style={styles.pointsText}>
+            {awardResult.pointsAwarded > 0
+              ? `+${awardResult.pointsAwarded} points · #${awardResult.weeklyRank} this week`
+              : `#${awardResult.weeklyRank} this week`}
+          </Text>
+        ) : null}
+
         <View style={styles.teaserCard}>
           <Text style={styles.teaserLabel}>Tomorrow</Text>
           <Text style={styles.teaserText}>
@@ -122,6 +143,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm, marginTop: Spacing.xs,
   },
   milestoneText: { color: '#fff', fontWeight: '700', fontSize: Typography.body, textAlign: 'center' },
+  pointsText: { fontSize: Typography.body, fontWeight: '700', color: Colors.gold, marginTop: Spacing.xs },
   teaserCard: {
     backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: Radii.lg,
     padding: Spacing.lg, marginTop: Spacing.lg, gap: 4, width: '100%', ...Shadows.sm,
