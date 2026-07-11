@@ -84,6 +84,51 @@ export async function getVocabStats(
   };
 }
 
+/** A card is "mastered" once its SRS interval reaches this many days —
+ *  matches the standard SRS "mature card" convention (e.g. Anki's default). */
+export const MASTERED_INTERVAL_DAYS = 21;
+
+export type DeckCoverageStats = { seen: number; learned: number; mastered: number };
+
+/**
+ * Per-deck coverage for the Progress tab: seen = has any progress row at all
+ * (reviewed at least once, regardless of outcome), learned = passed at least
+ * once (repetitions >= 1, same definition as getVocabStats), mastered =
+ * interval >= MASTERED_INTERVAL_DAYS.
+ */
+export async function getDeckCoverage(
+  userId: string,
+  cardIds: string[],
+): Promise<DeckCoverageStats> {
+  if (Platform.OS === 'web' || !cardIds.length) return { seen: 0, learned: 0, mastered: 0 };
+  const db = await getDb();
+  const placeholders = cardIds.map(() => '?').join(',');
+
+  const [seenRow, learnedRow, masteredRow] = await Promise.all([
+    db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM vocab_progress
+       WHERE user_id = ? AND card_id IN (${placeholders})`,
+      [userId, ...cardIds],
+    ),
+    db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM vocab_progress
+       WHERE user_id = ? AND card_id IN (${placeholders}) AND repetitions >= 1`,
+      [userId, ...cardIds],
+    ),
+    db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) AS count FROM vocab_progress
+       WHERE user_id = ? AND card_id IN (${placeholders}) AND interval >= ?`,
+      [userId, ...cardIds, MASTERED_INTERVAL_DAYS],
+    ),
+  ]);
+
+  return {
+    seen: seenRow?.count ?? 0,
+    learned: learnedRow?.count ?? 0,
+    mastered: masteredRow?.count ?? 0,
+  };
+}
+
 /** Returns due card IDs (overdue + new), capped at 20 per session. */
 export async function getDueCardIds(
   userId: string,
