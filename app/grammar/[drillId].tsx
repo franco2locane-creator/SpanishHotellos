@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, TouchableOpacity,
   TextInput, ActivityIndicator, KeyboardAvoidingView, Platform,
@@ -11,6 +11,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { loadDrillSet, DRILL_CATALOG } from '@/lib/grammar/drills';
+import { saveGrammarDrillProgress } from '@/lib/grammar/progress';
 import { Haptics } from '@/lib/haptics';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { GrammarQuestion } from '@/types';
@@ -49,10 +50,19 @@ export default function GrammarDrillScreen() {
   const [correctFirstTry, setCorrectFirstTry] = useState(0);
   const [totalAsked, setTotalAsked] = useState(0);
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
+  const savedRef = useRef(false);
 
   useEffect(() => {
     if (drillSet) setQueue([...drillSet.questions]);
   }, [drillSet]);
+
+  // Persist best accuracy once, the first time this session reaches 'done'.
+  useEffect(() => {
+    if (phase !== 'done' || savedRef.current || !user || !drillMeta || !drillSet) return;
+    savedRef.current = true;
+    const accuracy = (correctFirstTry / drillSet.questions.length) * 100;
+    saveGrammarDrillProgress(user.id, drillMeta.id, accuracy).catch(() => {});
+  }, [phase, user, drillMeta, drillSet, correctFirstTry]);
 
   useSpeechRecognitionEvent('result', e => {
     setSpokenText(e.results?.[0]?.transcript ?? '');
