@@ -15,6 +15,7 @@
     "lib/examDate.ts",
     "lib/premiumGating.ts",
     "lib/guidedSession.ts",
+    "lib/readiness.ts",
     "types/**/*.ts",
     "expo-env.d.ts"
   ]

@@ -106,6 +106,39 @@ export async function getWeekCompletionDots(): Promise<WeekDot[]> {
   }));
 }
 
+// ── Readiness score history (for the Progress tab's "+2 this week" delta) ──────
+
+const READINESS_HISTORY_KEY = '@sp4h_readiness_history';
+const READINESS_HISTORY_MAX_ENTRIES = 60;
+const DELTA_WINDOW_DAYS = 7;
+
+type ReadinessSnapshot = { dateISO: string; score: number };
+
+/** Records today's composite readiness score — dedups by day (last write today wins). */
+export async function recordReadinessSnapshot(score: number): Promise<void> {
+  const today = todayISO();
+  const raw = await AsyncStorage.getItem(READINESS_HISTORY_KEY);
+  const history: ReadinessSnapshot[] = raw ? JSON.parse(raw) : [];
+  const withoutToday = history.filter(h => h.dateISO !== today);
+  const next = [...withoutToday, { dateISO: today, score }].slice(-READINESS_HISTORY_MAX_ENTRIES);
+  await AsyncStorage.setItem(READINESS_HISTORY_KEY, JSON.stringify(next));
+}
+
+/** Delta vs. the closest snapshot at least 7 days old — null if there isn't one yet. */
+export async function getReadinessSevenDayDelta(currentScore: number): Promise<number | null> {
+  const raw = await AsyncStorage.getItem(READINESS_HISTORY_KEY);
+  const history: ReadinessSnapshot[] = raw ? JSON.parse(raw) : [];
+  if (!history.length) return null;
+
+  const cutoff = Date.now() - DELTA_WINDOW_DAYS * 86400000;
+  const eligible = history.filter(h => Date.parse(h.dateISO) <= cutoff);
+  if (!eligible.length) return null;
+
+  // Closest to (but not after) the cutoff — the most relevant "week ago" baseline.
+  const baseline = eligible.reduce((best, h) => (Date.parse(h.dateISO) > Date.parse(best.dateISO) ? h : best));
+  return currentScore - baseline.score;
+}
+
 // ── Study plan data ───────────────────────────────────────────────────────────
 
 type AttemptRow = {
