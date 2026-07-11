@@ -8,6 +8,7 @@ import type { CourseLevel, Department, RubricCriterion } from '@/types';
 // imports of getDaysUntilExam/isFinalWeek from '@/lib/today' keep working.
 
 export { getDaysUntilExam, isFinalWeek } from './examDate';
+import { getWeekDates } from './examDate';
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -64,10 +65,45 @@ export async function toggleTile(id: string): Promise<string[]> {
     next = current.filter(x => x !== id);
   } else {
     next = [...current, id];
-    await recordActivity();
+    // Streak counts a full guided-session completion (all 3 steps), not
+    // just starting one — matches the guided flow, where a skipped step
+    // never gets added here at all.
+    if (next.length >= 3) {
+      await recordActivity();
+      await recordDayCompleted();
+    }
   }
   await AsyncStorage.setItem(tileKey(), JSON.stringify(next));
   return next;
+}
+
+// ── Completion history (7-day dot row) ─────────────────────────────────────────
+
+const HISTORY_KEY = '@sp4h_completion_history';
+const HISTORY_MAX_ENTRIES = 60;
+
+async function recordDayCompleted(): Promise<void> {
+  const today = todayISO();
+  const raw = await AsyncStorage.getItem(HISTORY_KEY);
+  const history: string[] = raw ? JSON.parse(raw) : [];
+  if (!history.includes(today)) {
+    history.push(today);
+    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-HISTORY_MAX_ENTRIES)));
+  }
+}
+
+export type WeekDot = { dateISO: string; completed: boolean; isToday: boolean };
+
+/** Monday-first completion dots for the current calendar week. */
+export async function getWeekCompletionDots(): Promise<WeekDot[]> {
+  const raw = await AsyncStorage.getItem(HISTORY_KEY);
+  const history = new Set<string>(raw ? JSON.parse(raw) : []);
+  const todayStr = todayISO();
+  return getWeekDates().map(dateISO => ({
+    dateISO,
+    completed: history.has(dateISO),
+    isToday: dateISO === todayStr,
+  }));
 }
 
 // ── Study plan data ───────────────────────────────────────────────────────────

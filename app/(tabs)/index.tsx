@@ -208,17 +208,23 @@ export default function TodayScreen() {
           </View>
         </View>
 
-        {/* Streak headline — shown for both free and premium, subtle bounce on increment */}
-        {streak > 0 && (
-          <Animated.View
-            style={[styles.streakHeadline, { transform: [{ scale: streakScale }] }]}
-            accessibilityLabel={`${streak} day streak`}
-          >
-            <Text style={styles.streakHeadlineFire}>🔥</Text>
-            <Text style={styles.streakHeadlineNum}>{streak}</Text>
-            <Text style={styles.streakHeadlineLabel}>day streak</Text>
-          </Animated.View>
-        )}
+        {/* Streak headline — always rendered (even at 0) for both free and
+            premium; was previously gated behind streak > 0, which hid it
+            for exactly the accounts most likely to be checked: fresh
+            installs and anyone who missed a day. Dim at 0 to invite the
+            first session rather than showing a bare "0". */}
+        <Animated.View
+          style={[
+            styles.streakHeadline,
+            streak === 0 && styles.streakHeadlineDim,
+            { transform: [{ scale: streakScale }] },
+          ]}
+          accessibilityLabel={streak > 0 ? `${streak} day streak` : 'No streak yet — complete a session to start one'}
+        >
+          <Text style={styles.streakHeadlineFire}>🔥</Text>
+          <Text style={styles.streakHeadlineNum}>{streak}</Text>
+          <Text style={styles.streakHeadlineLabel}>{streak > 0 ? 'day streak' : 'start your streak today'}</Text>
+        </Animated.View>
 
         {/* Exam countdown */}
         <View
@@ -341,6 +347,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8EC', borderRadius: Radii.lg,
     paddingVertical: Spacing.sm, marginBottom: Spacing.md,
   },
+  streakHeadlineDim: { backgroundColor: '#F3F1EC', opacity: 0.7 },
   streakHeadlineFire: { fontSize: 26 },
   streakHeadlineNum: { fontSize: 28, fontWeight: '800', color: Colors.gold },
   streakHeadlineLabel: { fontSize: Typography.caption, fontWeight: '600', color: Colors.textSecondary },
