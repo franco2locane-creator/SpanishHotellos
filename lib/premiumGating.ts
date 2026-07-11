@@ -25,6 +25,22 @@ export function resolvePremium(devOverrideActive: boolean, rcIsPremium: boolean)
   return rcIsPremium;
 }
 
+/**
+ * The preview flag only affects resolvePremium() on the client — it cannot
+ * reach server-side checks, because Supabase Edge Functions (Deno) can't
+ * import this module and correctly enforce real entitlement by reading
+ * `profiles.is_premium` from the DB (see supabase/functions/roleplay/index.ts).
+ * That server check must stay intact — it's the real paywall enforcement,
+ * not a stray gate to weaken. So when the preview flag is active, the
+ * client instead mirrors premium status to that same DB row for the
+ * signed-in tester, the same way a real purchase does (lib/purchases.ts's
+ * mirrorPremiumToDb) — the server check then sees a genuinely premium
+ * profile and needs no changes.
+ */
+export function shouldMirrorPreviewPremium(hasUser: boolean): boolean {
+  return PREVIEW_PREMIUM_ENABLED && hasUser;
+}
+
 // ── Free-tier limits ─────────────────────────────────────────────────────────
 
 export const FREE_LIMITS = {

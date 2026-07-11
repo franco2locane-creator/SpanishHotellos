@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { checkIsPremium, mirrorPremiumToDb } from '@/lib/purchases';
-import { resolvePremium, PREVIEW_PREMIUM_ENABLED } from '@/lib/premiumGating';
+import { resolvePremium, PREVIEW_PREMIUM_ENABLED, shouldMirrorPreviewPremium } from '@/lib/premiumGating';
 
 /**
  * Returns whether the current user has an active premium entitlement.
@@ -19,8 +19,18 @@ export function usePremium(): boolean {
   const { devPremiumOverride } = usePurchaseStore();
 
   useEffect(() => {
-    // Skip RC validation when dev override or the preview flag is forcing premium
-    if ((__DEV__ && devPremiumOverride) || PREVIEW_PREMIUM_ENABLED) return;
+    // Preview builds: the flag forces resolvePremium() to true client-side, but
+    // server-side checks (e.g. supabase/functions/roleplay's entitlement gate)
+    // read profiles.is_premium directly and can't see this flag at all — mirror
+    // premium to that same DB row so those checks pass too, without touching
+    // the server's actual enforcement logic. See shouldMirrorPreviewPremium().
+    if (shouldMirrorPreviewPremium(!!user?.id)) {
+      mirrorPremiumToDb(user!.id);
+      return;
+    }
+
+    // Skip RC validation when the dev override is forcing premium
+    if (__DEV__ && devPremiumOverride) return;
 
     checkIsPremium().then(isActive => {
       const cached = user?.isPremium ?? false;

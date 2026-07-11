@@ -93,7 +93,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return err('First message must be from the student (role: "user")');
   }
 
-  // Entitlement check for premium scenarios.
+  // Entitlement check for premium scenarios. This is the real, authoritative
+  // paywall enforcement — it deliberately does NOT trust anything the client
+  // sends about its own premium status (that would be spoofable). The app's
+  // EXPO_PUBLIC_PREMIUM_PREVIEW build flag (lib/premiumGating.ts) can't reach
+  // this check at all — a preview build instead mirrors premium to this same
+  // profiles row for the signed-in tester (hooks/usePremium.ts, gated by
+  // shouldMirrorPreviewPremium()), the same way a real purchase does. Do not
+  // weaken or remove this check to accommodate preview builds.
   if (!scenario.isFree) {
     const { data: profile } = await supabase
       .from('profiles')

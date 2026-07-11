@@ -28,6 +28,35 @@ describe('resolvePremium', () => {
   });
 });
 
+describe('preview flag behavior (EXPO_PUBLIC_PREMIUM_PREVIEW)', () => {
+  const ORIGINAL_ENV = process.env.EXPO_PUBLIC_PREMIUM_PREVIEW;
+
+  afterEach(() => {
+    process.env.EXPO_PUBLIC_PREMIUM_PREVIEW = ORIGINAL_ENV;
+  });
+
+  it('forces resolvePremium() true and requires DB mirroring for a signed-in user when the flag is "1"', () => {
+    jest.isolateModules(() => {
+      process.env.EXPO_PUBLIC_PREMIUM_PREVIEW = '1';
+      const gating = require('./premiumGating');
+      expect(gating.PREVIEW_PREMIUM_ENABLED).toBe(true);
+      expect(gating.resolvePremium(false, false)).toBe(true);
+      expect(gating.shouldMirrorPreviewPremium(true)).toBe(true);
+      expect(gating.shouldMirrorPreviewPremium(false)).toBe(false);
+    });
+  });
+
+  it('does not force premium or mirror when the flag is unset', () => {
+    jest.isolateModules(() => {
+      delete process.env.EXPO_PUBLIC_PREMIUM_PREVIEW;
+      const gating = require('./premiumGating');
+      expect(gating.PREVIEW_PREMIUM_ENABLED).toBe(false);
+      expect(gating.resolvePremium(false, false)).toBe(false);
+      expect(gating.shouldMirrorPreviewPremium(true)).toBe(false);
+    });
+  });
+});
+
 describe('access helpers', () => {
   it('canAccessScenario / canAccessDeck / canAccessGrammarDrillSet honor isFree and isPremium', () => {
     expect(canAccessScenario({ isFree: true }, false)).toBe(true);
