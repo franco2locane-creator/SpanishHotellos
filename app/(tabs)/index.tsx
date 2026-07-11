@@ -251,7 +251,7 @@ export default function TodayScreen() {
           <Text style={styles.countdownText}>{daysLabel(days)}</Text>
           {finalWeekActive && <Text style={styles.finalWeekLabel}>Final week</Text>}
         </View>
-        <ReadinessCard avgMockScore={avgMockScore} />
+        <ReadinessCard score={avgMockScore} />
 
         {finalWeekActive && (
           <View style={styles.calmCard}>

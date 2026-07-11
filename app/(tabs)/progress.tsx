@@ -307,7 +307,7 @@ export default function ProgressScreen() {
           </View>
         )}
 
-        <ReadinessCard avgMockScore={avgMockScore} />
+        <ReadinessCard score={avgMockScore} />
 
         {lastMock && (
           <LastMockCard
