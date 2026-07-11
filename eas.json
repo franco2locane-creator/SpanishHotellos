@@ -18,6 +18,9 @@
       },
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_PREMIUM_PREVIEW": "1"
       }
     },
     "production": {

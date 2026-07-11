@@ -1,5 +1,16 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
+// Guard: EXPO_PUBLIC_PREMIUM_PREVIEW forces usePremium() to true (see
+// lib/premiumGating.ts) and must only ever be set on the `preview` EAS build
+// profile (eas.json). EAS sets EAS_BUILD_PROFILE automatically during cloud
+// builds — hard-fail here rather than silently shipping a production build
+// where the paywall is unreachable.
+if (process.env.EAS_BUILD_PROFILE === 'production' && process.env.EXPO_PUBLIC_PREMIUM_PREVIEW === '1') {
+  throw new Error(
+    'EXPO_PUBLIC_PREMIUM_PREVIEW must never be set on the production build profile — check eas.json.'
+  );
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Spanish4Hoteleros',

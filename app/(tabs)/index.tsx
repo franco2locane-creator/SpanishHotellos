@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
-import { usePremium } from '@/hooks/usePremium';
+import { usePremium, usePreviewPremiumActive } from '@/hooks/usePremium';
 import {
   getDaysUntilExam, isFinalWeek, getStreak,
   getTodayChecked, toggleTile, getStudyPlanData, type StudyPlanData,
@@ -82,6 +82,7 @@ export default function TodayScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const isPremium = usePremium();
+  const previewPremiumActive = usePreviewPremiumActive();
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
   const [checked, setChecked] = useState<string[]>([]);
@@ -190,14 +191,21 @@ export default function TodayScreen() {
             <Text style={styles.greeting}>{greeting()}</Text>
             <Text style={styles.heading}>Today</Text>
           </View>
-          <TouchableOpacity
-            onPress={() => router.push('/settings' as any)}
-            hitSlop={12}
-            accessibilityRole="button"
-            accessibilityLabel="Settings"
-          >
-            <Text style={styles.gearIcon}>⚙️</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {previewPremiumActive && (
+              <View style={styles.previewBadge} accessibilityLabel="Preview build — premium forced on">
+                <Text style={styles.previewBadgeText}>PREVIEW PREMIUM</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              onPress={() => router.push('/settings' as any)}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+            >
+              <Text style={styles.gearIcon}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Streak headline — shown for both free and premium, subtle bounce on increment */}
@@ -319,9 +327,15 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
   content: { padding: Spacing.lg, paddingBottom: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   greeting: { fontSize: Typography.caption, color: Colors.textMuted },
   heading: { fontSize: Typography.title, fontWeight: '700', color: Colors.navy },
   gearIcon: { fontSize: 22, opacity: 0.6 },
+  previewBadge: {
+    backgroundColor: '#7C3AED', borderRadius: Radii.sm,
+    paddingHorizontal: 6, paddingVertical: 3,
+  },
+  previewBadgeText: { color: '#fff', fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   streakHeadline: {
     flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 6,
     backgroundColor: '#FFF8EC', borderRadius: Radii.lg,
