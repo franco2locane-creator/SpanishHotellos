@@ -14,10 +14,15 @@ import {
   getDueCardIds, getCardProgress, upsertCardProgress, logReview, syncDirtyToSupabase,
 } from '@/lib/db/vocab';
 import { nextSrsState, INITIAL_SRS, type SrsGrade } from '@/lib/srs';
+import { guidedNextRoute } from '@/lib/guidedSession';
+import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import FlashCard from '@/components/vocab/FlashCard';
 import ReviewControls from '@/components/vocab/ReviewControls';
+import GuidedStepHeader from '@/components/today/GuidedStepHeader';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 import type { VocabCard, SrsData } from '@/types';
+
+const GUIDED_SESSION_LIMIT = 15;
 
 // ── Fuzzy match for speak-it mode ─────────────────────────────────────────────
 
@@ -76,7 +81,8 @@ function SessionSummary({ reviewed, correct, deckTitle, onDone }: SummaryProps) 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
 export default function ReviewScreen() {
-  const { deckId } = useLocalSearchParams<{ deckId: string }>();
+  const { deckId, guided } = useLocalSearchParams<{ deckId: string; guided?: string }>();
+  const isGuided = guided === '1';
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -102,7 +108,9 @@ export default function ReviewScreen() {
     if (!user || !deck) return;
     async function load() {
       const allIds = deck!.cards.map(c => c.id);
-      const dueIds = await getDueCardIds(user!.id, deck!.id, allIds);
+      const dueIds = isGuided
+        ? await getDueCardIds(user!.id, deck!.id, allIds, GUIDED_SESSION_LIMIT)
+        : await getDueCardIds(user!.id, deck!.id, allIds);
       const dueCards = dueIds.map(id => deck!.cards.find(c => c.id === id)!).filter(Boolean);
       setCards(dueCards);
 
@@ -183,6 +191,29 @@ export default function ReviewScreen() {
     }
   }
 
+  // ── Guided-session navigation ────────────────────────────────────────────────
+
+  async function goToNextGuidedStep(skipped: boolean) {
+    const store = useGuidedSessionStore.getState();
+    if (skipped) store.skip(); else await store.advance();
+    const dest = guidedNextRoute(useGuidedSessionStore.getState().currentIndex);
+    if (dest.screen === 'complete') {
+      router.replace('/today-session/complete' as any);
+    } else {
+      router.replace(`/today-session/transition?next=${dest.next}` as any);
+    }
+  }
+
+  function exitScreen() {
+    if (isGuided) { goToNextGuidedStep(false); return; }
+    router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
+  }
+
+  function backOrSkip() {
+    if (isGuided) { goToNextGuidedStep(true); return; }
+    router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────────
 
   if (!deck) {
@@ -208,7 +239,7 @@ export default function ReviewScreen() {
           reviewed={reviewedCount}
           correct={correctCount}
           deckTitle={deck.title}
-          onDone={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}
+          onDone={exitScreen}
         />
       </SafeAreaView>
     );
@@ -221,7 +252,7 @@ export default function ReviewScreen() {
           <Text style={styles.summaryEmoji}>✅</Text>
           <Text style={styles.summaryTitle}>You're all caught up</Text>
           <Text style={styles.summaryDeck}>No cards due in {deck.title} — your spacing is working. Come back tomorrow to keep the streak.</Text>
-          <TouchableOpacity style={styles.doneBtn} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}>
+          <TouchableOpacity style={styles.doneBtn} onPress={exitScreen}>
             <Text style={styles.doneBtnText}>Back to decks</Text>
           </TouchableOpacity>
         </View>
@@ -234,9 +265,11 @@ export default function ReviewScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
+      {isGuided && <GuidedStepHeader currentStepIndex={0} onSkip={backOrSkip} />}
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} hitSlop={12}>
+        <TouchableOpacity onPress={backOrSkip} hitSlop={12}>
           <Text style={styles.back}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.progressText}>{progress}</Text>

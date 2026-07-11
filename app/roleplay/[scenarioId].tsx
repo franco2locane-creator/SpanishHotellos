@@ -18,9 +18,12 @@ import { gradeSession } from '@/lib/api/grade';
 import { ApiCallError } from '@/lib/api/apiError';
 import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
 import { Haptics } from '@/lib/haptics';
+import { guidedNextRoute } from '@/lib/guidedSession';
+import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import ChatBubble from '@/components/roleplay/ChatBubble';
 import ObjectivesChecklist from '@/components/roleplay/ObjectivesChecklist';
 import MicButton from '@/components/roleplay/MicButton';
+import GuidedStepHeader from '@/components/today/GuidedStepHeader';
 import { Colors, Spacing, Typography, Radii } from '@/lib/theme';
 
 const MAX_TURNS = 12;
@@ -44,7 +47,8 @@ type Phase =
 const ACTIVE_PHASES: Phase[] = ['guest_speaking', 'student_turn', 'recording', 'sending'];
 
 export default function RoleplayScreen() {
-  const { scenarioId } = useLocalSearchParams<{ scenarioId: string }>();
+  const { scenarioId, guided } = useLocalSearchParams<{ scenarioId: string; guided?: string }>();
+  const isGuided = guided === '1';
   const router = useRouter();
   const { user } = useAuthStore();
   const { setResult } = useFeedbackStore();
@@ -206,6 +210,26 @@ export default function RoleplayScreen() {
 
   const lastGradingMessagesRef = useRef<WireMessage[]>([]);
 
+  // ── Guided-session navigation ────────────────────────────────────────────────
+
+  async function goToNextGuidedStep(skipped: boolean) {
+    const store = useGuidedSessionStore.getState();
+    if (skipped) store.skip(); else await store.advance();
+    const dest = guidedNextRoute(useGuidedSessionStore.getState().currentIndex);
+    if (dest.screen === 'complete') {
+      router.replace('/today-session/complete' as any);
+    } else {
+      router.replace(`/today-session/transition?next=${dest.next}` as any);
+    }
+  }
+
+  function exitScreen() {
+    // An interrupted/errored/edge-case exit never completed the role-play,
+    // so it's a skip, not a completion, in the guided flow.
+    if (isGuided) { goToNextGuidedStep(true); return; }
+    router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
+  }
+
   async function triggerGrading(messages: WireMessage[]) {
     if (!scenario || !user) { updatePhase('done'); return; }
     lastGradingMessagesRef.current = messages;
@@ -219,7 +243,14 @@ export default function RoleplayScreen() {
       });
       Haptics.success();
       setResult(gradeResult);
-      router.replace(`/feedback/${gradeResult.attemptId}` as any);
+      // Guided flow: the attempt is graded and saved either way (visible later
+      // in Progress) — momentum matters more than the detailed feedback screen
+      // mid-session, so move straight to the next step instead of /feedback.
+      if (isGuided) {
+        await goToNextGuidedStep(false);
+      } else {
+        router.replace(`/feedback/${gradeResult.attemptId}` as any);
+      }
     } catch (e) {
       const apiError = e instanceof ApiCallError ? e : null;
       setErrorMsg(apiError?.message ?? 'Something went wrong while grading. Please try again.');
@@ -247,7 +278,7 @@ export default function RoleplayScreen() {
           <TouchableOpacity style={styles.startBtn} onPress={() => updatePhase('idle')}>
             <Text style={styles.startBtnText}>Retry this scenario</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} style={{ marginTop: Spacing.sm }}>
+          <TouchableOpacity onPress={exitScreen} style={{ marginTop: Spacing.sm }}>
             <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Go back</Text>
           </TouchableOpacity>
         </View>
@@ -280,7 +311,7 @@ export default function RoleplayScreen() {
           >
             <Text style={styles.startBtnText}>Retry grading</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} style={{ marginTop: Spacing.sm }}>
+          <TouchableOpacity onPress={exitScreen} style={{ marginTop: Spacing.sm }}>
             <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Give up and go back</Text>
           </TouchableOpacity>
         </View>
@@ -294,7 +325,7 @@ export default function RoleplayScreen() {
         <View style={styles.gradingWrap}>
           <Text style={{ fontSize: 48 }}>✓</Text>
           <Text style={styles.gradingTitle}>Session complete</Text>
-          <TouchableOpacity style={styles.startBtn} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}>
+          <TouchableOpacity style={styles.startBtn} onPress={exitScreen}>
             <Text style={styles.startBtnText}>Back to Practice</Text>
           </TouchableOpacity>
         </View>
@@ -304,9 +335,11 @@ export default function RoleplayScreen() {
 
   return (
     <SafeAreaView style={styles.screen}>
+      {isGuided && <GuidedStepHeader currentStepIndex={1} onSkip={() => goToNextGuidedStep(true)} />}
+
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}
+          onPress={exitScreen}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Close and return to practice"

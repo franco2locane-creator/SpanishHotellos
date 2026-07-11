@@ -10,6 +10,9 @@ import {
 } from 'expo-speech-recognition';
 import { usePremium } from '@/hooks/usePremium';
 import { canAccessDemoDrill } from '@/lib/premiumGating';
+import { guidedNextRoute } from '@/lib/guidedSession';
+import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
+import GuidedStepHeader from '@/components/today/GuidedStepHeader';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { FixItem } from '@/lib/api/grade';
 
@@ -111,7 +114,8 @@ function isCorrect(spoken: string, answer: string): boolean {
 type Phase = 'ready' | 'recording' | 'result' | 'done';
 
 export default function DrillScreen() {
-  const { drillType } = useLocalSearchParams<{ drillType: string }>();
+  const { drillType, guided } = useLocalSearchParams<{ drillType: string; guided?: string }>();
+  const isGuided = guided === '1';
   const router = useRouter();
   const isPremium = usePremium();
 
@@ -169,6 +173,29 @@ export default function DrillScreen() {
     Speech.speak(config.questions[qi].answer, { language: 'es-ES', rate: 0.85 });
   }
 
+  // ── Guided-session navigation ────────────────────────────────────────────────
+
+  async function goToNextGuidedStep(skipped: boolean) {
+    const store = useGuidedSessionStore.getState();
+    if (skipped) store.skip(); else await store.advance();
+    const dest = guidedNextRoute(useGuidedSessionStore.getState().currentIndex);
+    if (dest.screen === 'complete') {
+      router.replace('/today-session/complete' as any);
+    } else {
+      router.replace(`/today-session/transition?next=${dest.next}` as any);
+    }
+  }
+
+  function exitScreen() {
+    if (isGuided) { goToNextGuidedStep(true); return; }
+    router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
+  }
+
+  function finishScreen() {
+    if (isGuided) { goToNextGuidedStep(false); return; }
+    router.canGoBack() ? router.back() : router.replace('/(tabs)' as any);
+  }
+
   if (!config) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -206,7 +233,7 @@ export default function DrillScreen() {
               ? 'Perfect! Keep drilling daily until it\'s automatic.'
               : 'Good effort. Come back tomorrow to reinforce this skill.'}
           </Text>
-          <TouchableOpacity style={styles.doneBtn} onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)}>
+          <TouchableOpacity style={styles.doneBtn} onPress={finishScreen}>
             <Text style={styles.doneBtnText}>Back to Feedback</Text>
           </TouchableOpacity>
         </View>
@@ -217,8 +244,9 @@ export default function DrillScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       {/* Header */}
+      {isGuided && <GuidedStepHeader currentStepIndex={2} onSkip={() => goToNextGuidedStep(true)} />}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)' as any)} hitSlop={12}>
+        <TouchableOpacity onPress={exitScreen} hitSlop={12}>
           <Text style={styles.back}>✕</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{config.title}</Text>

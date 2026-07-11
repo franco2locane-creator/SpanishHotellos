@@ -14,6 +14,7 @@
     "lib/mockExam/loader.ts",
     "lib/examDate.ts",
     "lib/premiumGating.ts",
+    "lib/guidedSession.ts",
     "types/**/*.ts",
     "expo-env.d.ts"
   ]

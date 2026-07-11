@@ -97,6 +97,7 @@ export default function RootLayout() {
         <Stack.Screen name="feedback" />
         <Stack.Screen name="drill" />
         <Stack.Screen name="grammar" />
+        <Stack.Screen name="today-session" />
         <Stack.Screen name="exam" />
         <Stack.Screen name="paywall" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="phrases" options={{ presentation: 'modal' }} />
