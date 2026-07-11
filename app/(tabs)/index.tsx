@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
@@ -10,7 +10,7 @@ import {
   getTodayChecked, toggleTile, getStudyPlanData, type StudyPlanData,
 } from '@/lib/today';
 import { dailySeededPick } from '@/lib/dailySeed';
-import { FREE_LIMITS } from '@/lib/premiumGating';
+import { FREE_LIMITS, isFinalWeekModeActive } from '@/lib/premiumGating';
 import { scenariosForLevel, type ScenarioMeta } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getDueCount } from '@/lib/db/vocab';
@@ -88,9 +88,14 @@ export default function TodayScreen() {
   const [planData, setPlanData] = useState<StudyPlanData | null>(null);
   const [dueCount, setDueCount] = useState(0);
   const [bestDeckId, setBestDeckId] = useState('front-office-basics');
+  const streakScale = useRef(new Animated.Value(1)).current;
 
   const days = getDaysUntilExam(user?.examDate);
-  const finalWeek = isFinalWeek(user?.examDate);
+  // finalWeekEligible is pure date math; finalWeekActive additionally requires
+  // premium — the failed-scenario re-run / calmer-tone experience is a premium
+  // feature, so free users within 7 days of their exam get a locked nudge instead.
+  const finalWeekEligible = isFinalWeek(user?.examDate);
+  const finalWeekActive = isFinalWeekModeActive(isPremium, user?.examDate);
   const level = user?.mockLevel ?? 'basic';
   const decks = decksForLevel(level);
   const scenarios = scenariosForLevel(level);
@@ -128,8 +133,16 @@ export default function TodayScreen() {
     const next = await toggleTile(id);
     setChecked(next);
     const s = await getStreak();
-    setStreak(s);
-  }, []);
+    setStreak(prev => {
+      if (s > prev) {
+        Animated.sequence([
+          Animated.spring(streakScale, { toValue: 1.3, useNativeDriver: true, speed: 20, bounciness: 12 }),
+          Animated.spring(streakScale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 12 }),
+        ]).start();
+      }
+      return s;
+    });
+  }, [streakScale]);
 
   if (loading) {
     return (
@@ -144,14 +157,14 @@ export default function TodayScreen() {
   // whichever departments/criteria are actually weak. Free: always the single
   // weakest pick, same every day — the daily-refresh CTA below explains why.
   const todayISO = new Date().toISOString().slice(0, 10);
-  const dailyScenario = isPremium && !finalWeek
+  const dailyScenario = isPremium && !finalWeekActive
     ? dailySeededPick(buildScenarioPool(scenarios, planData?.rankedWeakDepts ?? []), user!.id, 'scenario', todayISO)
     : null;
-  const dailyCriterion = isPremium && !finalWeek
+  const dailyCriterion = isPremium && !finalWeekActive
     ? dailySeededPick(buildCriterionPool(planData?.rankedCriteria ?? []), user!.id, 'drill', todayISO)
     : null;
 
-  const scenarioId = finalWeek
+  const scenarioId = finalWeekActive
     ? (planData?.lowestScenarioId ?? planData?.weakestScenarioId ?? scenarios[0]?.id)
     : (dailyScenario?.id ?? planData?.weakestScenarioId ?? scenarios[0]?.id);
   const scenario = scenarios.find(s => s.id === scenarioId) ?? scenarios[0];
@@ -160,7 +173,7 @@ export default function TodayScreen() {
   // pick that could resolve to a type the user can't actually open.
   const criterion = !isPremium
     ? FREE_LIMITS.grammarDemoDrillType
-    : finalWeek
+    : finalWeekActive
       ? (planData?.weakestCriterion ?? 'content')
       : (dailyCriterion ?? planData?.weakestCriterion ?? 'content');
 
@@ -177,34 +190,38 @@ export default function TodayScreen() {
             <Text style={styles.greeting}>{greeting()}</Text>
             <Text style={styles.heading}>Today</Text>
           </View>
-          <View style={styles.headerRight}>
-            {streak > 0 && (
-              <View style={styles.streakBadge} accessibilityLabel={`${streak} day streak`}>
-                <Text style={styles.streakFire}>🔥</Text>
-                <Text style={styles.streakNum}>{streak}</Text>
-              </View>
-            )}
-            <TouchableOpacity
-              onPress={() => router.push('/settings' as any)}
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel="Settings"
-            >
-              <Text style={styles.gearIcon}>⚙️</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={() => router.push('/settings' as any)}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
+            <Text style={styles.gearIcon}>⚙️</Text>
+          </TouchableOpacity>
         </View>
+
+        {/* Streak headline — shown for both free and premium, subtle bounce on increment */}
+        {streak > 0 && (
+          <Animated.View
+            style={[styles.streakHeadline, { transform: [{ scale: streakScale }] }]}
+            accessibilityLabel={`${streak} day streak`}
+          >
+            <Text style={styles.streakHeadlineFire}>🔥</Text>
+            <Text style={styles.streakHeadlineNum}>{streak}</Text>
+            <Text style={styles.streakHeadlineLabel}>day streak</Text>
+          </Animated.View>
+        )}
 
         {/* Exam countdown */}
         <View
-          style={[styles.countdownBar, finalWeek && styles.countdownFinalWeek]}
+          style={[styles.countdownBar, finalWeekActive && styles.countdownFinalWeek]}
           accessibilityLabel={daysLabel(days)}
         >
           <Text style={styles.countdownText}>{daysLabel(days)}</Text>
-          {finalWeek && <Text style={styles.finalWeekLabel}>Final week</Text>}
+          {finalWeekActive && <Text style={styles.finalWeekLabel}>Final week</Text>}
         </View>
 
-        {finalWeek && (
+        {finalWeekActive && (
           <View style={styles.calmCard}>
             <Text style={styles.calmTitle}>You're more ready than you think.</Text>
             <Text style={styles.calmText}>
@@ -214,11 +231,25 @@ export default function TodayScreen() {
           </View>
         )}
 
+        {finalWeekEligible && !finalWeekActive && (
+          <TouchableOpacity
+            style={styles.finalWeekLockCard}
+            onPress={() => router.push('/paywall' as any)}
+            accessibilityRole="button"
+            accessibilityLabel="Unlock Final Week Mode with Premium"
+          >
+            <Text style={styles.finalWeekLockTitle}>🔒 Final Week Mode</Text>
+            <Text style={styles.finalWeekLockText}>
+              Unlock focused review of your weakest areas in the days before your exam with Premium.
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.sessionHeaderRow}>
           <Text style={styles.sectionTitle}>
-            {allChecked ? "Today's session complete ✓" : "Today's 15-minute session"}
+            {allChecked ? "Today's session complete ✓" : "Your daily session · 15 min"}
           </Text>
-          {!finalWeek && (
+          {!finalWeekActive && (
             isPremium ? (
               <View style={styles.refreshBadge} accessibilityLabel="Refreshed for today">
                 <Text style={styles.refreshBadgeText}>🔄 Fresh today</Text>
@@ -230,7 +261,7 @@ export default function TodayScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Unlock daily refreshed exercises with Premium"
               >
-                <Text style={styles.refreshLockText}>🔒 Nuevos ejercicios cada día con Premium</Text>
+                <Text style={styles.refreshLockText}>🔒 Fresh exercises every day with Premium</Text>
               </TouchableOpacity>
             )
           )}
@@ -250,8 +281,8 @@ export default function TodayScreen() {
         <StudyTile
           id="scenario"
           icon="🗣️"
-          title={finalWeek ? `Retry: ${scenario.title}` : `Practice: ${scenario.title}`}
-          subtitle={finalWeek
+          title={finalWeekActive ? `Retry: ${scenario.title}` : `Practice: ${scenario.title}`}
+          subtitle={finalWeekActive
             ? 'Your lowest-scoring scenario — nail it before the exam'
             : `Targeted at your weakest area: ${scenario.department.replace('_', ' ')}`}
           checked={tilesChecked.has('scenario')}
@@ -288,17 +319,23 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
   content: { padding: Spacing.lg, paddingBottom: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   greeting: { fontSize: Typography.caption, color: Colors.textMuted },
   heading: { fontSize: Typography.title, fontWeight: '700', color: Colors.navy },
   gearIcon: { fontSize: 22, opacity: 0.6 },
-  streakBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
+  streakHeadline: {
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 6,
     backgroundColor: '#FFF8EC', borderRadius: Radii.lg,
-    paddingHorizontal: Spacing.sm, paddingVertical: 6,
+    paddingVertical: Spacing.sm, marginBottom: Spacing.md,
   },
-  streakFire: { fontSize: 18 },
-  streakNum: { fontSize: Typography.body, fontWeight: '700', color: Colors.gold },
+  streakHeadlineFire: { fontSize: 26 },
+  streakHeadlineNum: { fontSize: 28, fontWeight: '800', color: Colors.gold },
+  streakHeadlineLabel: { fontSize: Typography.caption, fontWeight: '600', color: Colors.textSecondary },
+  finalWeekLockCard: {
+    backgroundColor: '#FFF8EC', borderRadius: Radii.lg, padding: Spacing.md,
+    marginBottom: Spacing.md, gap: 4, borderWidth: 1, borderColor: '#F0E4C8',
+  },
+  finalWeekLockTitle: { fontSize: Typography.body, fontWeight: '700', color: Colors.gold },
+  finalWeekLockText: { fontSize: Typography.caption, color: Colors.textSecondary, lineHeight: 18 },
   countdownBar: {
     backgroundColor: Colors.navy, borderRadius: Radii.lg, padding: Spacing.md,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
