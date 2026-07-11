@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity,
 } from 'react-native';
@@ -11,8 +11,14 @@ import { usePremium } from '@/hooks/usePremium';
 import { SCENARIO_CATALOG, DEPT_LABELS } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
 import { getVocabStats } from '@/lib/db/vocab';
-import { getStreak, getDaysUntilExam, getStudyPlanData, type StudyPlanData } from '@/lib/today';
+import {
+  getStreak, getDaysUntilExam, getStudyPlanData, type StudyPlanData,
+  getWeekCompletionDots, getTotalPracticeDays, recordReadinessSnapshot, getReadinessSevenDayDelta,
+  type WeekDot,
+} from '@/lib/today';
 import { progressTabMode } from '@/lib/premiumGating';
+import { getCoverageSummary, type CoverageSummary } from '@/lib/progressCoverage';
+import { computeReadiness, computeConsistencyScore } from '@/lib/readiness';
 import Skeleton from '@/components/Skeleton';
 import ReadinessCard from '@/components/progress/ReadinessCard';
 import LastMockCard from '@/components/progress/LastMockCard';
@@ -22,6 +28,8 @@ import CriterionTrend, { type CriterionKey } from '@/components/progress/Criteri
 import LockedOverlay from '@/components/progress/LockedOverlay';
 import DrillRecommendationsCard from '@/components/progress/DrillRecommendationsCard';
 import StudyPlanCard from '@/components/progress/StudyPlanCard';
+import { ScenarioCoverageCard, VocabCoverageCard, GrammarCoverageCard, MockCoverageCard } from '@/components/progress/CoverageCards';
+import ConsistencyStats from '@/components/progress/ConsistencyStats';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { RubricCriterion } from '@/types';
 
@@ -167,12 +175,17 @@ export default function ProgressScreen() {
   const [vocabStats, setVocabStats] = useState({ learned: 0, due: 0, total: 0 });
   const [streak, setStreak] = useState(0);
   const [studyPlan, setStudyPlan] = useState<StudyPlanData | null>(null);
+  const [coverage, setCoverage] = useState<CoverageSummary | null>(null);
+  const [weekDots, setWeekDots] = useState<WeekDot[]>([]);
+  const [totalPracticeDays, setTotalPracticeDays] = useState(0);
+  const [readinessDelta, setReadinessDelta] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isFull = progressTabMode(isPremium) === 'full';
 
-  // Refetch every time this tab gains focus — a just-graded session or vocab
-  // review must never show stale numbers.
+  // Refetch every time this tab gains focus — a just-graded session, vocab
+  // review, grammar drill, or guided-session completion must never show
+  // stale numbers.
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
@@ -183,7 +196,10 @@ export default function ProgressScreen() {
         const decks = decksForLevel(level).filter(d => d.isFree || isPremium);
         const allCardIds = decks.flatMap(d => loadDeckCards(d.id).map(c => c.id));
 
-        const [{ data: attemptData }, { data: mockData }, vStats, s, plan] = await Promise.all([
+        const [
+          { data: attemptData }, { data: mockData }, vStats, s, plan,
+          coverageSummary, dots, totalDays,
+        ] = await Promise.all([
           supabase
             .from('exam_attempts')
             .select('id, scenario_id, total_score, scores, completed_at')
@@ -199,6 +215,9 @@ export default function ProgressScreen() {
           getVocabStats(user!.id, allCardIds),
           getStreak(),
           getStudyPlanData(user!.id, level),
+          getCoverageSummary(user!.id, level, isPremium),
+          getWeekCompletionDots(),
+          getTotalPracticeDays(),
         ]);
 
         if (cancelled) return;
@@ -207,6 +226,9 @@ export default function ProgressScreen() {
         setVocabStats(vStats);
         setStreak(s);
         setStudyPlan(plan);
+        setCoverage(coverageSummary);
+        setWeekDots(dots);
+        setTotalPracticeDays(totalDays);
         setLoading(false);
       }
       load();
@@ -240,11 +262,38 @@ export default function ProgressScreen() {
   const recentTrend = attempts.slice(-8);
   const criterionSeries = attempts.slice(-8).map(a => a.scores);
 
-  // Readiness = average combined_score of the last 3 mocks, if any.
+  // Readiness (Performance component) = average combined_score of the last 3 mocks, if any.
   const recentMocks = mockAttempts.slice(0, 3);
   const avgMockScore = recentMocks.length
     ? recentMocks.reduce((s, m) => s + m.combined_score, 0) / recentMocks.length
     : null;
+
+  // ── Readiness v2: weighted composite of Performance / Coverage / Consistency ─
+  // (lib/readiness.ts documents the 50/30/20 weights). Performance falls back to
+  // recent role-play scores when no mock exists yet; the composite itself is
+  // withheld (cold-start) until there's at least SOME graded evidence, per your
+  // amendment — Coverage/Consistency render regardless.
+  const hasPerformanceData = avgMockScore !== null || attempts.length > 0;
+  const performanceScore = avgMockScore ?? (
+    attempts.length ? (attempts.reduce((s, a) => s + a.total_score, 0) / attempts.length) * 5 : 0
+  );
+  const sessionsThisWeek = weekDots.filter(d => d.completed).length;
+  const consistencyScore = computeConsistencyScore(sessionsThisWeek, streak);
+  const compositeScore = (hasPerformanceData && coverage)
+    ? computeReadiness(performanceScore, coverage.overallPct, consistencyScore)
+    : null;
+
+  // Record today's composite once it's known, and fetch the 7-day-ago delta.
+  useEffect(() => {
+    if (compositeScore === null) { setReadinessDelta(null); return; }
+    let cancelled = false;
+    (async () => {
+      const delta = await getReadinessSevenDayDelta(compositeScore);
+      if (!cancelled) setReadinessDelta(delta);
+      await recordReadinessSnapshot(compositeScore);
+    })();
+    return () => { cancelled = true; };
+  }, [compositeScore]);
 
   // Mastery by assignment type, aggregated across all mock attempts.
   const masteryAcc: Record<string, { sum: number; count: number }> = {};
@@ -307,7 +356,11 @@ export default function ProgressScreen() {
           </View>
         )}
 
-        <ReadinessCard score={avgMockScore} />
+        <ReadinessCard
+          score={compositeScore}
+          delta={readinessDelta}
+          breakdown={{ performance: performanceScore, coverage: coverage?.overallPct ?? 0, consistency: consistencyScore }}
+        />
 
         {lastMock && (
           <LastMockCard
@@ -320,6 +373,23 @@ export default function ProgressScreen() {
           />
         )}
 
+        {/* Coverage — unlocked for both tiers: tracking your own coverage is
+            engagement, not analytics. */}
+        <Text style={styles.sectionLabel}>Coverage</Text>
+        {coverage && (
+          <>
+            <ScenarioCoverageCard coverage={coverage.scenarios} />
+            <VocabCoverageCard coverage={coverage.vocab} />
+            <GrammarCoverageCard coverage={coverage.grammar} />
+            <MockCoverageCard coverage={coverage.mocks} />
+          </>
+        )}
+
+        {/* Consistency — also unlocked for both tiers. */}
+        <Text style={styles.sectionLabel}>Consistency</Text>
+        <ConsistencyStats streak={streak} sessionsThisWeek={sessionsThisWeek} totalPracticeDays={totalPracticeDays} />
+
+        <Text style={styles.sectionLabel}>Performance</Text>
         {isFull ? (
           <>
             <VocabStatsCard {...vocabStats} streak={streak} />
@@ -514,6 +584,11 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
   content: { padding: Spacing.lg, paddingBottom: 60 },
   heading: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy, marginBottom: Spacing.sm },
+  sectionLabel: {
+    fontSize: 11, fontWeight: '700', color: Colors.textMuted,
+    textTransform: 'uppercase', letterSpacing: 1,
+    marginTop: Spacing.sm, marginBottom: Spacing.xs,
+  },
   devToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: '#FFF3CD', borderRadius: Radii.md, padding: Spacing.sm,

@@ -106,6 +106,14 @@ export async function getWeekCompletionDots(): Promise<WeekDot[]> {
   }));
 }
 
+/** Total distinct days with a fully-completed session, up to the last
+ *  HISTORY_MAX_ENTRIES tracked — a running "lifetime" count for Consistency. */
+export async function getTotalPracticeDays(): Promise<number> {
+  const raw = await AsyncStorage.getItem(HISTORY_KEY);
+  const history: string[] = raw ? JSON.parse(raw) : [];
+  return history.length;
+}
+
 // ── Readiness score history (for the Progress tab's "+2 this week" delta) ──────
 
 const READINESS_HISTORY_KEY = '@sp4h_readiness_history';
