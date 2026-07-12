@@ -50,7 +50,9 @@ export default function GrammarDrillScreen() {
   const [correctFirstTry, setCorrectFirstTry] = useState(0);
   const [totalAsked, setTotalAsked] = useState(0);
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
+  const [isNewBest, setIsNewBest] = useState(false);
   const savedRef = useRef(false);
+  const startedAtRef = useRef(Date.now());
 
   useEffect(() => {
     if (drillSet) setQueue([...drillSet.questions]);
@@ -61,7 +63,10 @@ export default function GrammarDrillScreen() {
     if (phase !== 'done' || savedRef.current || !user || !drillMeta || !drillSet) return;
     savedRef.current = true;
     const accuracy = (correctFirstTry / drillSet.questions.length) * 100;
-    saveGrammarDrillProgress(user.id, drillMeta.id, accuracy).catch(() => {});
+    const completionSeconds = Math.round((Date.now() - startedAtRef.current) / 1000);
+    saveGrammarDrillProgress(user.id, drillMeta.id, accuracy, completionSeconds)
+      .then(result => setIsNewBest(result.isNewBest))
+      .catch(() => {});
   }, [phase, user, drillMeta, drillSet, correctFirstTry]);
 
   useSpeechRecognitionEvent('result', e => {
@@ -146,6 +151,7 @@ export default function GrammarDrillScreen() {
         <View style={styles.center}>
           <Text style={{ fontSize: 56 }}>{correctFirstTry === drillSet.questions.length ? '🎉' : '💪'}</Text>
           <Text style={styles.centerTitle}>{correctFirstTry}/{drillSet.questions.length} correct on first try</Text>
+          {isNewBest && <Text style={styles.newBest}>🏆 New personal best!</Text>}
           <Text style={styles.centerText}>
             {correctFirstTry === drillSet.questions.length
               ? 'Perfect run! Come back tomorrow to keep it sharp.'
@@ -261,6 +267,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.lg, padding: Spacing.xl },
   centerTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy, textAlign: 'center' },
   centerText: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  newBest: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.gold },
   nextBtn: { backgroundColor: Colors.navy, borderRadius: Radii.lg, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
   nextBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
   errText: { padding: Spacing.xl, color: Colors.error },

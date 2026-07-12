@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator,
 } from 'react-native';
@@ -10,6 +10,7 @@ import {
 } from '@/lib/db/vocab';
 import { nextSrsState, INITIAL_SRS, type SrsGrade } from '@/lib/srs';
 import { assignModes, pickRecycleMode, generateMcqOptions, type FlashcardMode } from '@/lib/vocab/flashcardModes';
+import { saveVocabDeckBest } from '@/lib/vocab/deckBest';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import McqQuestion from '@/components/vocab/McqQuestion';
@@ -35,16 +36,18 @@ type SummaryProps = {
   neededRetries: number;
   longestStreak: number;
   deckTitle: string;
+  isNewBest: boolean;
   onDone: () => void;
 };
 
-function RoundSummary({ correctFirstTry, neededRetries, longestStreak, deckTitle, onDone }: SummaryProps) {
+function RoundSummary({ correctFirstTry, neededRetries, longestStreak, deckTitle, isNewBest, onDone }: SummaryProps) {
   const emoji = neededRetries === 0 ? '🌟' : correctFirstTry >= neededRetries ? '💪' : '📚';
   return (
     <View style={styles.summaryWrap}>
       <Text style={styles.summaryEmoji}>{emoji}</Text>
       <Text style={styles.summaryTitle}>Round complete!</Text>
       <Text style={styles.summaryDeck}>{deckTitle}</Text>
+      {isNewBest && <Text style={styles.newBest}>🏆 New personal best!</Text>}
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={[styles.statVal, { color: Colors.success }]}>{correctFirstTry}</Text>
@@ -87,12 +90,15 @@ export default function ReviewScreen() {
   const [longestStreak, setLongestStreak] = useState(0);
   const [phase, setPhase] = useState<'question' | 'reveal' | 'summary'>('question');
   const [revealCard, setRevealCard] = useState<VocabCard | null>(null);
+  const [isNewBest, setIsNewBest] = useState(false);
+  const startedAtRef = useRef(Date.now());
 
   // ── Load due cards ──────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!user || !deck) return;
     async function load() {
+      startedAtRef.current = Date.now();
       const allIds = deck!.cards.map(c => c.id);
       const dueIds = isGuided
         ? await getDueCardIds(user!.id, deck!.id, allIds, GUIDED_SESSION_LIMIT)
@@ -166,6 +172,13 @@ export default function ReviewScreen() {
       setQueue(rest);
       if (rest.length === 0) {
         await syncDirtyToSupabase(user.id);
+        const finalCorrectFirstTry = correctFirstTry + (isFirst ? 1 : 0);
+        const firstTryPct = cardOrder.length > 0 ? (finalCorrectFirstTry / cardOrder.length) * 100 : 0;
+        const completionSeconds = Math.round((Date.now() - startedAtRef.current) / 1000);
+        try {
+          const result = await saveVocabDeckBest(user.id, deckId!, firstTryPct, completionSeconds);
+          setIsNewBest(result.isNewBest);
+        } catch {}
         setPhase('summary');
       }
     } else {
@@ -231,6 +244,7 @@ export default function ReviewScreen() {
           neededRetries={seenFirst.size - correctFirstTry}
           longestStreak={longestStreak}
           deckTitle={deck.title}
+          isNewBest={isNewBest}
           onDone={exitScreen}
         />
       </SafeAreaView>
@@ -338,6 +352,7 @@ const styles = StyleSheet.create({
   summaryEmoji: { fontSize: 64 },
   summaryTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
   summaryDeck: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center' },
+  newBest: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.gold },
   statsRow: { flexDirection: 'row', gap: Spacing.xl, marginVertical: Spacing.md },
   stat: { alignItems: 'center', gap: 4 },
   statVal: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy },

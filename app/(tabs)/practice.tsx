@@ -9,6 +9,9 @@ import { scenariosForLevel, DEPT_LABELS, MOOD_ICONS, type ScenarioMeta } from '@
 import { decksForLevel, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '@/lib/vocab/decks';
 import { drillsForLevel } from '@/lib/grammar/drills';
 import { getDueCount } from '@/lib/db/vocab';
+import { getVocabDeckBest, type VocabDeckBest } from '@/lib/vocab/deckBest';
+import { getScenarioBest, type ScenarioBest } from '@/lib/scenarioBest';
+import { formatBestBadge } from '@/lib/formatBest';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 // ── Difficulty dots ───────────────────────────────────────────────────────────
@@ -25,7 +28,7 @@ function DifficultyDots({ level }: { level: 1 | 2 | 3 }) {
 
 // ── Scenario card ─────────────────────────────────────────────────────────────
 
-function ScenarioCard({ s, isPremium, onPress, onPaywall }: { s: ScenarioMeta; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
+function ScenarioCard({ s, best, isPremium, onPress, onPaywall }: { s: ScenarioMeta; best: ScenarioBest | undefined; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
   const locked = !s.isFree && !isPremium;
   const moodKey = s.personaPreview.split(' · ')[2]?.split(' ')[0] ?? 'neutral';
 
@@ -53,6 +56,9 @@ function ScenarioCard({ s, isPremium, onPress, onPaywall }: { s: ScenarioMeta; i
           {MOOD_ICONS[moodKey]} {s.personaPreview}
         </Text>
       </View>
+      {best && (
+        <Text style={styles.bestBadge}>{formatBestBadge((best.score / 20) * 100, best.completionSeconds)}</Text>
+      )}
     </TouchableOpacity>
   );
 }
@@ -68,7 +74,7 @@ const DEPT_ICONS: Record<string, string> = {
   concierge: '🗝️', events: '🎊', management: '📋',
 };
 
-function DeckRow({ d, dueCount, isPremium, onPress, onPaywall }: { d: DeckMeta; dueCount: number | null; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
+function DeckRow({ d, dueCount, best, isPremium, onPress, onPaywall }: { d: DeckMeta; dueCount: number | null; best: VocabDeckBest | undefined; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
   const locked = !d.isFree && !isPremium;
   return (
     <TouchableOpacity
@@ -82,6 +88,9 @@ function DeckRow({ d, dueCount, isPremium, onPress, onPaywall }: { d: DeckMeta; 
       <View style={{ flex: 1 }}>
         <Text style={styles.deckTitle}>{d.title}</Text>
         <Text style={styles.deckDept}>{DEPARTMENT_LABELS[d.department]}</Text>
+        {best && (
+          <Text style={styles.bestBadgeInline}>{formatBestBadge(best.bestFirstTryPct, best.bestCompletionSeconds)}</Text>
+        )}
       </View>
       {locked ? <Text style={styles.lockIcon}>🔒</Text>
         : dueCount === null ? <ActivityIndicator size="small" color={Colors.textMuted} />
@@ -99,6 +108,8 @@ export default function PracticeScreen() {
   const { user } = useAuthStore();
   const isPremium = usePremium();
   const [dueCounts, setDueCounts] = useState<Record<string, number | null>>({});
+  const [deckBests, setDeckBests] = useState<Record<string, VocabDeckBest>>({});
+  const [scenarioBests, setScenarioBests] = useState<Record<string, ScenarioBest>>({});
 
   const level = user?.mockLevel ?? 'basic';
   const scenarios = scenariosForLevel(level);
@@ -114,9 +125,23 @@ export default function PracticeScreen() {
         const ids = loadDeckCards(deck.id).map(c => c.id);
         const count = await getDueCount(user!.id, ids);
         setDueCounts(prev => ({ ...prev, [deck.id]: count }));
+        const best = await getVocabDeckBest(user!.id, deck.id);
+        if (best) setDeckBests(prev => ({ ...prev, [deck.id]: best }));
       }
     }
     loadCounts();
+  }, [user?.id, level]);
+
+  useEffect(() => {
+    if (!user) return;
+    async function loadScenarioBests() {
+      for (const s of scenarios) {
+        if (!s.isFree && !isPremium) continue;
+        const best = await getScenarioBest(user!.id, s.id);
+        if (best) setScenarioBests(prev => ({ ...prev, [s.id]: best }));
+      }
+    }
+    loadScenarioBests();
   }, [user?.id, level]);
 
   const totalDue = Object.values(dueCounts).reduce<number>((s, n) => s + (n ?? 0), 0);
@@ -135,6 +160,7 @@ export default function PracticeScreen() {
         <ScenarioCard
           key={s.id}
           s={s}
+          best={scenarioBests[s.id]}
           isPremium={isPremium}
           onPress={() => router.push(`/roleplay/${s.id}` as any)}
           onPaywall={() => router.push('/paywall' as any)}
@@ -171,6 +197,7 @@ export default function PracticeScreen() {
           key={d.id}
           d={d}
           dueCount={dueCounts[d.id] ?? (d.isFree || isPremium ? null : -1)}
+          best={deckBests[d.id]}
           isPremium={isPremium}
           onPress={() => router.push(`/vocab/${d.id}` as any)}
           onPaywall={() => router.push('/paywall' as any)}
@@ -205,6 +232,8 @@ const styles = StyleSheet.create({
   lockIcon: { fontSize: 18 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0D8CE' },
   dotFilled: { backgroundColor: Colors.gold },
+  bestBadge: { fontSize: Typography.caption, color: Colors.gold, fontWeight: Typography.semibold, marginTop: 2 },
+  bestBadgeInline: { fontSize: 11, color: Colors.gold, fontWeight: Typography.semibold, marginTop: 2 },
   // Deck
   deckRow: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.md,

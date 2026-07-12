@@ -41,7 +41,7 @@ function scoreColor(pct: number): string {
 export default function FeedbackScreen() {
   const { attemptId } = useLocalSearchParams<{ attemptId: string }>();
   const router = useRouter();
-  const { result, passMark, clear } = useFeedbackStore();
+  const { result, passMark, isNewBest, clear } = useFeedbackStore();
   const isPremium = usePremium();
 
   // Clear the store when leaving so memory isn't held.
@@ -89,6 +89,9 @@ export default function FeedbackScreen() {
             <Text style={styles.scoreOf}>/100</Text>
           </View>
           <Text style={[styles.scoreLabel, { color }]}>{label}</Text>
+          {passMark === null && isNewBest && (
+            <Text style={styles.newBest}>🏆 New personal best!</Text>
+          )}
           {passMark !== null && (
             <View style={[styles.passBadge, { backgroundColor: pct >= passMark ? '#DCFCE7' : '#FEE2E2' }]}>
               <Text style={[styles.passBadgeText, { color: pct >= passMark ? '#15803D' : '#DC2626' }]}>
@@ -178,6 +181,7 @@ const styles = StyleSheet.create({
   scorePct: { fontSize: 34, fontWeight: Typography.bold },
   scoreOf: { fontSize: 14, color: Colors.textMuted, alignSelf: 'flex-end', marginBottom: 8 },
   scoreLabel: { fontSize: Typography.heading, fontWeight: Typography.bold, marginTop: Spacing.sm },
+  newBest: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.gold, marginTop: Spacing.xs },
   passBadge: {
     borderRadius: Radii.md, paddingHorizontal: Spacing.md, paddingVertical: 6, marginTop: Spacing.sm,
   },

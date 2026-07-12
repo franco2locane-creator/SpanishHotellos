@@ -20,6 +20,8 @@
     "lib/progressRecommendation.ts",
     "lib/textMatch.ts",
     "lib/vocab/flashcardModes.ts",
+    "lib/scoreTiebreak.ts",
+    "lib/formatBest.ts",
     "types/**/*.ts",
     "expo-env.d.ts"
   ]

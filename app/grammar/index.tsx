@@ -1,11 +1,14 @@
+import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { drillsForLevel, type DrillMeta } from '@/lib/grammar/drills';
+import { getGrammarDrillBest, type GrammarDrillBest } from '@/lib/grammar/progress';
+import { formatBestBadge } from '@/lib/formatBest';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
-function DrillRow({ d, isPremium, onPress, onPaywall }: { d: DrillMeta; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
+function DrillRow({ d, best, isPremium, onPress, onPaywall }: { d: DrillMeta; best: GrammarDrillBest | undefined; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
   const locked = !d.isFree && !isPremium;
   return (
     <TouchableOpacity
@@ -19,6 +22,9 @@ function DrillRow({ d, isPremium, onPress, onPaywall }: { d: DrillMeta; isPremiu
       <View style={{ flex: 1 }}>
         <Text style={styles.rowTitle}>{d.title}</Text>
         <Text style={styles.rowSub}>{d.titleEs} · {d.questionCount} questions</Text>
+        {best && (
+          <Text style={styles.bestBadge}>{formatBestBadge(best.bestAccuracy, best.bestCompletionSeconds)}</Text>
+        )}
       </View>
       {locked ? (
         <Text style={styles.lockIcon}>🔒</Text>
@@ -35,6 +41,19 @@ export default function GrammarIndex() {
   const isPremium = usePremium();
   const level = user?.mockLevel ?? 'basic';
   const drills = drillsForLevel(level);
+  const [bests, setBests] = useState<Record<string, GrammarDrillBest>>({});
+
+  useEffect(() => {
+    if (!user) return;
+    async function loadBests() {
+      for (const d of drills) {
+        if (!d.isFree && !isPremium) continue;
+        const best = await getGrammarDrillBest(user!.id, d.id);
+        if (best) setBests(prev => ({ ...prev, [d.id]: best }));
+      }
+    }
+    loadBests();
+  }, [user?.id, level]);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -55,6 +74,7 @@ export default function GrammarIndex() {
           <DrillRow
             key={d.id}
             d={d}
+            best={bests[d.id]}
             isPremium={isPremium}
             onPress={() => router.push(`/grammar/${d.id}` as any)}
             onPaywall={() => router.push('/paywall' as any)}
@@ -87,6 +107,7 @@ const styles = StyleSheet.create({
   },
   rowTitle: { fontSize: Typography.body, fontWeight: Typography.semibold, color: Colors.textPrimary },
   rowSub: { fontSize: Typography.caption, color: Colors.textMuted, marginTop: 2 },
+  bestBadge: { fontSize: 11, color: Colors.gold, fontWeight: Typography.semibold, marginTop: 2 },
   lockIcon: { fontSize: 18 },
   freeBadge: { backgroundColor: Colors.gold, borderRadius: Radii.sm, paddingHorizontal: 6, paddingVertical: 2 },
   freeBadgeText: { color: '#fff', fontSize: 10, fontWeight: Typography.bold },

@@ -16,6 +16,8 @@ import { loadScenario } from '@/lib/scenarios/catalog';
 import { sendRolePlayTurn, type WireMessage } from '@/lib/api/roleplay';
 import { gradeSession } from '@/lib/api/grade';
 import { ApiCallError } from '@/lib/api/apiError';
+import { getScenarioBest } from '@/lib/scenarioBest';
+import { beatsBest } from '@/lib/scoreTiebreak';
 import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
 import { Haptics } from '@/lib/haptics';
 import { guidedNextRoute } from '@/lib/guidedSession';
@@ -237,12 +239,17 @@ export default function RoleplayScreen() {
     const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
     try {
+      const priorBest = await getScenarioBest(user.id, scenario.id).catch(() => null);
       const gradeResult = await gradeSession({
         scenario, messages, durationSeconds,
         level: user.mockLevel,
       });
       Haptics.success();
-      setResult(gradeResult);
+      const isNewBest = beatsBest(
+        { score: gradeResult.totalScore, completionSeconds: durationSeconds },
+        priorBest ? { score: priorBest.score, completionSeconds: priorBest.completionSeconds } : null,
+      );
+      setResult(gradeResult, undefined, isNewBest);
       // Guided flow: the attempt is graded and saved either way (visible later
       // in Progress) — momentum matters more than the detailed feedback screen
       // mid-session, so move straight to the next step instead of /feedback.

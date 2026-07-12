@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
@@ -8,9 +8,12 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
+import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { canAccessDemoDrill } from '@/lib/premiumGating';
 import { isFuzzyMatch } from '@/lib/textMatch';
+import { saveDemoDrillProgress, getDemoDrillBest, type DemoDrillBest } from '@/lib/demoDrill/progress';
+import { formatBestFraction } from '@/lib/formatBest';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import GuidedStepHeader from '@/components/today/GuidedStepHeader';
@@ -98,6 +101,7 @@ export default function DrillScreen() {
   const { drillType, guided } = useLocalSearchParams<{ drillType: string; guided?: string }>();
   const isGuided = guided === '1';
   const router = useRouter();
+  const { user } = useAuthStore();
   const isPremium = usePremium();
 
   const config = DRILLS[drillType as FixItem['drillType']];
@@ -107,7 +111,25 @@ export default function DrillScreen() {
   const [spoken, setSpoken] = useState('');
   const [correct, setCorrect] = useState(false);
   const [score, setScore] = useState(0);
+  const [best, setBest] = useState<DemoDrillBest>(null);
+  const [isNewBest, setIsNewBest] = useState(false);
   const liveRef = useRef('');
+  const startedAtRef = useRef(Date.now());
+  const savedRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || !drillType || locked) return;
+    getDemoDrillBest(user.id, drillType).then(setBest).catch(() => {});
+  }, [user?.id, drillType, locked]);
+
+  useEffect(() => {
+    if (phase !== 'done' || savedRef.current || !user || !drillType || !config) return;
+    savedRef.current = true;
+    const completionSeconds = Math.round((Date.now() - startedAtRef.current) / 1000);
+    saveDemoDrillProgress(user.id, drillType, score, completionSeconds)
+      .then(result => setIsNewBest(result.isNewBest))
+      .catch(() => {});
+  }, [phase, user, drillType, config, score]);
 
   useSpeechRecognitionEvent('result', e => {
     liveRef.current = e.results?.[0]?.transcript ?? '';
@@ -209,6 +231,7 @@ export default function DrillScreen() {
         <View style={styles.doneBlock}>
           <Text style={styles.doneEmoji}>{score === config.questions.length ? '🎉' : '💪'}</Text>
           <Text style={styles.doneTitle}>{score}/{config.questions.length} correct</Text>
+          {isNewBest && <Text style={styles.newBest}>🏆 New personal best!</Text>}
           <Text style={styles.doneSub}>
             {score === config.questions.length
               ? 'Perfect! Keep drilling daily until it\'s automatic.'
@@ -233,6 +256,10 @@ export default function DrillScreen() {
         <Text style={styles.headerTitle} numberOfLines={1}>{config.title}</Text>
         <Text style={styles.counter}>{qi + 1}/{config.questions.length}</Text>
       </View>
+
+      {best && phase === 'ready' && qi === 0 && (
+        <Text style={styles.bestLine}>{formatBestFraction(best.bestScore, config.questions.length, best.bestCompletionSeconds)}</Text>
+      )}
 
       {/* Progress bar */}
       <View style={styles.progressBg}>
@@ -302,6 +329,7 @@ const styles = StyleSheet.create({
   back: { fontSize: 20, color: '#fff' },
   headerTitle: { flex: 1, textAlign: 'center', color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body, marginHorizontal: Spacing.sm },
   counter: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.7)' },
+  bestLine: { fontSize: Typography.caption, color: Colors.gold, fontWeight: Typography.semibold, textAlign: 'center', paddingVertical: 4, backgroundColor: Colors.navy },
   progressBg: { height: 4, backgroundColor: '#E8E3DC' },
   progressFill: { height: '100%', backgroundColor: Colors.gold },
   card: {
@@ -335,6 +363,7 @@ const styles = StyleSheet.create({
   doneEmoji: { fontSize: 64 },
   doneTitle: { fontSize: 32, fontWeight: Typography.bold, color: Colors.navy },
   doneSub: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  newBest: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.gold },
   doneBtn: {
     marginTop: Spacing.lg, backgroundColor: Colors.navy, borderRadius: Radii.lg,
     paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md,
