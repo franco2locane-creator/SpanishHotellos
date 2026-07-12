@@ -10,6 +10,7 @@ import {
 } from 'expo-speech-recognition';
 import { usePremium } from '@/hooks/usePremium';
 import { canAccessDemoDrill } from '@/lib/premiumGating';
+import { isFuzzyMatch } from '@/lib/textMatch';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import GuidedStepHeader from '@/components/today/GuidedStepHeader';
@@ -89,26 +90,6 @@ const DRILLS: Record<FixItem['drillType'], { title: string; instruction: string;
   },
 };
 
-// ── Fuzzy match ───────────────────────────────────────────────────────────────
-
-function normalize(s: string) {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9 ]/g, '')
-    .trim();
-}
-
-function isCorrect(spoken: string, answer: string): boolean {
-  const a = normalize(spoken);
-  const b = normalize(answer);
-  // Accept if 60% of answer words appear in spoken output.
-  const wordsB = b.split(' ').filter(Boolean);
-  const matches = wordsB.filter(w => a.includes(w));
-  return matches.length / wordsB.length >= 0.6;
-}
-
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 type Phase = 'ready' | 'recording' | 'result' | 'done';
@@ -139,7 +120,7 @@ export default function DrillScreen() {
 
   function evaluate(raw: string) {
     const q = config.questions[qi];
-    const ok = isCorrect(raw, q.answer);
+    const ok = isFuzzyMatch(raw, q.answer);
     setCorrect(ok);
     if (ok) setScore(s => s + 1);
     setSpoken(raw);

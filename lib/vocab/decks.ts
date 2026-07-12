@@ -77,3 +77,8 @@ export function buildCloze(sentence: string, termEs: string): string {
   const escaped = termEs.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return sentence.replace(new RegExp(escaped, 'i'), '____');
 }
+
+/** Strip a leading Spanish article before TTS, e.g. "la reserva" -> "reserva". */
+export function stripSpanishArticle(term: string): string {
+  return term.replace('el/la ', '').replace(/^(el|la|los|las) /, '');
+}
