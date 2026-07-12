@@ -8,20 +8,26 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { usePremium } from '@/hooks/usePremium';
-import { SCENARIO_CATALOG, DEPT_LABELS } from '@/lib/scenarios/catalog';
+import { SCENARIO_CATALOG, DEPT_LABELS, scenariosForLevel } from '@/lib/scenarios/catalog';
 import { decksForLevel, loadDeckCards } from '@/lib/vocab/decks';
+import { drillsForLevel } from '@/lib/grammar/drills';
 import { getVocabStats } from '@/lib/db/vocab';
 import {
   getStreak, getDaysUntilExam, getStudyPlanData, type StudyPlanData,
   getWeekCompletionDots, getTotalPracticeDays, recordReadinessSnapshot, getReadinessSevenDayDelta,
   type WeekDot,
 } from '@/lib/today';
+import { examCountdownLabel } from '@/lib/examDate';
 import { progressTabMode } from '@/lib/premiumGating';
 import { getCoverageSummary, type CoverageSummary } from '@/lib/progressCoverage';
 import { computeReadiness, computeConsistencyScore } from '@/lib/readiness';
+import { getRecommendation, getWeakestAreas } from '@/lib/progressRecommendation';
 import Skeleton from '@/components/Skeleton';
 import ReadinessCard from '@/components/progress/ReadinessCard';
 import LastMockCard from '@/components/progress/LastMockCard';
+import DoThisNextCard from '@/components/progress/DoThisNextCard';
+import WeakestAreasCard from '@/components/progress/WeakestAreasCard';
+import CollapsibleSection from '@/components/progress/CollapsibleSection';
 import VocabStatsCard from '@/components/progress/VocabStatsCard';
 import AssignmentMasteryCard, { type MasteryRow } from '@/components/progress/AssignmentMasteryCard';
 import CriterionTrend, { type CriterionKey } from '@/components/progress/CriterionTrend';
@@ -330,6 +336,27 @@ export default function ProgressScreen() {
   if (nextActions.length === 0) nextActions.push('Keep up your daily practice streak.');
   const drillCriteria = (studyPlan?.rankedCriteria ?? []).slice(0, 3);
 
+  // ── "Do This Next" + "Weakest Areas" — top-of-tab hierarchy ────────────────
+  const level = user?.mockLevel ?? 'basic';
+  const recommendation = coverage
+    ? getRecommendation({
+        coverage,
+        studyPlan,
+        scenarios: scenariosForLevel(level),
+        decks: decksForLevel(level),
+        drills: drillsForLevel(level),
+        isPremium,
+      })
+    : null;
+  const weakestAreas = coverage
+    ? getWeakestAreas({
+        coverage,
+        isFull,
+        avgScores: attempts.length ? avgScores : undefined,
+        criterionSeries: attempts.length ? criterionSeries : undefined,
+      })
+    : [];
+
   if (loading) {
     return (
       <SafeAreaView style={styles.screen}>
@@ -361,220 +388,226 @@ export default function ProgressScreen() {
           delta={readinessDelta}
           breakdown={{ performance: performanceScore, coverage: coverage?.overallPct ?? 0, consistency: consistencyScore }}
         />
+        <Text style={styles.countdown}>{examCountdownLabel(daysUntilExam)}</Text>
 
-        {lastMock && (
-          <LastMockCard
-            mockId={lastMock.mock_id}
-            combinedScore={lastMock.combined_score}
-            passed={lastMock.passed}
-            gatePassed={lastMock.gate_passed}
-            completedAt={lastMock.completed_at}
-            assignmentResults={lastMock.assignment_results}
-          />
-        )}
+        {/* Nothing else competes with Readiness at this level — Do This Next
+            and Weakest Areas are the tab's next two priorities, everything
+            else is detail behind a tap. */}
+        <DoThisNextCard recommendation={recommendation} />
+        <WeakestAreasCard items={weakestAreas} />
 
-        {/* Coverage — unlocked for both tiers: tracking your own coverage is
-            engagement, not analytics. */}
-        <Text style={styles.sectionLabel}>Coverage</Text>
-        {coverage && (
-          <>
-            <ScenarioCoverageCard coverage={coverage.scenarios} />
-            <VocabCoverageCard coverage={coverage.vocab} />
-            <GrammarCoverageCard coverage={coverage.grammar} />
-            <MockCoverageCard coverage={coverage.mocks} />
-          </>
-        )}
+        <CollapsibleSection title="Coverage" storageKey="@sp4h_progress_section_coverage">
+          {lastMock && (
+            <LastMockCard
+              mockId={lastMock.mock_id}
+              combinedScore={lastMock.combined_score}
+              passed={lastMock.passed}
+              gatePassed={lastMock.gate_passed}
+              completedAt={lastMock.completed_at}
+              assignmentResults={lastMock.assignment_results}
+            />
+          )}
+          {coverage && (
+            <>
+              <ScenarioCoverageCard coverage={coverage.scenarios} />
+              <VocabCoverageCard coverage={coverage.vocab} />
+              <GrammarCoverageCard coverage={coverage.grammar} />
+              <MockCoverageCard coverage={coverage.mocks} />
+            </>
+          )}
+        </CollapsibleSection>
 
-        {/* Consistency — also unlocked for both tiers. */}
-        <Text style={styles.sectionLabel}>Consistency</Text>
-        <ConsistencyStats streak={streak} sessionsThisWeek={sessionsThisWeek} totalPracticeDays={totalPracticeDays} />
+        <CollapsibleSection title="Performance" storageKey="@sp4h_progress_section_performance">
+          {isFull ? (
+            <>
+              <VocabStatsCard {...vocabStats} streak={streak} />
+              <StudyPlanCard daysUntilExam={daysUntilExam} minutesPerDay={minutesPerDay} nextActions={nextActions} />
+              <DrillRecommendationsCard criteria={drillCriteria} onSelect={c => router.push(`/drill/${c}` as any)} />
+              <AssignmentMasteryCard rows={masteryRows} />
+              <MockHistoryList mocks={mockAttempts} />
 
-        <Text style={styles.sectionLabel}>Performance</Text>
-        {isFull ? (
-          <>
-            <VocabStatsCard {...vocabStats} streak={streak} />
-            <StudyPlanCard daysUntilExam={daysUntilExam} minutesPerDay={minutesPerDay} nextActions={nextActions} />
-            <DrillRecommendationsCard criteria={drillCriteria} onSelect={c => router.push(`/drill/${c}` as any)} />
-            <AssignmentMasteryCard rows={masteryRows} />
-            <MockHistoryList mocks={mockAttempts} />
+              {!hasAnyData ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyEmoji}>📊</Text>
+                  <Text style={styles.emptyTitle}>Your first session is the hardest</Text>
+                  <Text style={styles.emptyText}>
+                    Complete a role-play or mock exam and your scores will appear here.
+                    No pressure — this is practice.
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.emptyBtn}
+                    onPress={() => router.push('/(tabs)/practice' as any)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Start practising — go to Practice tab"
+                  >
+                    <Text style={styles.emptyBtnText}>Start practising</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <View style={styles.card}>
+                    <Text style={styles.cardTitle}>Score Trend</Text>
+                    <Text style={styles.cardSub}>{attempts.length} session{attempts.length !== 1 ? 's' : ''} completed</Text>
+                    <View style={styles.chartWrap}>
+                      <TrendChart attempts={recentTrend} />
+                    </View>
+                  </View>
 
-            {!hasAnyData ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyEmoji}>📊</Text>
-                <Text style={styles.emptyTitle}>Your first session is the hardest</Text>
-                <Text style={styles.emptyText}>
-                  Complete a role-play or mock exam and your scores will appear here.
-                  No pressure — this is practice.
-                </Text>
-                <TouchableOpacity
-                  style={styles.emptyBtn}
-                  onPress={() => router.push('/(tabs)/practice' as any)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Start practising — go to Practice tab"
-                >
-                  <Text style={styles.emptyBtnText}>Start practising</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
+                  <CriterionTrend series={criterionSeries} />
+
+                  <View style={styles.card}>
+                    <Text style={styles.cardTitle}>Criterion Averages</Text>
+                    {CRITERION_KEYS.map(k => (
+                      <AvgBar key={k} label={CRITERION_LABELS[k]} avg={avgScores[k]} />
+                    ))}
+                  </View>
+
+                  {weakest && (
+                    <View style={[styles.card, styles.weakCard]}>
+                      <Text style={styles.weakTitle}>Focus area this week</Text>
+                      <Text style={styles.weakCriterion}>{CRITERION_LABELS[weakest]}</Text>
+                      <Text style={styles.weakSub}>
+                        Your average here is {Math.round((avgScores[weakest] / 20) * 100)}% — a few targeted drills will move this quickly.
+                      </Text>
+                    </View>
+                  )}
+
+                  {Object.keys(deptCounts).length > 0 && (
+                    <View style={styles.card}>
+                      <Text style={styles.cardTitle}>Scenarios Practiced</Text>
+                      {Object.entries(deptCounts).map(([dept, count]) => (
+                        <View key={dept} style={styles.deptRow}>
+                          <Text style={styles.deptLabel}>{DEPT_LABELS[dept as keyof typeof DEPT_LABELS] ?? dept.replace('_', ' ')}</Text>
+                          <Text style={styles.deptCount}>{count}×</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <LockedOverlay ctaLabel="Unlock your full vocabulary analytics" onUnlock={() => router.push('/paywall' as any)}>
+                <VocabStatsCard {...vocabStats} streak={streak} masked />
+              </LockedOverlay>
+
+              <LockedOverlay ctaLabel="Unlock your adaptive study plan" onUnlock={() => router.push('/paywall' as any)}>
+                <StudyPlanCard daysUntilExam={daysUntilExam} minutesPerDay={minutesPerDay} nextActions={nextActions} />
+              </LockedOverlay>
+
+              <LockedOverlay ctaLabel="Unlock personalized drill recommendations" onUnlock={() => router.push('/paywall' as any)}>
+                <DrillRecommendationsCard
+                  criteria={drillCriteria.length ? drillCriteria : SAMPLE_CRITERIA}
+                  onSelect={() => router.push('/paywall' as any)}
+                />
+              </LockedOverlay>
+
+              <LockedOverlay
+                ctaLabel={lastMock ? 'Unlock the full analysis of your last exam' : 'Unlock your full mastery breakdown'}
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={masteryRows.length === 0}
+              >
+                <AssignmentMasteryCard
+                  rows={masteryRows.length ? masteryRows : SAMPLE_MASTERY_ROWS}
+                  masked={masteryRows.length > 0}
+                />
+              </LockedOverlay>
+
+              <LockedOverlay
+                ctaLabel="Unlock your full mock exam history"
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={mockAttempts.length === 0}
+              >
+                <MockHistoryList
+                  mocks={mockAttempts.length ? mockAttempts : SAMPLE_MOCK_HISTORY}
+                  masked={mockAttempts.length > 0}
+                />
+              </LockedOverlay>
+
+              <LockedOverlay
+                ctaLabel={attempts.length >= 2 ? 'Unlock the full analysis of your last exam' : 'Unlock your full score trend'}
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={attempts.length < 2}
+              >
                 <View style={styles.card}>
                   <Text style={styles.cardTitle}>Score Trend</Text>
-                  <Text style={styles.cardSub}>{attempts.length} session{attempts.length !== 1 ? 's' : ''} completed</Text>
+                  <Text style={styles.cardSub}>
+                    {attempts.length >= 2 ? `${attempts.length} sessions completed` : 'Example trend'}
+                  </Text>
                   <View style={styles.chartWrap}>
-                    <TrendChart attempts={recentTrend} />
+                    <TrendChart attempts={attempts.length >= 2 ? recentTrend : SAMPLE_ATTEMPTS} masked={attempts.length >= 2} />
                   </View>
                 </View>
+              </LockedOverlay>
 
-                <CriterionTrend series={criterionSeries} />
+              <LockedOverlay
+                ctaLabel="Unlock your per-criterion trends"
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={attempts.length < 2}
+              >
+                <CriterionTrend
+                  series={attempts.length >= 2 ? criterionSeries : SAMPLE_ATTEMPTS.map(a => a.scores)}
+                  masked={attempts.length >= 2}
+                />
+              </LockedOverlay>
 
+              <LockedOverlay
+                ctaLabel="Unlock your criterion averages"
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={attempts.length === 0}
+              >
                 <View style={styles.card}>
                   <Text style={styles.cardTitle}>Criterion Averages</Text>
                   {CRITERION_KEYS.map(k => (
-                    <AvgBar key={k} label={CRITERION_LABELS[k]} avg={avgScores[k]} />
+                    <AvgBar
+                      key={k}
+                      label={CRITERION_LABELS[k]}
+                      avg={attempts.length > 0 ? avgScores[k] : sampleAvgScores[k]}
+                      masked={attempts.length > 0}
+                    />
                   ))}
                 </View>
+              </LockedOverlay>
 
-                {weakest && (
-                  <View style={[styles.card, styles.weakCard]}>
-                    <Text style={styles.weakTitle}>Focus area this week</Text>
-                    <Text style={styles.weakCriterion}>{CRITERION_LABELS[weakest]}</Text>
-                    <Text style={styles.weakSub}>
-                      Your average here is {Math.round((avgScores[weakest] / 20) * 100)}% — a few targeted drills will move this quickly.
-                    </Text>
-                  </View>
-                )}
-
-                {Object.keys(deptCounts).length > 0 && (
-                  <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Scenarios Practiced</Text>
-                    {Object.entries(deptCounts).map(([dept, count]) => (
-                      <View key={dept} style={styles.deptRow}>
-                        <Text style={styles.deptLabel}>{DEPT_LABELS[dept as keyof typeof DEPT_LABELS] ?? dept.replace('_', ' ')}</Text>
-                        <Text style={styles.deptCount}>{count}×</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            <LockedOverlay ctaLabel="Unlock your full vocabulary analytics" onUnlock={() => router.push('/paywall' as any)}>
-              <VocabStatsCard {...vocabStats} streak={streak} masked />
-            </LockedOverlay>
-
-            <LockedOverlay ctaLabel="Unlock your adaptive study plan" onUnlock={() => router.push('/paywall' as any)}>
-              <StudyPlanCard daysUntilExam={daysUntilExam} minutesPerDay={minutesPerDay} nextActions={nextActions} />
-            </LockedOverlay>
-
-            <LockedOverlay ctaLabel="Unlock personalized drill recommendations" onUnlock={() => router.push('/paywall' as any)}>
-              <DrillRecommendationsCard
-                criteria={drillCriteria.length ? drillCriteria : SAMPLE_CRITERIA}
-                onSelect={() => router.push('/paywall' as any)}
-              />
-            </LockedOverlay>
-
-            <LockedOverlay
-              ctaLabel={lastMock ? 'Unlock the full analysis of your last exam' : 'Unlock your full mastery breakdown'}
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={masteryRows.length === 0}
-            >
-              <AssignmentMasteryCard
-                rows={masteryRows.length ? masteryRows : SAMPLE_MASTERY_ROWS}
-                masked={masteryRows.length > 0}
-              />
-            </LockedOverlay>
-
-            <LockedOverlay
-              ctaLabel="Unlock your full mock exam history"
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={mockAttempts.length === 0}
-            >
-              <MockHistoryList
-                mocks={mockAttempts.length ? mockAttempts : SAMPLE_MOCK_HISTORY}
-                masked={mockAttempts.length > 0}
-              />
-            </LockedOverlay>
-
-            <LockedOverlay
-              ctaLabel={attempts.length >= 2 ? 'Unlock the full analysis of your last exam' : 'Unlock your full score trend'}
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={attempts.length < 2}
-            >
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>Score Trend</Text>
-                <Text style={styles.cardSub}>
-                  {attempts.length >= 2 ? `${attempts.length} sessions completed` : 'Example trend'}
-                </Text>
-                <View style={styles.chartWrap}>
-                  <TrendChart attempts={attempts.length >= 2 ? recentTrend : SAMPLE_ATTEMPTS} masked={attempts.length >= 2} />
+              <LockedOverlay
+                ctaLabel="Unlock your personalized focus area"
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={!weakest}
+              >
+                <View style={[styles.card, styles.weakCard]}>
+                  <Text style={styles.weakTitle}>Focus area this week</Text>
+                  <Text style={styles.weakCriterion}>{CRITERION_LABELS[weakest ?? 'grammar']}</Text>
+                  <Text style={styles.weakSub}>
+                    {weakest
+                      ? 'Your average here is 🔒 — a few targeted drills will move this quickly.'
+                      : 'Your average here is 58% — a few targeted drills will move this quickly.'}
+                  </Text>
                 </View>
-              </View>
-            </LockedOverlay>
+              </LockedOverlay>
 
-            <LockedOverlay
-              ctaLabel="Unlock your per-criterion trends"
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={attempts.length < 2}
-            >
-              <CriterionTrend
-                series={attempts.length >= 2 ? criterionSeries : SAMPLE_ATTEMPTS.map(a => a.scores)}
-                masked={attempts.length >= 2}
-              />
-            </LockedOverlay>
+              <LockedOverlay
+                ctaLabel="Unlock your full practice breakdown"
+                onUnlock={() => router.push('/paywall' as any)}
+                isSample={Object.keys(deptCounts).length === 0}
+              >
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>Scenarios Practiced</Text>
+                  {Object.entries(Object.keys(deptCounts).length > 0 ? deptCounts : SAMPLE_DEPT_COUNTS).map(([dept, count]) => (
+                    <View key={dept} style={styles.deptRow}>
+                      <Text style={styles.deptLabel}>{DEPT_LABELS[dept as keyof typeof DEPT_LABELS] ?? dept.replace('_', ' ')}</Text>
+                      <Text style={styles.deptCount}>{Object.keys(deptCounts).length > 0 ? '🔒' : `${count}×`}</Text>
+                    </View>
+                  ))}
+                </View>
+              </LockedOverlay>
+            </>
+          )}
+        </CollapsibleSection>
 
-            <LockedOverlay
-              ctaLabel="Unlock your criterion averages"
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={attempts.length === 0}
-            >
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>Criterion Averages</Text>
-                {CRITERION_KEYS.map(k => (
-                  <AvgBar
-                    key={k}
-                    label={CRITERION_LABELS[k]}
-                    avg={attempts.length > 0 ? avgScores[k] : sampleAvgScores[k]}
-                    masked={attempts.length > 0}
-                  />
-                ))}
-              </View>
-            </LockedOverlay>
-
-            <LockedOverlay
-              ctaLabel="Unlock your personalized focus area"
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={!weakest}
-            >
-              <View style={[styles.card, styles.weakCard]}>
-                <Text style={styles.weakTitle}>Focus area this week</Text>
-                <Text style={styles.weakCriterion}>{CRITERION_LABELS[weakest ?? 'grammar']}</Text>
-                <Text style={styles.weakSub}>
-                  {weakest
-                    ? 'Your average here is 🔒 — a few targeted drills will move this quickly.'
-                    : 'Your average here is 58% — a few targeted drills will move this quickly.'}
-                </Text>
-              </View>
-            </LockedOverlay>
-
-            <LockedOverlay
-              ctaLabel="Unlock your full practice breakdown"
-              onUnlock={() => router.push('/paywall' as any)}
-              isSample={Object.keys(deptCounts).length === 0}
-            >
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>Scenarios Practiced</Text>
-                {Object.entries(Object.keys(deptCounts).length > 0 ? deptCounts : SAMPLE_DEPT_COUNTS).map(([dept, count]) => (
-                  <View key={dept} style={styles.deptRow}>
-                    <Text style={styles.deptLabel}>{DEPT_LABELS[dept as keyof typeof DEPT_LABELS] ?? dept.replace('_', ' ')}</Text>
-                    <Text style={styles.deptCount}>{Object.keys(deptCounts).length > 0 ? '🔒' : `${count}×`}</Text>
-                  </View>
-                ))}
-              </View>
-            </LockedOverlay>
-          </>
-        )}
+        <CollapsibleSection title="Consistency" storageKey="@sp4h_progress_section_consistency">
+          <ConsistencyStats streak={streak} sessionsThisWeek={sessionsThisWeek} totalPracticeDays={totalPracticeDays} />
+        </CollapsibleSection>
       </ScrollView>
     </SafeAreaView>
   );
@@ -584,10 +617,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F8F5F0' },
   content: { padding: Spacing.lg, paddingBottom: 60 },
   heading: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy, marginBottom: Spacing.sm },
-  sectionLabel: {
-    fontSize: 11, fontWeight: '700', color: Colors.textMuted,
-    textTransform: 'uppercase', letterSpacing: 1,
-    marginTop: Spacing.sm, marginBottom: Spacing.xs,
+  countdown: {
+    fontSize: Typography.caption, color: Colors.textMuted, textAlign: 'center',
+    marginBottom: Spacing.md,
   },
   devToggle: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

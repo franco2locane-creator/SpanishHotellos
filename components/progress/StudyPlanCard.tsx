@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { examCountdownLabel } from '@/lib/examDate';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 type Props = {
@@ -7,21 +8,13 @@ type Props = {
   nextActions: string[];
 };
 
-function countdownText(days: number | null): string {
-  if (days === null) return 'No exam date set';
-  if (days < 0) return 'Exam has passed';
-  if (days === 0) return 'Exam is today';
-  if (days === 1) return '1 day until your exam';
-  return `${days} days until your exam`;
-}
-
 export default function StudyPlanCard({ daysUntilExam, minutesPerDay, nextActions }: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Your Study Plan</Text>
       <View style={styles.row}>
         <View style={styles.stat}>
-          <Text style={styles.statVal}>{countdownText(daysUntilExam)}</Text>
+          <Text style={styles.statVal}>{examCountdownLabel(daysUntilExam)}</Text>
         </View>
       </View>
       <View style={styles.minutesRow}>

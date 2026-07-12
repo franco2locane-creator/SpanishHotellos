@@ -13,6 +13,17 @@ export function isFinalWeek(examDate?: string): boolean {
   return days !== null && days >= 0 && days <= 7;
 }
 
+/** Neutral, stat-style countdown label — shared by any card that just needs
+ *  to state the days-until-exam fact (contrast with Today tab's friendlier,
+ *  more editorial daysLabel() in app/(tabs)/index.tsx). */
+export function examCountdownLabel(days: number | null): string {
+  if (days === null) return 'No exam date set';
+  if (days < 0) return 'Exam has passed';
+  if (days === 0) return 'Exam is today';
+  if (days === 1) return '1 day until your exam';
+  return `${days} days until your exam`;
+}
+
 /**
  * Monday-first ISO date strings (YYYY-MM-DD) for the calendar week containing
  * `now`, entirely in UTC (via getUTCDay/Date.UTC) to match lib/today.ts's

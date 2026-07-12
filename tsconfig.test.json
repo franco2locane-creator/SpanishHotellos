@@ -16,6 +16,10 @@
     "lib/premiumGating.ts",
     "lib/guidedSession.ts",
     "lib/readiness.ts",
+    "lib/progressCoverage.ts",
+    "lib/progressRecommendation.ts",
+    "lib/textMatch.ts",
+    "lib/vocab/flashcardModes.ts",
     "types/**/*.ts",
     "expo-env.d.ts"
   ]
