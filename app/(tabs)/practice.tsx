@@ -10,9 +10,9 @@ import { decksForLevel, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '
 import { drillsForLevel } from '@/lib/grammar/drills';
 import { getDueCount } from '@/lib/db/vocab';
 import { getVocabDeckBest, type VocabDeckBest } from '@/lib/vocab/deckBest';
-import { getScenarioBest, getLastScenarioAttempt, type ScenarioBest } from '@/lib/scenarioBest';
+import { getScenarioBest, type ScenarioBest } from '@/lib/scenarioBest';
 import { formatBestBadge } from '@/lib/formatBest';
-import { useFeedbackStore } from '@/stores/feedbackStore';
+import { useViewScenarioFeedback } from '@/hooks/useViewScenarioFeedback';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 // ── Difficulty dots ───────────────────────────────────────────────────────────
@@ -113,17 +113,14 @@ export default function PracticeScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const isPremium = usePremium();
-  const { setResult } = useFeedbackStore();
+  const viewLastScenarioFeedback = useViewScenarioFeedback();
   const [dueCounts, setDueCounts] = useState<Record<string, number | null>>({});
   const [deckBests, setDeckBests] = useState<Record<string, VocabDeckBest>>({});
   const [scenarioBests, setScenarioBests] = useState<Record<string, ScenarioBest>>({});
 
-  async function viewLastFeedback(scenarioId: string) {
+  function viewLastFeedback(scenarioId: string) {
     if (!user) return;
-    const result = await getLastScenarioAttempt(user.id, scenarioId);
-    if (!result) return;
-    setResult(result, undefined, false);
-    router.push(`/feedback/${result.attemptId}` as any);
+    viewLastScenarioFeedback(user.id, scenarioId);
   }
 
   const level = user?.mockLevel ?? 'basic';

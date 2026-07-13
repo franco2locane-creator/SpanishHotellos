@@ -75,8 +75,11 @@ export function getRecommendation(input: RecommendationInput): Recommendation | 
     }
   }
 
-  // 2. Weakest accessible vocab deck.
+  // 2. Weakest accessible vocab deck. Off-level decks (practiced under a
+  // different mockLevel — see lib/progressCoverage.ts) are visible in
+  // Coverage but never actionable as current-level advice.
   const weakDecks = [...coverage.vocab]
+    .filter(d => !d.offLevel)
     .filter(d => d.total > 0 && d.learned < d.total)
     .filter(d => canAccessDeck({ isFree: d.isFree }, isPremium))
     .sort((a, b) => a.learned / a.total - b.learned / b.total);
@@ -91,8 +94,9 @@ export function getRecommendation(input: RecommendationInput): Recommendation | 
     };
   }
 
-  // 3. Weakest accessible grammar drill not yet attempted.
+  // 3. Weakest accessible grammar drill not yet attempted (off-level excluded, same reasoning as vocab above).
   const unattempted = coverage.grammar
+    .filter(g => !g.offLevel)
     .filter((g): g is GrammarDrillCoverage => !g.attempted)
     .filter(g => canAccessGrammarDrillSet({ isFree: g.isFree }, isPremium));
   if (unattempted.length) {
@@ -159,7 +163,7 @@ export function getWeakestAreas(input: WeakestAreasInput): WeakAreaItem[] {
   }
 
   for (const d of coverage.vocab) {
-    if (d.total === 0 || d.learned >= d.total || (!d.isFree && !isFull)) continue;
+    if (d.offLevel || d.total === 0 || d.learned >= d.total || (!d.isFree && !isFull)) continue;
     candidates.push({
       label: d.title,
       detail: `${d.learned}/${d.total} learned`,

@@ -19,9 +19,10 @@ import {
 } from '@/lib/today';
 import { examCountdownLabel } from '@/lib/examDate';
 import { progressTabMode } from '@/lib/premiumGating';
-import { getCoverageSummary, type CoverageSummary } from '@/lib/progressCoverage';
+import { getCoverageSummary, getScenarioActivity, type CoverageSummary, type ScenarioActivity } from '@/lib/progressCoverage';
 import { computeReadiness, computeConsistencyScore } from '@/lib/readiness';
 import { getRecommendation, getWeakestAreas } from '@/lib/progressRecommendation';
+import { useViewScenarioFeedback } from '@/hooks/useViewScenarioFeedback';
 import Skeleton from '@/components/Skeleton';
 import ReadinessCard from '@/components/progress/ReadinessCard';
 import LastMockCard from '@/components/progress/LastMockCard';
@@ -34,7 +35,8 @@ import CriterionTrend, { type CriterionKey } from '@/components/progress/Criteri
 import LockedOverlay from '@/components/progress/LockedOverlay';
 import DrillRecommendationsCard from '@/components/progress/DrillRecommendationsCard';
 import StudyPlanCard from '@/components/progress/StudyPlanCard';
-import { ScenarioCoverageCard, VocabCoverageCard, GrammarCoverageCard, MockCoverageCard } from '@/components/progress/CoverageCards';
+import { ScenarioCoverageCard, VocabCoverageCard, GrammarCoverageCard, DemoDrillCoverageCard, MockCoverageCard } from '@/components/progress/CoverageCards';
+import ScenarioActivityCard from '@/components/progress/ScenarioActivityCard';
 import ConsistencyStats from '@/components/progress/ConsistencyStats';
 import WebUnavailableCard from '@/components/progress/WebUnavailableCard';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
@@ -143,7 +145,7 @@ function AvgBar({ label, avg, masked }: { label: string; avg: number; masked?: b
   );
 }
 
-function MockHistoryList({ mocks, masked }: { mocks: MockAttemptRow[]; masked?: boolean }) {
+function MockHistoryList({ mocks, masked, onViewFeedback }: { mocks: MockAttemptRow[]; masked?: boolean; onViewFeedback?: (mockId: string) => void }) {
   if (mocks.length === 0) return null;
   return (
     <View style={styles.card}>
@@ -155,6 +157,11 @@ function MockHistoryList({ mocks, masked }: { mocks: MockAttemptRow[]; masked?: 
           <Text style={[styles.mockHistoryScore, m.passed ? styles.mockHistoryPass : styles.mockHistoryFail]}>
             {masked ? '🔒' : `${Math.round(m.combined_score)}/100`}
           </Text>
+          {!masked && onViewFeedback && (
+            <TouchableOpacity onPress={() => onViewFeedback(m.mock_id)} hitSlop={8}>
+              <Text style={styles.mockFeedbackLink}>Feedback →</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ))}
     </View>
@@ -186,9 +193,11 @@ export default function ProgressScreen() {
   const [weekDots, setWeekDots] = useState<WeekDot[]>([]);
   const [totalPracticeDays, setTotalPracticeDays] = useState(0);
   const [readinessDelta, setReadinessDelta] = useState<number | null>(null);
+  const [scenarioActivity, setScenarioActivity] = useState<ScenarioActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const lastFetchedAtRef = useRef(0);
   const isWeb = Platform.OS === 'web';
+  const viewLastScenarioFeedback = useViewScenarioFeedback();
 
   const isFull = progressTabMode(isPremium) === 'full';
 
@@ -245,6 +254,11 @@ export default function ProgressScreen() {
         setWeekDots(dots);
         setTotalPracticeDays(totalDays);
         setLoading(false);
+
+        // Per-scenario best scores, one batch behind coverage since it needs
+        // coverage's completedScenarioIds first.
+        const activity = await getScenarioActivity(user!.id, coverageSummary.completedScenarioIds);
+        if (!cancelled) setScenarioActivity(activity);
       }
       load();
 
@@ -418,10 +432,16 @@ export default function ProgressScreen() {
           )}
           {coverage && (
             <>
-              <ScenarioCoverageCard coverage={coverage.scenarios} />
+              <ScenarioCoverageCard coverage={coverage.scenarios} offLevelCompleted={coverage.offLevelScenariosCompleted} />
+              <ScenarioActivityCard
+                activity={scenarioActivity}
+                scenarios={scenariosForLevel(level)}
+                onViewFeedback={scenarioId => user && viewLastScenarioFeedback(user.id, scenarioId)}
+              />
               {isWeb ? <WebUnavailableCard label="Vocabulary coverage" /> : <VocabCoverageCard coverage={coverage.vocab} />}
               <GrammarCoverageCard coverage={coverage.grammar} />
-              <MockCoverageCard coverage={coverage.mocks} />
+              <DemoDrillCoverageCard coverage={coverage.demoDrills} />
+              <MockCoverageCard coverage={coverage.mocks} offLevelCompleted={coverage.offLevelMocksCompleted} />
             </>
           )}
         </CollapsibleSection>
@@ -433,7 +453,7 @@ export default function ProgressScreen() {
               <StudyPlanCard daysUntilExam={daysUntilExam} minutesPerDay={minutesPerDay} nextActions={nextActions} />
               <DrillRecommendationsCard criteria={drillCriteria} onSelect={c => router.push(`/drill/${c}` as any)} />
               <AssignmentMasteryCard rows={masteryRows} />
-              <MockHistoryList mocks={mockAttempts} />
+              <MockHistoryList mocks={mockAttempts} onViewFeedback={mockId => router.push(`/exam/last-attempt?mockId=${mockId}` as any)} />
 
               {!hasAnyData ? (
                 <View style={styles.emptyState}>
@@ -650,6 +670,7 @@ const styles = StyleSheet.create({
   mockHistoryScore: { fontSize: Typography.caption, fontWeight: Typography.bold },
   mockHistoryPass: { color: '#16A34A' },
   mockHistoryFail: { color: Colors.error },
+  mockFeedbackLink: { fontSize: 11, color: Colors.info, fontWeight: Typography.medium, marginLeft: Spacing.sm },
   cardSub: { fontSize: Typography.caption, color: Colors.textMuted },
   chartWrap: { alignItems: 'center', marginTop: Spacing.sm },
   avgRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },

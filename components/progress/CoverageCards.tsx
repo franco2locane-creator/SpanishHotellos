@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 import CoverageBar from './CoverageBar';
 import DeckCoverageRow from './DeckCoverageRow';
+import { formatBestBadge, formatBestFraction } from '@/lib/formatBest';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
-import type { AssignmentTypeCoverage, DeckCoverage, GrammarDrillCoverage, MockCoverage } from '@/lib/progressCoverage';
+import type { AssignmentTypeCoverage, DeckCoverage, GrammarDrillCoverage, DemoDrillCoverage, MockCoverage } from '@/lib/progressCoverage';
 
 const ASSIGNMENT_TYPE_LABELS: Record<string, string> = {
   checkin: 'Check-in',
@@ -13,7 +14,12 @@ const ASSIGNMENT_TYPE_LABELS: Record<string, string> = {
   job_interview: 'Job Interview',
 };
 
-export function ScenarioCoverageCard({ coverage }: { coverage: AssignmentTypeCoverage[] }) {
+const DEMO_DRILL_LABELS: Record<string, string> = {
+  register: 'Register', vocabulary: 'Vocabulary', grammar: 'Grammar',
+  fluency: 'Fluency', pronunciation: 'Pronunciation', content: 'Content',
+};
+
+export function ScenarioCoverageCard({ coverage, offLevelCompleted }: { coverage: AssignmentTypeCoverage[]; offLevelCompleted?: number }) {
   if (coverage.length === 0) return null;
   return (
     <View style={styles.card}>
@@ -27,6 +33,9 @@ export function ScenarioCoverageCard({ coverage }: { coverage: AssignmentTypeCov
           locked={c.completed === 0}
         />
       ))}
+      {!!offLevelCompleted && (
+        <Text style={styles.offLevelNote}>Also practiced (other level): {offLevelCompleted}</Text>
+      )}
     </View>
   );
 }
@@ -45,6 +54,8 @@ export function VocabCoverageCard({ coverage }: { coverage: DeckCoverage[] }) {
           mastered={d.mastered}
           total={d.total}
           locked={!d.isFree && d.seen === 0 && d.learned === 0}
+          offLevel={d.offLevel}
+          bestBadge={d.bestFirstTryPct !== null ? formatBestBadge(d.bestFirstTryPct, d.bestCompletionSeconds) : null}
         />
       ))}
     </View>
@@ -53,16 +64,48 @@ export function VocabCoverageCard({ coverage }: { coverage: DeckCoverage[] }) {
 
 export function GrammarCoverageCard({ coverage }: { coverage: GrammarDrillCoverage[] }) {
   if (coverage.length === 0) return null;
-  const attemptedCount = coverage.filter(d => d.attempted).length;
+  const onLevel = coverage.filter(d => !d.offLevel);
+  const offLevel = coverage.filter(d => d.offLevel);
+  const attemptedCount = onLevel.filter(d => d.attempted).length;
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Grammar Coverage</Text>
-      <CoverageBar label="Drill sets attempted" completed={attemptedCount} total={coverage.length} />
-      {coverage.map(d => (
+      <CoverageBar label="Drill sets attempted" completed={attemptedCount} total={onLevel.length} />
+      {onLevel.map(d => (
         <View key={d.drillId} style={styles.grammarRow}>
           <Text style={styles.grammarLabel} numberOfLines={1}>{d.title}</Text>
           <Text style={styles.grammarValue}>
-            {d.attempted ? `${Math.round(d.bestAccuracy ?? 0)}% best` : (d.isFree ? 'Not started' : '🔒')}
+            {d.attempted ? formatBestBadge(d.bestAccuracy ?? 0, d.bestCompletionSeconds) : (d.isFree ? 'Not started' : '🔒')}
+          </Text>
+        </View>
+      ))}
+      {offLevel.length > 0 && (
+        <>
+          <Text style={styles.offLevelNote}>Also practiced (other level):</Text>
+          {offLevel.map(d => (
+            <View key={d.drillId} style={styles.grammarRow}>
+              <Text style={styles.grammarLabel} numberOfLines={1}>{d.title}</Text>
+              <Text style={styles.grammarValue}>{formatBestBadge(d.bestAccuracy ?? 0, d.bestCompletionSeconds)}</Text>
+            </View>
+          ))}
+        </>
+      )}
+    </View>
+  );
+}
+
+export function DemoDrillCoverageCard({ coverage }: { coverage: DemoDrillCoverage[] }) {
+  if (coverage.length === 0) return null;
+  const attemptedCount = coverage.filter(d => d.attempted).length;
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Demo Drills</Text>
+      <CoverageBar label="Drills attempted" completed={attemptedCount} total={coverage.length} />
+      {coverage.map(d => (
+        <View key={d.drillType} style={styles.grammarRow}>
+          <Text style={styles.grammarLabel} numberOfLines={1}>{DEMO_DRILL_LABELS[d.drillType] ?? d.drillType}</Text>
+          <Text style={styles.grammarValue}>
+            {d.attempted ? formatBestFraction(d.bestScore ?? 0, 5, d.bestCompletionSeconds) : 'Not started'}
           </Text>
         </View>
       ))}
@@ -70,11 +113,14 @@ export function GrammarCoverageCard({ coverage }: { coverage: GrammarDrillCovera
   );
 }
 
-export function MockCoverageCard({ coverage }: { coverage: MockCoverage }) {
+export function MockCoverageCard({ coverage, offLevelCompleted }: { coverage: MockCoverage; offLevelCompleted?: number }) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Mock Exam Coverage</Text>
       <CoverageBar label="Mocks attempted" completed={coverage.completed} total={coverage.total} />
+      {!!offLevelCompleted && (
+        <Text style={styles.offLevelNote}>Also practiced (other level): {offLevelCompleted}</Text>
+      )}
     </View>
   );
 }
@@ -91,4 +137,5 @@ const styles = StyleSheet.create({
   },
   grammarLabel: { flex: 1, fontSize: Typography.caption, color: Colors.textSecondary, marginRight: Spacing.sm },
   grammarValue: { fontSize: Typography.caption, fontWeight: '700', color: Colors.navy },
+  offLevelNote: { fontSize: 11, color: Colors.textMuted, fontStyle: 'italic', marginTop: Spacing.xs },
 });

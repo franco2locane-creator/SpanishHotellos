@@ -7,9 +7,13 @@ import type { DrillMeta } from './grammar/drills';
 function makeCoverage(overrides: Partial<CoverageSummary> = {}): CoverageSummary {
   return {
     scenarios: [],
+    offLevelScenariosCompleted: 0,
+    completedScenarioIds: [],
     mocks: { completed: 0, total: 6 },
+    offLevelMocksCompleted: 0,
     grammar: [],
     vocab: [],
+    demoDrills: [],
     overallPct: 0,
     ...overrides,
   };
@@ -47,7 +51,7 @@ describe('getRecommendation', () => {
     const input: RecommendationInput = {
       coverage: makeCoverage({
         scenarios: [{ type: 'complaint', completed: 0, total: 1 }],
-        vocab: [{ deckId: 'front-office-basics', title: 'Front Office Basics', isFree: true, seen: 0, learned: 5, mastered: 0, total: 40 }],
+        vocab: [{ deckId: 'front-office-basics', title: 'Front Office Basics', isFree: true, seen: 0, learned: 5, mastered: 0, total: 40, bestFirstTryPct: null, bestCompletionSeconds: null }],
       }),
       studyPlan: null,
       scenarios: [SCENARIOS[1]], // only the locked one
@@ -81,6 +85,21 @@ describe('getRecommendation', () => {
     expect(rec?.route).toBe('/drill/grammar');
   });
 
+  it('never recommends an off-level vocab deck or grammar drill', () => {
+    const input: RecommendationInput = {
+      coverage: makeCoverage({
+        vocab: [{ deckId: 'restaurant-service-steps', title: 'Restaurant Service', isFree: false, seen: 0, learned: 0, mastered: 0, total: 40, bestFirstTryPct: null, bestCompletionSeconds: null, offLevel: true }],
+        grammar: [{ drillId: 'ser-estar', title: 'Ser vs Estar', isFree: true, attempted: false, bestAccuracy: null, bestCompletionSeconds: null, offLevel: true }],
+      }),
+      studyPlan: null,
+      scenarios: [],
+      decks: [],
+      drills: [],
+      isPremium: true,
+    };
+    expect(getRecommendation(input)).toBeNull();
+  });
+
   it('returns null on true cold start', () => {
     const input: RecommendationInput = {
       coverage: makeCoverage(),
@@ -110,6 +129,16 @@ describe('getWeakestAreas', () => {
     const items = getWeakestAreas(input);
     expect(items).toHaveLength(3);
     expect(items[0].detail).toBe('0/6');
+  });
+
+  it('never surfaces an off-level vocab deck as a weakest area', () => {
+    const input: WeakestAreasInput = {
+      coverage: makeCoverage({
+        vocab: [{ deckId: 'restaurant-service-steps', title: 'Restaurant Service', isFree: false, seen: 0, learned: 0, mastered: 0, total: 40, bestFirstTryPct: null, bestCompletionSeconds: null, offLevel: true }],
+      }),
+      isFull: true,
+    };
+    expect(getWeakestAreas(input)).toHaveLength(0);
   });
 
   it('excludes performance criteria for LITE users', () => {
