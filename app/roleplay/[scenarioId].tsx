@@ -18,6 +18,7 @@ import { gradeSession } from '@/lib/api/grade';
 import { ApiCallError } from '@/lib/api/apiError';
 import { getScenarioBest } from '@/lib/scenarioBest';
 import { beatsBest } from '@/lib/scoreTiebreak';
+import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
 import { setRecordingMode, setPlaybackMode } from '@/lib/audioSession';
 import { Haptics } from '@/lib/haptics';
 import { guidedNextRoute } from '@/lib/guidedSession';
@@ -48,6 +49,21 @@ type Phase =
 
 const ACTIVE_PHASES: Phase[] = ['guest_speaking', 'student_turn', 'recording', 'sending'];
 
+// Full turn-by-turn resume, cross-session only — a live in-session interrupt
+// (AppState background/return within the same mount) resumes straight from
+// memory, no storage round-trip needed; this blob exists so a KILLED app can
+// pick the same conversation back up. Two-tier staleness: within the hard
+// cap, offer resume; past it, the persona context and elapsed-time metric
+// are both meaningless, so discard and offer only a fresh start.
+const RESUME_HARD_CAP_MS = 48 * 60 * 60 * 1000;
+
+type ResumeBlob = {
+  turns: Turn[];
+  completedIds: string[];
+  wireHistory: WireMessage[];
+  startedAt: number;
+};
+
 export default function RoleplayScreen() {
   const { scenarioId, guided } = useLocalSearchParams<{ scenarioId: string; guided?: string }>();
   const isGuided = guided === '1';
@@ -68,6 +84,62 @@ export default function RoleplayScreen() {
   const wireHistoryRef = useRef<WireMessage[]>([]);
   const lastTurnRef = useRef<{ wireHistory: WireMessage[]; turnsSoFar: number }>({ wireHistory: [], turnsSoFar: 0 });
   const scrollRef = useRef<ScrollView>(null);
+  const wasResumedRef = useRef(false);
+  const [resumeChecked, setResumeChecked] = useState(false);
+  const [resumePrompt, setResumePrompt] = useState<ResumeBlob | null>(null);
+
+  // ── Cross-session resume check (killed-and-relaunched app) ─────────────────
+  // Guided sessions never offer resume, matching the daily-session contract.
+
+  useEffect(() => {
+    if (!user || !scenario || isGuided) { setResumeChecked(true); return; }
+    let cancelled = false;
+    loadResumeState<ResumeBlob>(resumeKey('roleplay', user.id, scenario.id)).then(blob => {
+      if (cancelled) return;
+      if (blob && blob.turns.length > 0) {
+        if (Date.now() - blob.startedAt > RESUME_HARD_CAP_MS) {
+          clearResumeState(resumeKey('roleplay', user.id, scenario.id));
+        } else {
+          setResumePrompt(blob);
+        }
+      }
+      setResumeChecked(true);
+    });
+    return () => { cancelled = true; };
+  }, [user?.id, scenario?.id, isGuided]);
+
+  function resumeFromBlob(blob: ResumeBlob) {
+    wasResumedRef.current = true;
+    setTurns(blob.turns);
+    setCompletedIds(new Set(blob.completedIds));
+    wireHistoryRef.current = blob.wireHistory;
+    sessionStartRef.current = blob.startedAt;
+    setResumePrompt(null);
+    updatePhase('student_turn');
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
+  }
+
+  function discardResumeAndStartFresh() {
+    if (user && scenario) clearResumeState(resumeKey('roleplay', user.id, scenario.id));
+    setTurns([]);
+    setCompletedIds(new Set());
+    wireHistoryRef.current = [];
+    setResumePrompt(null);
+    updatePhase('idle');
+  }
+
+  // Auto-save after every turn exchange — non-guided only, cleared once graded.
+  useEffect(() => {
+    if (isGuided || !resumeChecked || !user || !scenario || turns.length === 0) return;
+    if (['done', 'grading', 'grading_error'].includes(phase)) return;
+    const blob: ResumeBlob = {
+      turns,
+      completedIds: [...completedIds],
+      wireHistory: wireHistoryRef.current,
+      startedAt: sessionStartRef.current,
+    };
+    saveResumeState(resumeKey('roleplay', user.id, scenario.id), blob);
+  }, [isGuided, resumeChecked, user?.id, scenario?.id, turns, completedIds, phase]);
 
   function updatePhase(p: Phase) {
     phaseRef.current = p;
@@ -243,6 +315,7 @@ export default function RoleplayScreen() {
       const gradeResult = await gradeSession({
         scenario, messages, durationSeconds,
         level: user.mockLevel,
+        wasResumed: wasResumedRef.current,
       });
       Haptics.success();
       const isNewBest = beatsBest(
@@ -250,6 +323,7 @@ export default function RoleplayScreen() {
         priorBest ? { score: priorBest.score, completionSeconds: priorBest.completionSeconds } : null,
       );
       setResult(gradeResult, undefined, isNewBest);
+      if (user && scenario) clearResumeState(resumeKey('roleplay', user.id, scenario.id));
       // Guided flow: the attempt is graded and saved either way (visible later
       // in Progress) — momentum matters more than the detailed feedback screen
       // mid-session, so move straight to the next step instead of /feedback.
@@ -269,6 +343,60 @@ export default function RoleplayScreen() {
     return (
       <SafeAreaView style={styles.screen}>
         <Text style={styles.errText}>Scenario not found.</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (resumePrompt) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.gradingWrap}>
+          <Text style={{ fontSize: 48 }}>⏸️</Text>
+          <Text style={styles.gradingTitle}>Pick up this conversation?</Text>
+          <Text style={styles.gradingText}>
+            You were partway through {scenario.title} — {resumePrompt.turns.filter(t => t.role === 'student').length} exchange{resumePrompt.turns.filter(t => t.role === 'student').length === 1 ? '' : 's'} in.
+          </Text>
+          <TouchableOpacity style={styles.startBtn} onPress={() => resumeFromBlob(resumePrompt)}>
+            <Text style={styles.startBtnText}>Resume conversation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={discardResumeAndStartFresh} style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Start over instead</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!resumeChecked) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+      </SafeAreaView>
+    );
+  }
+
+  if (phase === 'interrupted' && !isGuided && turns.length > 0) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.gradingWrap}>
+          <Text style={{ fontSize: 48 }}>📵</Text>
+          <Text style={styles.gradingTitle}>Session paused</Text>
+          <Text style={styles.gradingText}>
+            Something interrupted your session. Pick up right where you left off, or start fresh.
+          </Text>
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={() => resumeFromBlob({ turns, completedIds: [...completedIds], wireHistory: wireHistoryRef.current, startedAt: sessionStartRef.current })}
+          >
+            <Text style={styles.startBtnText}>Resume conversation</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={discardResumeAndStartFresh} style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Start over instead</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={exitScreen} style={{ marginTop: Spacing.sm }}>
+            <Text style={[styles.gradingText, { textDecorationLine: 'underline' }]}>Go back</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }

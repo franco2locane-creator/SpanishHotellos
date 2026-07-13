@@ -12,11 +12,14 @@ import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { canAccessDemoDrill } from '@/lib/premiumGating';
 import { isFuzzyMatch } from '@/lib/textMatch';
-import { saveDemoDrillProgress, getDemoDrillBest, type DemoDrillBest } from '@/lib/demoDrill/progress';
+import { saveDemoDrillProgress, getDemoDrillBest, getDemoDrillLastAttempt, type DemoDrillBest } from '@/lib/demoDrill/progress';
+import type { AttemptDetailItem } from '@/lib/grammar/progress';
 import { formatBestFraction } from '@/lib/formatBest';
+import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import GuidedStepHeader from '@/components/today/GuidedStepHeader';
+import LastAttemptPanel from '@/components/LastAttemptPanel';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { FixItem } from '@/lib/api/grade';
 
@@ -97,6 +100,8 @@ const DRILLS: Record<FixItem['drillType'], { title: string; instruction: string;
 
 type Phase = 'ready' | 'recording' | 'result' | 'done';
 
+type ResumeBlob = { qi: number; score: number; startedAt: number };
+
 export default function DrillScreen() {
   const { drillType, guided } = useLocalSearchParams<{ drillType: string; guided?: string }>();
   const isGuided = guided === '1';
@@ -116,19 +121,63 @@ export default function DrillScreen() {
   const liveRef = useRef('');
   const startedAtRef = useRef(Date.now());
   const savedRef = useRef(false);
+  const attemptDetailRef = useRef<Array<{ prompt: string; given: string; correct: boolean; correctAnswer: string }>>([]);
+  const [resumeChecked, setResumeChecked] = useState(false);
+  const [resumePrompt, setResumePrompt] = useState<ResumeBlob | null>(null);
+  const [lastAttempt, setLastAttempt] = useState<AttemptDetailItem[]>([]);
+  const [showLastAttempt, setShowLastAttempt] = useState(false);
 
   useEffect(() => {
     if (!user || !drillType || locked) return;
     getDemoDrillBest(user.id, drillType).then(setBest).catch(() => {});
+    getDemoDrillLastAttempt(user.id, drillType).then(setLastAttempt).catch(() => {});
   }, [user?.id, drillType, locked]);
+
+  useEffect(() => {
+    if (!user || !drillType || locked || resumeChecked) return;
+    let cancelled = false;
+    loadResumeState<ResumeBlob>(resumeKey('demoDrill', user.id, drillType)).then(blob => {
+      if (cancelled) return;
+      if (blob && blob.qi > 0) {
+        setResumePrompt(blob);
+      } else {
+        setResumeChecked(true);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [user?.id, drillType, locked, resumeChecked]);
+
+  function resumeSession(blob: ResumeBlob) {
+    setQi(blob.qi);
+    setScore(blob.score);
+    startedAtRef.current = blob.startedAt;
+    setResumePrompt(null);
+    setResumeChecked(true);
+  }
+
+  function startFresh() {
+    if (user && drillType) clearResumeState(resumeKey('demoDrill', user.id, drillType));
+    startedAtRef.current = Date.now();
+    setResumePrompt(null);
+    setResumeChecked(true);
+  }
+
+  // Auto-save after every question resolves.
+  useEffect(() => {
+    if (!resumeChecked || !user || !drillType || phase === 'done') return;
+    if (qi === 0 && score === 0) return; // nothing to resume yet
+    const blob: ResumeBlob = { qi, score, startedAt: startedAtRef.current };
+    saveResumeState(resumeKey('demoDrill', user.id, drillType), blob);
+  }, [resumeChecked, user?.id, drillType, qi, score, phase]);
 
   useEffect(() => {
     if (phase !== 'done' || savedRef.current || !user || !drillType || !config) return;
     savedRef.current = true;
     const completionSeconds = Math.round((Date.now() - startedAtRef.current) / 1000);
-    saveDemoDrillProgress(user.id, drillType, score, completionSeconds)
+    saveDemoDrillProgress(user.id, drillType, score, completionSeconds, attemptDetailRef.current)
       .then(result => setIsNewBest(result.isNewBest))
       .catch(() => {});
+    clearResumeState(resumeKey('demoDrill', user.id, drillType));
   }, [phase, user, drillType, config, score]);
 
   useSpeechRecognitionEvent('result', e => {
@@ -147,6 +196,7 @@ export default function DrillScreen() {
     if (ok) setScore(s => s + 1);
     setSpoken(raw);
     setPhase('result');
+    attemptDetailRef.current.push({ prompt: q.prompt, given: raw, correct: ok, correctAnswer: q.answer });
   }
 
   const startRecording = useCallback(async () => {
@@ -222,6 +272,34 @@ export default function DrillScreen() {
     );
   }
 
+  if (resumePrompt) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.doneBlock}>
+          <Text style={styles.doneEmoji}>⏸️</Text>
+          <Text style={styles.doneTitle}>Pick up where you left off?</Text>
+          <Text style={styles.doneSub}>
+            You were {resumePrompt.score}/{config.questions.length} correct, on question {resumePrompt.qi + 1}.
+          </Text>
+          <TouchableOpacity style={styles.doneBtn} onPress={() => resumeSession(resumePrompt)}>
+            <Text style={styles.doneBtnText}>Resume</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.startOverBtn} onPress={startFresh}>
+            <Text style={styles.startOverBtnText}>Start over</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!resumeChecked) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+      </SafeAreaView>
+    );
+  }
+
   const q = config.questions[qi];
   const progress = qi / config.questions.length;
 
@@ -260,6 +338,12 @@ export default function DrillScreen() {
       {best && phase === 'ready' && qi === 0 && (
         <Text style={styles.bestLine}>{formatBestFraction(best.bestScore, config.questions.length, best.bestCompletionSeconds)}</Text>
       )}
+      {lastAttempt.length > 0 && phase === 'ready' && qi === 0 && (
+        <TouchableOpacity onPress={() => setShowLastAttempt(v => !v)} style={styles.lastAttemptToggle}>
+          <Text style={styles.lastAttemptToggleText}>{showLastAttempt ? 'Hide' : 'View'} last attempt</Text>
+        </TouchableOpacity>
+      )}
+      {showLastAttempt && phase === 'ready' && qi === 0 && <LastAttemptPanel items={lastAttempt} />}
 
       {/* Progress bar */}
       <View style={styles.progressBg}>
@@ -330,6 +414,8 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, textAlign: 'center', color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body, marginHorizontal: Spacing.sm },
   counter: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.7)' },
   bestLine: { fontSize: Typography.caption, color: Colors.gold, fontWeight: Typography.semibold, textAlign: 'center', paddingVertical: 4, backgroundColor: Colors.navy },
+  lastAttemptToggle: { alignSelf: 'center', paddingVertical: Spacing.xs, backgroundColor: Colors.navy },
+  lastAttemptToggleText: { fontSize: Typography.caption, color: '#fff', fontWeight: Typography.medium, textDecorationLine: 'underline' },
   progressBg: { height: 4, backgroundColor: '#E8E3DC' },
   progressFill: { height: '100%', backgroundColor: Colors.gold },
   card: {
@@ -369,4 +455,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md,
   },
   doneBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
+  startOverBtn: { marginTop: Spacing.sm, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm },
+  startOverBtnText: { color: Colors.textMuted, fontWeight: Typography.medium, fontSize: Typography.body, textDecorationLine: 'underline' },
 });

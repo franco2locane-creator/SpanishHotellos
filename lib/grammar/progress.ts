@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { beatsBest } from '@/lib/scoreTiebreak';
 
+export type AttemptDetailItem = { prompt: string; given: string; correct: boolean; correctAnswer: string };
+
 export type SaveGrammarDrillResult = {
   isNewBest: boolean;
   bestAccuracy: number;
@@ -79,4 +81,15 @@ export async function getGrammarDrillBest(userId: string, drillId: string): Prom
     .maybeSingle();
   if (!data) return null;
   return { bestAccuracy: data.best_accuracy, bestCompletionSeconds: data.best_completion_seconds };
+}
+
+/** Per-question detail from the latest attempt only — for the "Last attempt" view. */
+export async function getGrammarDrillLastAttempt(userId: string, drillId: string): Promise<AttemptDetailItem[]> {
+  const { data } = await supabase
+    .from('grammar_drill_progress')
+    .select('last_attempt_detail')
+    .eq('user_id', userId)
+    .eq('drill_id', drillId)
+    .maybeSingle();
+  return (data?.last_attempt_detail as AttemptDetailItem[]) ?? [];
 }

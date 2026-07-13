@@ -10,6 +10,7 @@ import { useMockExamStore } from '@/stores/mockExamStore';
 import { getMockList } from '@/lib/mockExam/loader';
 import { getCatalogSummary, canStartMockExam } from '@/lib/premiumGating';
 import { getMockExamAttemptCount } from '@/lib/today';
+import { getLastMockAttempt } from '@/lib/mockLastAttempt';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { MockExamData, MockLevel } from '@/types';
 
@@ -23,7 +24,10 @@ const ASSIGNMENT_ICONS: Record<string, string> = {
   saying_no: '🚫',
 };
 
-function MockCard({ mock, onStart, locked }: { mock: MockExamData; onStart: () => void; locked: boolean }) {
+function MockCard({ mock, onStart, locked, lastScore, onViewLastAttempt }: {
+  mock: MockExamData; onStart: () => void; locked: boolean;
+  lastScore: number | undefined; onViewLastAttempt: () => void;
+}) {
   const types = mock.assignments.map(a => ASSIGNMENT_ICONS[a.type] ?? '📋').join(' ');
   const levelLabel = mock.level === 'basic' ? 'Basic' : 'Intermediate';
 
@@ -46,6 +50,14 @@ function MockCard({ mock, onStart, locked }: { mock: MockExamData; onStart: () =
         )}
       </View>
       <Text style={styles.mockTypes}>{types}</Text>
+      {lastScore !== undefined && (
+        <View style={styles.mockCardTop}>
+          <Text style={styles.lastAttemptScore}>Last attempt: {Math.round(lastScore)}/100</Text>
+          <TouchableOpacity onPress={onViewLastAttempt} hitSlop={8}>
+            <Text style={styles.lastAttemptLink}>View feedback →</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -58,6 +70,7 @@ export default function MockExamScreen() {
   const [mocks, setMocks] = useState<MockExamData[]>([]);
   const [loading, setLoading] = useState(true);
   const [attemptCount, setAttemptCount] = useState(0);
+  const [lastScores, setLastScores] = useState<Record<string, number>>({});
 
   const level: MockLevel = user?.mockLevel ?? 'basic';
   const canStart = canStartMockExam(isPremium, attemptCount);
@@ -73,6 +86,12 @@ export default function MockExamScreen() {
       setAttemptCount(count);
       setLoading(false);
     });
+    (async () => {
+      for (const mock of list) {
+        const last = await getLastMockAttempt(user.id, mock.id);
+        if (last) setLastScores(prev => ({ ...prev, [mock.id]: last.combinedScore }));
+      }
+    })();
   }, [level, isPremium, user?.id]);
 
   function handleStart(mock: MockExamData) {
@@ -125,6 +144,8 @@ export default function MockExamScreen() {
                   mock={mock}
                   locked={locked}
                   onStart={() => handleStart(mock)}
+                  lastScore={lastScores[mock.id]}
+                  onViewLastAttempt={() => router.push(`/exam/last-attempt?mockId=${mock.id}` as any)}
                 />
               );
             })}
@@ -179,6 +200,8 @@ const styles = StyleSheet.create({
   lockIcon: { fontSize: 20 },
   playIcon: { fontSize: 18, color: Colors.navy, fontWeight: Typography.bold },
   mockTypes: { fontSize: 22, letterSpacing: 4 },
+  lastAttemptScore: { fontSize: Typography.caption, color: Colors.gold, fontWeight: Typography.semibold },
+  lastAttemptLink: { fontSize: Typography.caption, color: Colors.info, fontWeight: Typography.medium },
   upgradeBtn: {
     backgroundColor: Colors.gold, borderRadius: Radii.lg, paddingVertical: Spacing.md,
     alignItems: 'center', marginBottom: Spacing.lg, marginTop: Spacing.sm,

@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { beatsBest } from '@/lib/scoreTiebreak';
+import type { AttemptDetailItem } from '@/lib/grammar/progress';
 
 export type SaveDemoDrillResult = {
   isNewBest: boolean;
@@ -61,4 +62,14 @@ export async function getDemoDrillBest(userId: string, drillType: string): Promi
     .maybeSingle();
   if (!data) return null;
   return { bestScore: data.best_score, bestCompletionSeconds: data.best_completion_seconds };
+}
+
+export async function getDemoDrillLastAttempt(userId: string, drillType: string): Promise<AttemptDetailItem[]> {
+  const { data } = await supabase
+    .from('demo_drill_progress')
+    .select('last_attempt_detail')
+    .eq('user_id', userId)
+    .eq('drill_type', drillType)
+    .maybeSingle();
+  return (data?.last_attempt_detail as AttemptDetailItem[]) ?? [];
 }

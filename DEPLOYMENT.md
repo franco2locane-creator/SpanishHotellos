@@ -57,5 +57,6 @@ supabase functions deploy roleplay
 supabase functions deploy grade
 supabase functions deploy placement
 supabase functions deploy delete-account
+supabase functions deploy award-daily-points
 supabase db push
 ```

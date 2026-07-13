@@ -71,6 +71,8 @@ export async function gradeSession(args: {
   messages: WireMessage[];
   durationSeconds: number;
   level: CourseLevel;
+  /** True if this attempt was restored from a resume blob (app-kill mid-conversation). */
+  wasResumed?: boolean;
 }): Promise<GradeResult> {
   return invokeGrade({
     scenario: {
@@ -83,6 +85,7 @@ export async function gradeSession(args: {
     messages: args.messages,
     durationSeconds: args.durationSeconds,
     level: args.level,
+    wasResumed: args.wasResumed ?? false,
   });
 }
 

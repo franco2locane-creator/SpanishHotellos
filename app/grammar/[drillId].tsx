@@ -11,8 +11,10 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
 import { loadDrillSet, DRILL_CATALOG } from '@/lib/grammar/drills';
-import { saveGrammarDrillProgress } from '@/lib/grammar/progress';
+import { saveGrammarDrillProgress, getGrammarDrillLastAttempt, type AttemptDetailItem } from '@/lib/grammar/progress';
+import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
 import { Haptics } from '@/lib/haptics';
+import LastAttemptPanel from '@/components/LastAttemptPanel';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { GrammarQuestion } from '@/types';
 
@@ -30,6 +32,13 @@ function isCorrect(input: string, answer: string): boolean {
 }
 
 type Phase = 'question' | 'result' | 'done';
+
+type ResumeBlob = {
+  queueIds: string[];
+  correctFirstTry: number;
+  seenIds: string[];
+  startedAt: number;
+};
 
 export default function GrammarDrillScreen() {
   const { drillId } = useLocalSearchParams<{ drillId: string }>();
@@ -51,12 +60,67 @@ export default function GrammarDrillScreen() {
   const [totalAsked, setTotalAsked] = useState(0);
   const [seenIds, setSeenIds] = useState<Set<string>>(new Set());
   const [isNewBest, setIsNewBest] = useState(false);
+  const [resumeChecked, setResumeChecked] = useState(false);
+  const [resumePrompt, setResumePrompt] = useState<ResumeBlob | null>(null);
   const savedRef = useRef(false);
   const startedAtRef = useRef(Date.now());
+  const attemptDetailRef = useRef<Array<{ prompt: string; given: string; correct: boolean; correctAnswer: string }>>([]);
+  const [lastAttempt, setLastAttempt] = useState<AttemptDetailItem[]>([]);
+  const [showLastAttempt, setShowLastAttempt] = useState(false);
 
   useEffect(() => {
-    if (drillSet) setQueue([...drillSet.questions]);
-  }, [drillSet]);
+    if (!user || !drillMeta) return;
+    getGrammarDrillLastAttempt(user.id, drillMeta.id).then(setLastAttempt).catch(() => {});
+  }, [user?.id, drillMeta?.id]);
+
+  useEffect(() => {
+    if (!drillSet || !user) return;
+    let cancelled = false;
+    loadResumeState<ResumeBlob>(resumeKey('grammar', user.id, drillSet.id)).then(blob => {
+      if (cancelled) return;
+      if (blob && blob.queueIds.length > 0) {
+        setResumePrompt(blob);
+      } else {
+        setQueue([...drillSet.questions]);
+        setResumeChecked(true);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [drillSet, user?.id]);
+
+  function resumeSession(blob: ResumeBlob) {
+    if (!drillSet) return;
+    const restoredQueue = blob.queueIds
+      .map(id => drillSet.questions.find(q => q.id === id))
+      .filter((q): q is GrammarQuestion => !!q);
+    setQueue(restoredQueue);
+    setCorrectFirstTry(blob.correctFirstTry);
+    setSeenIds(new Set(blob.seenIds));
+    startedAtRef.current = blob.startedAt;
+    setResumePrompt(null);
+    setResumeChecked(true);
+  }
+
+  function startFresh() {
+    if (!drillSet || !user) return;
+    clearResumeState(resumeKey('grammar', user.id, drillSet.id));
+    setQueue([...drillSet.questions]);
+    startedAtRef.current = Date.now();
+    setResumePrompt(null);
+    setResumeChecked(true);
+  }
+
+  // Auto-save after every question resolution — cleared once the drill is done.
+  useEffect(() => {
+    if (!resumeChecked || !user || !drillSet || phase === 'done' || queue.length === 0) return;
+    const blob: ResumeBlob = {
+      queueIds: queue.map(q => q.id),
+      correctFirstTry,
+      seenIds: [...seenIds],
+      startedAt: startedAtRef.current,
+    };
+    saveResumeState(resumeKey('grammar', user.id, drillSet.id), blob);
+  }, [resumeChecked, user?.id, drillSet, queue, correctFirstTry, seenIds, phase]);
 
   // Persist best accuracy once, the first time this session reaches 'done'.
   useEffect(() => {
@@ -64,9 +128,10 @@ export default function GrammarDrillScreen() {
     savedRef.current = true;
     const accuracy = (correctFirstTry / drillSet.questions.length) * 100;
     const completionSeconds = Math.round((Date.now() - startedAtRef.current) / 1000);
-    saveGrammarDrillProgress(user.id, drillMeta.id, accuracy, completionSeconds)
+    saveGrammarDrillProgress(user.id, drillMeta.id, accuracy, completionSeconds, attemptDetailRef.current)
       .then(result => setIsNewBest(result.isNewBest))
       .catch(() => {});
+    clearResumeState(resumeKey('grammar', user.id, drillMeta.id));
   }, [phase, user, drillMeta, drillSet, correctFirstTry]);
 
   useSpeechRecognitionEvent('result', e => {
@@ -97,6 +162,34 @@ export default function GrammarDrillScreen() {
     );
   }
 
+  if (resumePrompt) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.center}>
+          <Text style={{ fontSize: 48 }}>⏸️</Text>
+          <Text style={styles.centerTitle}>Pick up where you left off?</Text>
+          <Text style={styles.centerText}>
+            You were {resumePrompt.correctFirstTry}/{drillSet.questions.length} correct with {resumePrompt.queueIds.length} question{resumePrompt.queueIds.length === 1 ? '' : 's'} left.
+          </Text>
+          <TouchableOpacity style={styles.nextBtn} onPress={() => resumeSession(resumePrompt)}>
+            <Text style={styles.nextBtnText}>Resume</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.startOverBtn} onPress={startFresh}>
+            <Text style={styles.startOverBtnText}>Start over</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!resumeChecked) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+      </SafeAreaView>
+    );
+  }
+
   const q = queue[0];
 
   async function toggleMic() {
@@ -120,6 +213,7 @@ export default function GrammarDrillScreen() {
     const ok = isCorrect(given, q.answer);
     setCorrect(ok);
     setTotalAsked(n => n + 1);
+    attemptDetailRef.current.push({ prompt: q.prompt, given, correct: ok, correctAnswer: q.answer });
 
     if (ok) {
       Haptics.success();
@@ -174,6 +268,13 @@ export default function GrammarDrillScreen() {
         <Text style={styles.headerTitle} numberOfLines={1}>{drillMeta.title}</Text>
         <Text style={styles.counter}>{queue.length} left</Text>
       </View>
+
+      {totalAsked === 0 && lastAttempt.length > 0 && (
+        <TouchableOpacity onPress={() => setShowLastAttempt(v => !v)} style={styles.lastAttemptToggle}>
+          <Text style={styles.lastAttemptToggleText}>{showLastAttempt ? 'Hide' : 'View'} last attempt</Text>
+        </TouchableOpacity>
+      )}
+      {totalAsked === 0 && showLastAttempt && <LastAttemptPanel items={lastAttempt} />}
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.card}>
@@ -243,6 +344,8 @@ const styles = StyleSheet.create({
   back: { fontSize: 20, color: '#fff' },
   headerTitle: { flex: 1, textAlign: 'center', color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body, marginHorizontal: Spacing.sm },
   counter: { fontSize: Typography.caption, color: 'rgba(255,255,255,0.7)' },
+  lastAttemptToggle: { alignSelf: 'center', paddingVertical: Spacing.xs },
+  lastAttemptToggleText: { fontSize: Typography.caption, color: Colors.info, fontWeight: Typography.medium },
   card: {
     margin: Spacing.lg, backgroundColor: Colors.surface, borderRadius: Radii.xl,
     padding: Spacing.xl, gap: Spacing.lg, ...Shadows.md, flex: 1,
@@ -270,5 +373,7 @@ const styles = StyleSheet.create({
   newBest: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.gold },
   nextBtn: { backgroundColor: Colors.navy, borderRadius: Radii.lg, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
   nextBtnText: { color: '#fff', fontWeight: Typography.semibold, fontSize: Typography.body },
+  startOverBtn: { paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm },
+  startOverBtnText: { color: Colors.textMuted, fontWeight: Typography.medium, fontSize: Typography.body, textDecorationLine: 'underline' },
   errText: { padding: Spacing.xl, color: Colors.error },
 });

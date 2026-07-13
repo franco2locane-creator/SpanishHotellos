@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import type { GradeResult } from '@/lib/api/grade';
 
 export type ScenarioBest = { score: number; completionSeconds: number } | null;
 
@@ -26,4 +27,44 @@ export async function getScenarioBest(userId: string, scenarioId: string): Promi
     .maybeSingle();
   if (!data) return null;
   return { score: data.total_score, completionSeconds: data.duration_seconds };
+}
+
+type FullFeedback = {
+  detail: GradeResult['detail'];
+  hospitalityGate: GradeResult['hospitalityGate'];
+  topThingsFix: GradeResult['topThingsFix'];
+  feedback: string;
+  wasResumed?: boolean;
+};
+
+/**
+ * Most recent attempt for this scenario, reconstructed as a GradeResult so
+ * it can be dropped straight into useFeedbackStore and shown on the
+ * existing /feedback/[attemptId] screen — no new UI needed to view it.
+ * Returns null if the attempt predates the full_feedback column (older
+ * rows just won't have a "last attempt" view, which is an honest gap, not
+ * a bug — the raw scores are still visible everywhere else).
+ */
+export async function getLastScenarioAttempt(userId: string, scenarioId: string): Promise<GradeResult | null> {
+  const { data } = await supabase
+    .from('exam_attempts')
+    .select('id, total_score, completed_at, scores, full_feedback')
+    .eq('user_id', userId)
+    .eq('scenario_id', scenarioId)
+    .order('completed_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data || !data.full_feedback) return null;
+
+  const full = data.full_feedback as FullFeedback;
+  return {
+    attemptId: data.id,
+    totalScore: data.total_score,
+    completedAt: data.completed_at,
+    numericScores: data.scores,
+    detail: full.detail,
+    hospitalityGate: full.hospitalityGate,
+    topThingsFix: full.topThingsFix,
+    feedback: full.feedback,
+  };
 }

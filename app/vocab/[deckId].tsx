@@ -11,6 +11,7 @@ import {
 import { nextSrsState, INITIAL_SRS, type SrsGrade } from '@/lib/srs';
 import { assignModes, pickRecycleMode, generateMcqOptions, type FlashcardMode } from '@/lib/vocab/flashcardModes';
 import { saveVocabDeckBest } from '@/lib/vocab/deckBest';
+import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import McqQuestion from '@/components/vocab/McqQuestion';
@@ -28,6 +29,17 @@ const GUIDED_SESSION_LIMIT = 15;
 const RECYCLE_OFFSET = 3;
 
 type QueueItem = { card: VocabCard; mode: FlashcardMode };
+
+type ResumeBlob = {
+  cardOrder: string[];
+  queueIds: { cardId: string; mode: FlashcardMode }[];
+  dotState: Record<string, DotState>;
+  seenFirst: string[];
+  correctFirstTry: number;
+  currentStreak: number;
+  longestStreak: number;
+  startedAt: number;
+};
 
 // ── Round summary ─────────────────────────────────────────────────────────────
 
@@ -91,32 +103,85 @@ export default function ReviewScreen() {
   const [phase, setPhase] = useState<'question' | 'reveal' | 'summary'>('question');
   const [revealCard, setRevealCard] = useState<VocabCard | null>(null);
   const [isNewBest, setIsNewBest] = useState(false);
+  const [resumeChecked, setResumeChecked] = useState(false);
+  const [resumePrompt, setResumePrompt] = useState<ResumeBlob | null>(null);
   const startedAtRef = useRef(Date.now());
 
-  // ── Load due cards ──────────────────────────────────────────────────────────
+  async function loadSrsMap(userId: string, cards: VocabCard[]): Promise<Record<string, SrsData>> {
+    const map: Record<string, SrsData> = {};
+    for (const card of cards) {
+      const progress = await getCardProgress(userId, card.id);
+      map[card.id] = progress ?? INITIAL_SRS;
+    }
+    return map;
+  }
+
+  async function applyResumeBlob(blob: ResumeBlob) {
+    if (!user || !deck) return;
+    const restoredQueue = blob.queueIds
+      .map(({ cardId, mode }) => {
+        const card = deck.cards.find(c => c.id === cardId);
+        return card ? { card, mode } : null;
+      })
+      .filter((q): q is QueueItem => !!q);
+    setCardOrder(blob.cardOrder);
+    setQueue(restoredQueue);
+    setDotState(blob.dotState);
+    setSeenFirst(new Set(blob.seenFirst));
+    setCorrectFirstTry(blob.correctFirstTry);
+    setCurrentStreak(blob.currentStreak);
+    setLongestStreak(blob.longestStreak);
+    startedAtRef.current = blob.startedAt;
+    setSrsMap(await loadSrsMap(user.id, restoredQueue.map(q => q.card)));
+    setResumePrompt(null);
+    setResumeChecked(true);
+    setLoading(false);
+  }
+
+  async function startFreshSession() {
+    if (!user || !deck) return;
+    clearResumeState(resumeKey('vocab', user.id, deck.id));
+    setResumePrompt(null);
+    setResumeChecked(true);
+    await loadDueCards();
+  }
+
+  async function loadDueCards() {
+    if (!user || !deck) return;
+    startedAtRef.current = Date.now();
+    const allIds = deck.cards.map(c => c.id);
+    const dueIds = isGuided
+      ? await getDueCardIds(user.id, deck.id, allIds, GUIDED_SESSION_LIMIT)
+      : await getDueCardIds(user.id, deck.id, allIds);
+    const dueCards = dueIds.map(id => deck.cards.find(c => c.id === id)!).filter(Boolean);
+    const modes = assignModes(dueCards.length);
+
+    setCardOrder(dueCards.map(c => c.id));
+    setQueue(dueCards.map((card, i) => ({ card, mode: modes[i] })));
+    setDotState(Object.fromEntries(dueCards.map(c => [c.id, 'pending' as DotState])));
+    setSrsMap(await loadSrsMap(user.id, dueCards));
+    setLoading(false);
+  }
+
+  // ── Load due cards (or offer resume, non-guided sessions only — guided
+  // sessions always start fresh per the daily-session contract) ─────────────
 
   useEffect(() => {
     if (!user || !deck) return;
     async function load() {
-      startedAtRef.current = Date.now();
-      const allIds = deck!.cards.map(c => c.id);
-      const dueIds = isGuided
-        ? await getDueCardIds(user!.id, deck!.id, allIds, GUIDED_SESSION_LIMIT)
-        : await getDueCardIds(user!.id, deck!.id, allIds);
-      const dueCards = dueIds.map(id => deck!.cards.find(c => c.id === id)!).filter(Boolean);
-      const modes = assignModes(dueCards.length);
-
-      setCardOrder(dueCards.map(c => c.id));
-      setQueue(dueCards.map((card, i) => ({ card, mode: modes[i] })));
-      setDotState(Object.fromEntries(dueCards.map(c => [c.id, 'pending' as DotState])));
-
-      const map: Record<string, SrsData> = {};
-      for (const card of dueCards) {
-        const progress = await getCardProgress(user!.id, card.id);
-        map[card.id] = progress ?? INITIAL_SRS;
+      if (isGuided) {
+        setResumeChecked(true);
+        await loadDueCards();
+        return;
       }
-      setSrsMap(map);
-      setLoading(false);
+      const blob = await loadResumeState<ResumeBlob>(resumeKey('vocab', user!.id, deck!.id));
+      if (blob && blob.queueIds.length > 0) {
+        setResumePrompt(blob);
+        setLoading(false);
+        return;
+      }
+      setResumeChecked(true);
+      await loadDueCards();
     }
     load();
   }, [user?.id, deckId]);
@@ -179,6 +244,7 @@ export default function ReviewScreen() {
           const result = await saveVocabDeckBest(user.id, deckId!, firstTryPct, completionSeconds);
           setIsNewBest(result.isNewBest);
         } catch {}
+        if (!isGuided) clearResumeState(resumeKey('vocab', user.id, deckId!));
         setPhase('summary');
       }
     } else {
@@ -189,6 +255,22 @@ export default function ReviewScreen() {
       setPhase('reveal');
     }
   }
+
+  // Auto-save mid-session state after every answer — non-guided only.
+  useEffect(() => {
+    if (isGuided || !resumeChecked || !user || !deck || phase !== 'question' || queue.length === 0) return;
+    const blob: ResumeBlob = {
+      cardOrder,
+      queueIds: queue.map(q => ({ cardId: q.card.id, mode: q.mode })),
+      dotState,
+      seenFirst: [...seenFirst],
+      correctFirstTry,
+      currentStreak,
+      longestStreak,
+      startedAt: startedAtRef.current,
+    };
+    saveResumeState(resumeKey('vocab', user.id, deck.id), blob);
+  }, [isGuided, resumeChecked, user?.id, deck?.id, queue, dotState, seenFirst, correctFirstTry, currentStreak, longestStreak, phase, cardOrder]);
 
   function continueAfterReveal() {
     setRevealCard(null);
@@ -232,6 +314,26 @@ export default function ReviewScreen() {
     return (
       <SafeAreaView style={styles.screen}>
         <ActivityIndicator style={{ flex: 1 }} color={Colors.navy} />
+      </SafeAreaView>
+    );
+  }
+
+  if (resumePrompt) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.allDoneWrap}>
+          <Text style={styles.summaryEmoji}>⏸️</Text>
+          <Text style={styles.summaryTitle}>Pick up where you left off?</Text>
+          <Text style={styles.summaryDeck}>
+            {resumePrompt.correctFirstTry} first-try correct, {resumePrompt.queueIds.length} card{resumePrompt.queueIds.length === 1 ? '' : 's'} left in {deck.title}.
+          </Text>
+          <TouchableOpacity style={styles.doneBtn} onPress={() => applyResumeBlob(resumePrompt)}>
+            <Text style={styles.doneBtnText}>Resume</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.startOverBtn} onPress={startFreshSession}>
+            <Text style={styles.startOverBtnText}>Start over</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -362,4 +464,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md,
   },
   doneBtnText: { color: '#fff', fontSize: Typography.body, fontWeight: Typography.semibold },
+  startOverBtn: { marginTop: Spacing.sm, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm },
+  startOverBtnText: { color: Colors.textMuted, fontWeight: Typography.medium, fontSize: Typography.body, textDecorationLine: 'underline' },
 });

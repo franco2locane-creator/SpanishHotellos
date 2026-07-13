@@ -22,6 +22,7 @@ type GradeRequest = {
   durationSeconds: number;
   allowTu?: boolean;         // true for personal_presentation — tú-forms are acceptable
   level?: CourseLevel;       // basic (A1) or intermediate (A2+/B1) grading expectations
+  wasResumed?: boolean;      // true if this attempt was restored from a resume blob — see app/roleplay/[scenarioId].tsx
 };
 
 type CriterionDetail = {
@@ -171,7 +172,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return err('Invalid JSON body');
   }
 
-  const { scenario, messages, durationSeconds, allowTu = false, level = 'basic' } = body;
+  const { scenario, messages, durationSeconds, allowTu = false, level = 'basic', wasResumed = false } = body;
   if (!scenario || !Array.isArray(messages) || messages.length < 2) {
     return err('scenario, messages (min 2), and durationSeconds are required');
   }
@@ -215,6 +216,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const numericScores = extractNumericScores(gradeInput.scores);
   const totalScore = computeTotalScore(numericScores, scenario.rubricWeights);
 
+  const fullFeedback = {
+    detail:          gradeInput.scores,
+    hospitalityGate: gradeInput.hospitalityGate,
+    topThingsFix:    gradeInput.topThingsFix,
+    feedback:        gradeInput.feedback,
+    wasResumed,
+  };
+
   const { data: attempt, error: insertError } = await supabase
     .from('exam_attempts')
     .insert({
@@ -226,6 +235,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       total_score:      totalScore,
       transcript,
       feedback:         gradeInput.feedback,
+      full_feedback:    fullFeedback,
     })
     .select('id, total_score, completed_at')
     .single();

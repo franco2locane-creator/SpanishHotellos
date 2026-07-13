@@ -10,8 +10,9 @@ import { decksForLevel, DEPARTMENT_LABELS, loadDeckCards, type DeckMeta } from '
 import { drillsForLevel } from '@/lib/grammar/drills';
 import { getDueCount } from '@/lib/db/vocab';
 import { getVocabDeckBest, type VocabDeckBest } from '@/lib/vocab/deckBest';
-import { getScenarioBest, type ScenarioBest } from '@/lib/scenarioBest';
+import { getScenarioBest, getLastScenarioAttempt, type ScenarioBest } from '@/lib/scenarioBest';
 import { formatBestBadge } from '@/lib/formatBest';
+import { useFeedbackStore } from '@/stores/feedbackStore';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 
 // ── Difficulty dots ───────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ function DifficultyDots({ level }: { level: 1 | 2 | 3 }) {
 
 // ── Scenario card ─────────────────────────────────────────────────────────────
 
-function ScenarioCard({ s, best, isPremium, onPress, onPaywall }: { s: ScenarioMeta; best: ScenarioBest | undefined; isPremium: boolean; onPress: () => void; onPaywall: () => void }) {
+function ScenarioCard({ s, best, isPremium, onPress, onPaywall, onViewLastFeedback }: { s: ScenarioMeta; best: ScenarioBest | undefined; isPremium: boolean; onPress: () => void; onPaywall: () => void; onViewLastFeedback: () => void }) {
   const locked = !s.isFree && !isPremium;
   const moodKey = s.personaPreview.split(' · ')[2]?.split(' ')[0] ?? 'neutral';
 
@@ -57,7 +58,12 @@ function ScenarioCard({ s, best, isPremium, onPress, onPaywall }: { s: ScenarioM
         </Text>
       </View>
       {best && (
-        <Text style={styles.bestBadge}>{formatBestBadge((best.score / 20) * 100, best.completionSeconds)}</Text>
+        <View style={styles.row}>
+          <Text style={styles.bestBadge}>{formatBestBadge((best.score / 20) * 100, best.completionSeconds)}</Text>
+          <TouchableOpacity onPress={onViewLastFeedback} hitSlop={8}>
+            <Text style={styles.lastFeedbackLink}>Last feedback →</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -107,9 +113,18 @@ export default function PracticeScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const isPremium = usePremium();
+  const { setResult } = useFeedbackStore();
   const [dueCounts, setDueCounts] = useState<Record<string, number | null>>({});
   const [deckBests, setDeckBests] = useState<Record<string, VocabDeckBest>>({});
   const [scenarioBests, setScenarioBests] = useState<Record<string, ScenarioBest>>({});
+
+  async function viewLastFeedback(scenarioId: string) {
+    if (!user) return;
+    const result = await getLastScenarioAttempt(user.id, scenarioId);
+    if (!result) return;
+    setResult(result, undefined, false);
+    router.push(`/feedback/${result.attemptId}` as any);
+  }
 
   const level = user?.mockLevel ?? 'basic';
   const scenarios = scenariosForLevel(level);
@@ -164,6 +179,7 @@ export default function PracticeScreen() {
           isPremium={isPremium}
           onPress={() => router.push(`/roleplay/${s.id}` as any)}
           onPaywall={() => router.push('/paywall' as any)}
+          onViewLastFeedback={() => viewLastFeedback(s.id)}
         />
       ))}
 
@@ -233,6 +249,7 @@ const styles = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E0D8CE' },
   dotFilled: { backgroundColor: Colors.gold },
   bestBadge: { fontSize: Typography.caption, color: Colors.gold, fontWeight: Typography.semibold, marginTop: 2 },
+  lastFeedbackLink: { fontSize: Typography.caption, color: Colors.info, fontWeight: Typography.medium, marginTop: 2 },
   bestBadgeInline: { fontSize: 11, color: Colors.gold, fontWeight: Typography.semibold, marginTop: 2 },
   // Deck
   deckRow: {

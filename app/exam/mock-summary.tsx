@@ -169,9 +169,13 @@ export default function MockSummary() {
         checklistHit: r.checklistHit,
         checklistTotal: r.checklistTotal,
         gatePassed: r.gradeResult.hospitalityGate.applicable ? r.gradeResult.hospitalityGate.passed : null,
+        // Links back to this assignment's exam_attempts row so the full
+        // per-criterion breakdown (full_feedback) can be re-fetched later
+        // without regrading — see "Last attempt" feedback views.
+        examAttemptId: r.gradeResult.attemptId,
       } : {
         assignmentType: exam.assignments[i]?.type ?? 'unknown',
-        score: null, checklistHit: [], checklistTotal: [], gatePassed: null,
+        score: null, checklistHit: [], checklistTotal: [], gatePassed: null, examAttemptId: null,
       });
 
       const { error } = await supabase.from('mock_attempts').insert({
