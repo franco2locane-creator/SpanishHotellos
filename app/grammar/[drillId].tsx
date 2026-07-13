@@ -13,23 +13,11 @@ import { usePremium } from '@/hooks/usePremium';
 import { loadDrillSet, DRILL_CATALOG } from '@/lib/grammar/drills';
 import { saveGrammarDrillProgress, getGrammarDrillLastAttempt, type AttemptDetailItem } from '@/lib/grammar/progress';
 import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
+import { isExactMatchAny } from '@/lib/textMatch';
 import { Haptics } from '@/lib/haptics';
 import LastAttemptPanel from '@/components/LastAttemptPanel';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { GrammarQuestion } from '@/types';
-
-function normalize(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '') // strip accents — typed/spoken input needn't match exactly
-    .replace(/[^a-z\s]/g, '')
-    .trim();
-}
-
-function isCorrect(input: string, answer: string): boolean {
-  return normalize(input) === normalize(answer);
-}
 
 type Phase = 'question' | 'result' | 'done';
 
@@ -210,7 +198,7 @@ export default function GrammarDrillScreen() {
     if (!given || !q) return;
     if (micActive) ExpoSpeechRecognitionModule.stop();
 
-    const ok = isCorrect(given, q.answer);
+    const ok = isExactMatchAny(given, q.answer);
     setCorrect(ok);
     setTotalAsked(n => n + 1);
     attemptDetailRef.current.push({ prompt: q.prompt, given, correct: ok, correctAnswer: q.answer });

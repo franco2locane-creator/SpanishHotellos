@@ -253,7 +253,8 @@
   },
   {
     "id": "rs-029",
-    "termEs": "el/la camarero/a (Spain) / el/la mesero/a (LatAm)",
+    "termEs": "el/la camarero/a",
+    "termEsLatam": "el/la mesero/a",
     "termEn": "waiter / waitress",
     "exampleSentence": "En España se llama camarero; en México o Colombia, mesero.",
     "department": "fnb",

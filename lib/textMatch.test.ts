@@ -1,4 +1,4 @@
-import { normalizeSpanish, isFuzzyMatch, isWholeWordFuzzyMatch, isFuzzyMatchAny } from './textMatch';
+import { normalizeSpanish, isFuzzyMatch, isWholeWordFuzzyMatch, isFuzzyMatchAny, answerVariants, isExactMatchAny } from './textMatch';
 
 describe('normalizeSpanish', () => {
   it('lowercases, strips accents, and strips punctuation', () => {
@@ -71,5 +71,61 @@ describe('isFuzzyMatchAny', () => {
 
   it('rejects when neither variant matches', () => {
     expect(isFuzzyMatchAny('llave', 'camarero', 'mesero')).toBe(false);
+  });
+});
+
+describe('number-word <-> digit equivalence', () => {
+  it('accepts a digit answer matched by its Spanish word form', () => {
+    expect(isWholeWordFuzzyMatch('15', 'quince')).toBe(true);
+    expect(isWholeWordFuzzyMatch('quince', '15')).toBe(true);
+  });
+
+  it('accepts a compound number in either digit or word form', () => {
+    expect(isWholeWordFuzzyMatch('32', 'treinta y dos')).toBe(true);
+    expect(isWholeWordFuzzyMatch('treinta y dos', '32')).toBe(true);
+  });
+
+  it('still rejects an unrelated wrong number', () => {
+    expect(isWholeWordFuzzyMatch('15', 'veinte')).toBe(false);
+    expect(isWholeWordFuzzyMatch('quince', 'veinte')).toBe(false);
+  });
+
+  it('isExactMatchAny also accepts digit/word equivalence', () => {
+    expect(isExactMatchAny('15', 'quince')).toBe(true);
+    expect(isExactMatchAny('treinta y dos', '32')).toBe(true);
+    expect(isExactMatchAny('16', 'quince')).toBe(false);
+  });
+});
+
+describe('answerVariants', () => {
+  it('expands a leading dual-article answer, keeping the article mandatory', () => {
+    const variants = answerVariants('el/la recepcionista');
+    expect(variants).toContain('el recepcionista');
+    expect(variants).toContain('la recepcionista');
+    expect(variants).toContain('el/la recepcionista');
+    expect(variants).not.toContain('recepcionista');
+  });
+
+  it('expands a trailing gender-suffix shorthand', () => {
+    const variants = answerVariants('camarero/a');
+    expect(variants).toContain('camarero');
+    expect(variants).toContain('camarera');
+  });
+
+  it('expands a compound dual-article + gender-suffix answer into all combinations', () => {
+    const variants = answerVariants('el/la camarero/a');
+    expect(variants).toContain('el camarero');
+    expect(variants).toContain('la camarera');
+  });
+
+  it('leaves an unrecognized generic "/"-list entry untouched', () => {
+    const variants = answerVariants('la tarjeta llave / la tarjeta de habitación');
+    expect(variants).toEqual(['la tarjeta llave / la tarjeta de habitación']);
+  });
+
+  it('a bare noun without the article never validates against a dual-article answer', () => {
+    expect(isFuzzyMatchAny('recepcionista', 'el/la recepcionista')).toBe(false);
+    expect(isFuzzyMatchAny('el recepcionista', 'el/la recepcionista')).toBe(true);
+    expect(isFuzzyMatchAny('la recepcionista', 'el/la recepcionista')).toBe(true);
   });
 });
