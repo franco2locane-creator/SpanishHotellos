@@ -12,6 +12,7 @@ import { nextSrsState, INITIAL_SRS, type SrsGrade } from '@/lib/srs';
 import { assignModes, pickRecycleMode, generateMcqOptions, type FlashcardMode } from '@/lib/vocab/flashcardModes';
 import { saveVocabDeckBest } from '@/lib/vocab/deckBest';
 import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
+import { withTimeout } from '@/lib/asyncGuard';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import McqQuestion from '@/components/vocab/McqQuestion';
@@ -204,6 +205,13 @@ export default function ReviewScreen() {
 
   // ── Answer handling ─────────────────────────────────────────────────────────
 
+  // A failed or hanging save must never leave the session stuck — a card's
+  // own SRS write is a rare, local degradation next to a hard freeze, and
+  // the dirty-flag/syncDirtyToSupabase retry-on-next-launch pattern already
+  // covers eventual consistency for whatever a timeout skips here.
+  const SRS_WRITE_TIMEOUT_MS = 5000;
+  const SYNC_TIMEOUT_MS = 8000;
+
   async function handleAnswer(correct: boolean) {
     const item = currentItem;
     if (!item || !user) return;
@@ -216,8 +224,8 @@ export default function ReviewScreen() {
       const before = srsMap[card.id] ?? INITIAL_SRS;
       const after = nextSrsState(before, grade);
       setSrsMap(prev => ({ ...prev, [card.id]: after }));
-      await upsertCardProgress(user.id, card.id, deckId!, after);
-      await logReview(user.id, card.id, grade, before, after);
+      await withTimeout(upsertCardProgress(user.id, card.id, deckId!, after), SRS_WRITE_TIMEOUT_MS, undefined);
+      await withTimeout(logReview(user.id, card.id, grade, before, after), SRS_WRITE_TIMEOUT_MS, undefined);
 
       if (correct) {
         setCorrectFirstTry(n => n + 1);
@@ -236,14 +244,16 @@ export default function ReviewScreen() {
     if (correct) {
       setQueue(rest);
       if (rest.length === 0) {
-        await syncDirtyToSupabase(user.id);
+        await withTimeout(syncDirtyToSupabase(user.id), SYNC_TIMEOUT_MS, undefined);
         const finalCorrectFirstTry = correctFirstTry + (isFirst ? 1 : 0);
         const firstTryPct = cardOrder.length > 0 ? (finalCorrectFirstTry / cardOrder.length) * 100 : 0;
         const completionSeconds = Math.round((Date.now() - startedAtRef.current) / 1000);
-        try {
-          const result = await saveVocabDeckBest(user.id, deckId!, firstTryPct, completionSeconds);
-          setIsNewBest(result.isNewBest);
-        } catch {}
+        const result = await withTimeout(
+          saveVocabDeckBest(user.id, deckId!, firstTryPct, completionSeconds),
+          SYNC_TIMEOUT_MS,
+          { isNewBest: false, bestFirstTryPct: firstTryPct, bestCompletionSeconds: completionSeconds },
+        );
+        setIsNewBest(result.isNewBest);
         if (!isGuided) clearResumeState(resumeKey('vocab', user.id, deckId!));
         setPhase('summary');
       }

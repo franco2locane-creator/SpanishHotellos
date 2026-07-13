@@ -15,23 +15,40 @@ type Props = {
 };
 
 const SETTLE_DELAY_MS = 800;
+// If the native recognizer never fires 'end' (a known failure mode on some
+// devices), this fires first — it must NOT count as an answered attempt:
+// no settle(), no onAnswer, no SRS write. A genuine 'end' with no match
+// still settles as wrong exactly as before; this only guards the case
+// where 'end' never arrives at all.
+const RECOGNIZER_TIMEOUT_MS = 12000;
 
 export default function SpeakQuestion({ prompt, correctTerm, correctTermLatam, onAnswer }: Props) {
   const [micActive, setMicActive] = useState(false);
   const [heardText, setHeardText] = useState('');
   const [result, setResult] = useState<boolean | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
   const liveRef = useRef('');
   const settledRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recognizerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function clearRecognizerTimeout() {
+    if (recognizerTimeoutRef.current) {
+      clearTimeout(recognizerTimeoutRef.current);
+      recognizerTimeoutRef.current = null;
+    }
+  }
 
   useEffect(() => {
     setMicActive(false);
     setHeardText('');
     setResult(null);
+    setTimedOut(false);
     liveRef.current = '';
     settledRef.current = false;
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      clearRecognizerTimeout();
       ExpoSpeechRecognitionModule.stop();
     };
   }, [prompt]);
@@ -39,9 +56,18 @@ export default function SpeakQuestion({ prompt, correctTerm, correctTermLatam, o
   function settle(ok: boolean) {
     if (settledRef.current) return;
     settledRef.current = true;
+    clearRecognizerTimeout();
     setResult(ok);
     ExpoSpeechRecognitionModule.stop();
     timerRef.current = setTimeout(() => onAnswer(ok), SETTLE_DELAY_MS);
+  }
+
+  function handleRecognizerTimeout() {
+    recognizerTimeoutRef.current = null;
+    if (settledRef.current) return;
+    ExpoSpeechRecognitionModule.stop();
+    setMicActive(false);
+    setTimedOut(true);
   }
 
   useSpeechRecognitionEvent('result', e => {
@@ -60,10 +86,13 @@ export default function SpeakQuestion({ prompt, correctTerm, correctTermLatam, o
   const startRecording = useCallback(async () => {
     liveRef.current = '';
     setHeardText('');
+    setTimedOut(false);
     const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!perm.granted) return;
     ExpoSpeechRecognitionModule.start({ lang: 'es-ES', interimResults: true });
     setMicActive(true);
+    clearRecognizerTimeout();
+    recognizerTimeoutRef.current = setTimeout(handleRecognizerTimeout, RECOGNIZER_TIMEOUT_MS);
   }, []);
 
   function stopRecording() {
@@ -74,7 +103,19 @@ export default function SpeakQuestion({ prompt, correctTerm, correctTermLatam, o
     <View style={styles.wrap}>
       <Text style={styles.promptLabel}>SPEAK IT</Text>
       <Text style={styles.prompt}>{prompt}</Text>
-      {result === null ? (
+      {result !== null ? (
+        <Text style={[styles.resultText, { color: result ? Colors.success : Colors.error }]}>
+          {result ? '✓ Correct!' : `✗ Not quite — ${correctTerm}`}
+        </Text>
+      ) : timedOut ? (
+        <View style={styles.timeoutWrap}>
+          <Text style={styles.timeoutText}>Didn't catch that — try again</Text>
+          <TouchableOpacity style={styles.micBtn} onPress={startRecording} activeOpacity={0.85}>
+            <Text style={styles.micIcon}>🎙️</Text>
+            <Text style={styles.micLabel}>Tap to speak</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
         <TouchableOpacity
           style={[styles.micBtn, micActive && styles.micBtnActive]}
           onPress={micActive ? stopRecording : startRecording}
@@ -87,10 +128,6 @@ export default function SpeakQuestion({ prompt, correctTerm, correctTermLatam, o
             {micActive ? (heardText || 'Listening…') : 'Tap to speak'}
           </Text>
         </TouchableOpacity>
-      ) : (
-        <Text style={[styles.resultText, { color: result ? Colors.success : Colors.error }]}>
-          {result ? '✓ Correct!' : `✗ Not quite — ${correctTerm}`}
-        </Text>
       )}
     </View>
   );
@@ -117,4 +154,6 @@ const styles = StyleSheet.create({
   micLabel: { fontSize: Typography.body, color: Colors.navy, fontWeight: Typography.semibold },
   micLabelActive: { color: '#fff' },
   resultText: { fontSize: Typography.body, fontWeight: Typography.semibold, textAlign: 'center' },
+  timeoutWrap: { alignItems: 'center', gap: Spacing.sm },
+  timeoutText: { fontSize: Typography.body, color: Colors.warning, fontWeight: Typography.medium },
 });
