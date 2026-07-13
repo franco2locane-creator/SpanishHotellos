@@ -1,4 +1,4 @@
-import { withTimeout } from './asyncGuard';
+import { withTimeout, retryOnce } from './asyncGuard';
 
 describe('withTimeout', () => {
   it('resolves with the promise value when it settles before the timeout', async () => {
@@ -31,5 +31,30 @@ describe('withTimeout', () => {
     expect(result).toBe('fallback');
     rejectLate(new Error('too late'));
     jest.useRealTimers();
+  });
+});
+
+describe('retryOnce', () => {
+  it('returns ok:true on first-attempt success without retrying', async () => {
+    const fn = jest.fn().mockResolvedValue('value');
+    const result = await retryOnce(fn, 'test');
+    expect(result).toEqual({ ok: true, value: 'value' });
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries once and succeeds on the second attempt', async () => {
+    const fn = jest.fn()
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockResolvedValueOnce('value');
+    const result = await retryOnce(fn, 'test');
+    expect(result).toEqual({ ok: true, value: 'value' });
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives up after both attempts fail, never throwing', async () => {
+    const fn = jest.fn().mockRejectedValue(new Error('durable failure'));
+    const result = await retryOnce(fn, 'test');
+    expect(result).toEqual({ ok: false });
+    expect(fn).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity,
+  View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, TouchableOpacity, Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
@@ -36,6 +36,7 @@ import DrillRecommendationsCard from '@/components/progress/DrillRecommendations
 import StudyPlanCard from '@/components/progress/StudyPlanCard';
 import { ScenarioCoverageCard, VocabCoverageCard, GrammarCoverageCard, MockCoverageCard } from '@/components/progress/CoverageCards';
 import ConsistencyStats from '@/components/progress/ConsistencyStats';
+import WebUnavailableCard from '@/components/progress/WebUnavailableCard';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { RubricCriterion } from '@/types';
 
@@ -186,16 +187,24 @@ export default function ProgressScreen() {
   const [totalPracticeDays, setTotalPracticeDays] = useState(0);
   const [readinessDelta, setReadinessDelta] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastFetchedAtRef = useRef(0);
+  const isWeb = Platform.OS === 'web';
 
   const isFull = progressTabMode(isPremium) === 'full';
 
   // Refetch every time this tab gains focus — a just-graded session, vocab
   // review, grammar drill, or guided-session completion must never show
-  // stale numbers.
+  // stale numbers. Debounced: a real post-exercise return is always
+  // seconds-to-minutes later, so skipping a refetch within 3s of the last
+  // one only ever catches back-to-back accidental refocuses, never a
+  // legitimate refresh.
+  const REFETCH_DEBOUNCE_MS = 3000;
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
+      if (Date.now() - lastFetchedAtRef.current < REFETCH_DEBOUNCE_MS) return;
       let cancelled = false;
+      lastFetchedAtRef.current = Date.now();
 
       async function load() {
         const level = user!.mockLevel ?? 'basic';
@@ -410,7 +419,7 @@ export default function ProgressScreen() {
           {coverage && (
             <>
               <ScenarioCoverageCard coverage={coverage.scenarios} />
-              <VocabCoverageCard coverage={coverage.vocab} />
+              {isWeb ? <WebUnavailableCard label="Vocabulary coverage" /> : <VocabCoverageCard coverage={coverage.vocab} />}
               <GrammarCoverageCard coverage={coverage.grammar} />
               <MockCoverageCard coverage={coverage.mocks} />
             </>
@@ -420,7 +429,7 @@ export default function ProgressScreen() {
         <CollapsibleSection title="Performance" storageKey="@sp4h_progress_section_performance">
           {isFull ? (
             <>
-              <VocabStatsCard {...vocabStats} streak={streak} />
+              {isWeb ? <WebUnavailableCard label="Vocabulary stats" /> : <VocabStatsCard {...vocabStats} streak={streak} />}
               <StudyPlanCard daysUntilExam={daysUntilExam} minutesPerDay={minutesPerDay} nextActions={nextActions} />
               <DrillRecommendationsCard criteria={drillCriteria} onSelect={c => router.push(`/drill/${c}` as any)} />
               <AssignmentMasteryCard rows={masteryRows} />

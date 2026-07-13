@@ -12,7 +12,7 @@ import { nextSrsState, INITIAL_SRS, type SrsGrade } from '@/lib/srs';
 import { assignModes, pickRecycleMode, generateMcqOptions, type FlashcardMode } from '@/lib/vocab/flashcardModes';
 import { saveVocabDeckBest } from '@/lib/vocab/deckBest';
 import { resumeKey, saveResumeState, loadResumeState, clearResumeState } from '@/lib/exerciseResume';
-import { withTimeout } from '@/lib/asyncGuard';
+import { withTimeout, retryOnce } from '@/lib/asyncGuard';
 import { guidedNextRoute } from '@/lib/guidedSession';
 import { useGuidedSessionStore } from '@/stores/guidedSessionStore';
 import McqQuestion from '@/components/vocab/McqQuestion';
@@ -224,8 +224,20 @@ export default function ReviewScreen() {
       const before = srsMap[card.id] ?? INITIAL_SRS;
       const after = nextSrsState(before, grade);
       setSrsMap(prev => ({ ...prev, [card.id]: after }));
-      await withTimeout(upsertCardProgress(user.id, card.id, deckId!, after), SRS_WRITE_TIMEOUT_MS, undefined);
-      await withTimeout(logReview(user.id, card.id, grade, before, after), SRS_WRITE_TIMEOUT_MS, undefined);
+      // Timeout guards a hang; retryOnce guards a genuine throw (near-always
+      // transient lock contention, not durable corruption) — a thrown local
+      // write never created a row, so there's nothing for the dirty-flag
+      // sync path to rescue; a bounded retry is the actual fix.
+      await withTimeout(
+        retryOnce(() => upsertCardProgress(user.id, card.id, deckId!, after), `upsertCardProgress:${card.id}`),
+        SRS_WRITE_TIMEOUT_MS,
+        { ok: false },
+      );
+      await withTimeout(
+        retryOnce(() => logReview(user.id, card.id, grade, before, after), `logReview:${card.id}`),
+        SRS_WRITE_TIMEOUT_MS,
+        { ok: false },
+      );
 
       if (correct) {
         setCorrectFirstTry(n => n + 1);

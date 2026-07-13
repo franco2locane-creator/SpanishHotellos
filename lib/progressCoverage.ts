@@ -97,17 +97,14 @@ export type DeckCoverage = {
 
 export async function getVocabCoverage(userId: string, level: CourseLevel, isPremium: boolean): Promise<DeckCoverage[]> {
   const decks: DeckMeta[] = decksForLevel(level);
-  const results: DeckCoverage[] = [];
-  for (const deck of decks) {
+  return Promise.all(decks.map(async (deck): Promise<DeckCoverage> => {
     if (!deck.isFree && !isPremium) {
-      results.push({ deckId: deck.id, title: deck.title, isFree: deck.isFree, seen: 0, learned: 0, mastered: 0, total: deck.cardCount });
-      continue;
+      return { deckId: deck.id, title: deck.title, isFree: deck.isFree, seen: 0, learned: 0, mastered: 0, total: deck.cardCount };
     }
     const cardIds = loadDeckCards(deck.id).map(c => c.id);
     const stats = await getDeckCoverage(userId, cardIds);
-    results.push({ deckId: deck.id, title: deck.title, isFree: deck.isFree, ...stats, total: deck.cardCount });
-  }
-  return results;
+    return { deckId: deck.id, title: deck.title, isFree: deck.isFree, ...stats, total: deck.cardCount };
+  }));
 }
 
 // ── Aggregate percentage (feeds the readiness composite's coverage term) ─────

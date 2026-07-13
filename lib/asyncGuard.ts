@@ -21,3 +21,30 @@ export async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: 
     clearTimeout(timer!);
   }
 }
+
+export type RetryResult<T> = { ok: true; value: T } | { ok: false };
+
+/**
+ * Retries a genuinely-thrown local write exactly once, then gives up —
+ * for local SQLite writes specifically, where a thrown error (as opposed to
+ * a hang, which `withTimeout` handles separately) is almost always
+ * transient lock contention, not durable corruption. This is NOT a
+ * dirty-flag/sync-queue mechanism: that pattern only rescues a write that
+ * already succeeded locally but hasn't reached Supabase yet, a different
+ * failure mode. A thrown local write never created a row to flag in the
+ * first place, so a bounded retry is the correct (and only meaningful)
+ * rescue here. Never throws — callers get a result object either way.
+ */
+export async function retryOnce<T>(fn: () => Promise<T>, context: string): Promise<RetryResult<T>> {
+  try {
+    return { ok: true, value: await fn() };
+  } catch (e) {
+    console.warn(`retryOnce: first attempt failed for ${context}, retrying once`, e);
+    try {
+      return { ok: true, value: await fn() };
+    } catch (e2) {
+      console.error(`retryOnce: both attempts failed for ${context} — write lost for this attempt`, e2);
+      return { ok: false };
+    }
+  }
+}
