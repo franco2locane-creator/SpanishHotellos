@@ -239,3 +239,15 @@ export async function syncDirtyToSupabase(userId: string): Promise<void> {
     );
   }
 }
+
+// ── Account deletion ─────────────────────────────────────────────────────────
+
+/** Wipes this user's local SRS state. Called after the server-side account
+ *  deletion succeeds so a reinstall or a new account on this device never
+ *  sees leftover progress. */
+export async function wipeLocalVocabData(userId: string): Promise<void> {
+  if (Platform.OS === 'web') return;
+  const db = await getDb();
+  await db.runAsync(`DELETE FROM vocab_progress WHERE user_id = ?`, [userId]);
+  await db.runAsync(`DELETE FROM review_log WHERE user_id = ?`, [userId]);
+}

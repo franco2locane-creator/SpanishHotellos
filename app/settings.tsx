@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/stores/authStore';
 import { usePremium } from '@/hooks/usePremium';
+import { deleteAccount, ApiCallError } from '@/lib/api/deleteAccount';
+import { wipeLocalAccountData } from '@/lib/accountDeletion';
 import { Colors, Spacing, Typography, Radii, Shadows } from '@/lib/theme';
 import type { MockLevel } from '@/types';
 
@@ -75,29 +77,53 @@ export default function SettingsScreen() {
     ]);
   }
 
-  async function handleDeleteAccount() {
+  function handleDeleteAccount() {
     Alert.alert(
       'Delete account',
-      'This will permanently delete your account and all your data — scores, vocab progress, everything. This cannot be undone.',
+      'This permanently deletes your profile, practice history, scores, and feedback. This cannot be undone.\n\n' +
+        'Your Premium purchase is tied to your Apple ID, not this account — if you ever come back, ' +
+        '"Restore purchases" brings it back. You will not lose what you paid for.',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete my account',
-          style: 'destructive',
-          onPress: async () => {
-            setDeletingAccount(true);
-            try {
-              const { error } = await supabase.functions.invoke('delete-account', {});
-              if (error) throw error;
-              await supabase.auth.signOut();
-            } catch {
-              setDeletingAccount(false);
-              Alert.alert('Error', 'Could not delete your account. Please try again or contact support.');
-            }
-          },
-        },
+        { text: 'Continue', style: 'destructive', onPress: confirmDeleteAccountFinal },
       ],
     );
+  }
+
+  function confirmDeleteAccountFinal() {
+    Alert.alert(
+      'Are you sure?',
+      'This is the last confirmation — your account and all its data will be deleted immediately and cannot be recovered.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete my account', style: 'destructive', onPress: performDeleteAccount },
+      ],
+    );
+  }
+
+  async function performDeleteAccount() {
+    if (!user) return;
+    setDeletingAccount(true);
+    try {
+      await deleteAccount();
+    } catch (e) {
+      setDeletingAccount(false);
+      const message = e instanceof ApiCallError
+        ? e.message
+        : 'Could not delete your account. Please try again or contact support.';
+      Alert.alert('Error', message);
+      return;
+    }
+    // Server-side deletion succeeded — the account is gone. Local wipe
+    // failures past this point are logged but never re-shown as "account
+    // intact", since the account is not intact anymore.
+    try {
+      await wipeLocalAccountData(user.id);
+    } catch (e) {
+      console.warn('wipeLocalAccountData failed after account deletion', e);
+    }
+    await supabase.auth.signOut();
+    // onAuthStateChange in _layout.tsx handles the redirect to onboarding/auth.
   }
 
   return (

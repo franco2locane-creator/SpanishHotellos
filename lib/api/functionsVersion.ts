@@ -1,6 +1,6 @@
 // Must match supabase/functions/_shared/version.ts — bump both together.
 // See DEPLOYMENT.md.
-export const EXPECTED_FUNCTIONS_VERSION = '2026-07-13.1';
+export const EXPECTED_FUNCTIONS_VERSION = '2026-07-14.1';
 
 /** Logs the server's reported function version and warns loudly on drift. */
 export function checkFunctionsVersion(fnName: string, serverVersion: unknown): void {
