@@ -50,10 +50,11 @@ type SummaryProps = {
   longestStreak: number;
   deckTitle: string;
   isNewBest: boolean;
+  writeFailures: number;
   onDone: () => void;
 };
 
-function RoundSummary({ correctFirstTry, neededRetries, longestStreak, deckTitle, isNewBest, onDone }: SummaryProps) {
+function RoundSummary({ correctFirstTry, neededRetries, longestStreak, deckTitle, isNewBest, writeFailures, onDone }: SummaryProps) {
   const emoji = neededRetries === 0 ? '🌟' : correctFirstTry >= neededRetries ? '💪' : '📚';
   return (
     <View style={styles.summaryWrap}>
@@ -61,6 +62,11 @@ function RoundSummary({ correctFirstTry, neededRetries, longestStreak, deckTitle
       <Text style={styles.summaryTitle}>Round complete!</Text>
       <Text style={styles.summaryDeck}>{deckTitle}</Text>
       {isNewBest && <Text style={styles.newBest}>🏆 New personal best!</Text>}
+      {writeFailures > 0 && (
+        <Text style={styles.writeFailureBanner}>
+          ⚠️ {writeFailures} card{writeFailures === 1 ? '' : 's'} didn't save this round — please try this deck again.
+        </Text>
+      )}
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={[styles.statVal, { color: Colors.success }]}>{correctFirstTry}</Text>
@@ -107,6 +113,7 @@ export default function ReviewScreen() {
   const [resumeChecked, setResumeChecked] = useState(false);
   const [resumePrompt, setResumePrompt] = useState<ResumeBlob | null>(null);
   const startedAtRef = useRef(Date.now());
+  const writeFailuresRef = useRef<Set<string>>(new Set());
 
   async function loadSrsMap(userId: string, cards: VocabCard[]): Promise<Record<string, SrsData>> {
     const map: Record<string, SrsData> = {};
@@ -227,17 +234,21 @@ export default function ReviewScreen() {
       // Timeout guards a hang; retryOnce guards a genuine throw (near-always
       // transient lock contention, not durable corruption) — a thrown local
       // write never created a row, so there's nothing for the dirty-flag
-      // sync path to rescue; a bounded retry is the actual fix.
-      await withTimeout(
+      // sync path to rescue; a bounded retry is the actual fix. Any failure
+      // here (of either write) marks the card as failed-to-save, tracked as
+      // a Set so a card that fails both writes isn't double-counted — shown
+      // as a visible banner on the round summary, not just logged.
+      const upsertResult = await withTimeout(
         retryOnce(() => upsertCardProgress(user.id, card.id, deckId!, after), `upsertCardProgress:${card.id}`),
         SRS_WRITE_TIMEOUT_MS,
-        { ok: false },
+        { ok: false as const },
       );
-      await withTimeout(
+      const logResult = await withTimeout(
         retryOnce(() => logReview(user.id, card.id, grade, before, after), `logReview:${card.id}`),
         SRS_WRITE_TIMEOUT_MS,
-        { ok: false },
+        { ok: false as const },
       );
+      if (!upsertResult.ok || !logResult.ok) writeFailuresRef.current.add(card.id);
 
       if (correct) {
         setCorrectFirstTry(n => n + 1);
@@ -369,6 +380,7 @@ export default function ReviewScreen() {
           longestStreak={longestStreak}
           deckTitle={deck.title}
           isNewBest={isNewBest}
+          writeFailures={writeFailuresRef.current.size}
           onDone={exitScreen}
         />
       </SafeAreaView>
@@ -477,6 +489,10 @@ const styles = StyleSheet.create({
   summaryTitle: { fontSize: Typography.heading, fontWeight: Typography.bold, color: Colors.navy },
   summaryDeck: { fontSize: Typography.body, color: Colors.textSecondary, textAlign: 'center' },
   newBest: { fontSize: Typography.body, fontWeight: Typography.bold, color: Colors.gold },
+  writeFailureBanner: {
+    fontSize: Typography.caption, color: Colors.warning, textAlign: 'center',
+    paddingHorizontal: Spacing.lg, lineHeight: 18,
+  },
   statsRow: { flexDirection: 'row', gap: Spacing.xl, marginVertical: Spacing.md },
   stat: { alignItems: 'center', gap: 4 },
   statVal: { fontSize: Typography.title, fontWeight: Typography.bold, color: Colors.navy },

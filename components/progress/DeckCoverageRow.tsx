@@ -15,12 +15,12 @@ type Props = {
 export default function DeckCoverageRow({ title, seen, learned, mastered, total, locked, bestBadge, offLevel }: Props) {
   const pct = total > 0 ? Math.min(100, Math.round((learned / total) * 100)) : 0;
   return (
-    <View style={styles.row} accessibilityLabel={`${title}: ${learned} of ${total} learned`}>
+    <View style={styles.row} accessibilityLabel={`${title}: ${learned} of ${total} cards learned`}>
       <View style={styles.labelRow}>
         <Text style={styles.label} numberOfLines={1}>
           {title}{offLevel ? <Text style={styles.offLevelTag}>  · other level</Text> : null}
         </Text>
-        <Text style={styles.frac}>{learned}/{total}{locked ? ' 🔒' : ''}</Text>
+        <Text style={styles.frac}>{learned}/{total} cards learned{locked ? ' 🔒' : ''}</Text>
       </View>
       <View style={styles.barBg}>
         <View style={[styles.barFill, { width: `${pct}%` }]} />

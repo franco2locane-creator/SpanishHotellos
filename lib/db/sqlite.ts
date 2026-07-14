@@ -71,6 +71,38 @@ const CREATE_DIRTY_INDEX = `
     WHERE dirty = 1;
 `;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Schema-integrity check — CREATE TABLE IF NOT EXISTS only ever applies to a
+// table that doesn't exist yet; it does nothing for a table that already
+// exists but predates a column newer code expects (there's no column-level
+// migration path for local SQLite in this app). An app update landing on a
+// device that's had the table since an earlier schema version would then
+// throw on any write referencing the missing column. Cheap insurance: check
+// and repair once at startup, every launch. card_id/user_id are the primary
+// key and can't be missing (the table wouldn't exist at all without them),
+// so only the non-key columns are checked.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const REPAIRABLE_VOCAB_PROGRESS_COLUMNS: [string, string][] = [
+  ['interval', 'INTEGER NOT NULL DEFAULT 1'],
+  ['ease_factor', 'REAL NOT NULL DEFAULT 2.5'],
+  ['due_date', "TEXT NOT NULL DEFAULT (date('now'))"],
+  ['repetitions', 'INTEGER NOT NULL DEFAULT 0'],
+  ['last_reviewed_at', 'TEXT'],
+  ['dirty', 'INTEGER NOT NULL DEFAULT 0'],
+];
+
+async function ensureVocabProgressSchema(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(vocab_progress)');
+  const existing = new Set(columns.map(c => c.name));
+  for (const [name, definition] of REPAIRABLE_VOCAB_PROGRESS_COLUMNS) {
+    if (!existing.has(name)) {
+      console.warn(`vocab_progress missing column "${name}" — repairing local schema drift from an older install`);
+      await db.execAsync(`ALTER TABLE vocab_progress ADD COLUMN ${name} ${definition}`);
+    }
+  }
+}
+
 let _db: SQLite.SQLiteDatabase | null = null;
 
 export async function getDb(): Promise<SQLite.SQLiteDatabase> {
@@ -79,6 +111,7 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
   _db = await SQLite.openDatabaseAsync(DB_NAME);
   await _db.execAsync('PRAGMA journal_mode = WAL;');
   await _db.execAsync(CREATE_VOCAB_PROGRESS);
+  await ensureVocabProgressSchema(_db);
   await _db.execAsync(CREATE_REVIEW_LOG);
   await _db.execAsync(CREATE_DUE_INDEX);
   await _db.execAsync(CREATE_DIRTY_INDEX);

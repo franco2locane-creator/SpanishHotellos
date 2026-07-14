@@ -30,11 +30,12 @@ export function ScenarioCoverageCard({ coverage, offLevelCompleted }: { coverage
           label={ASSIGNMENT_TYPE_LABELS[c.type] ?? c.type}
           completed={c.completed}
           total={c.total}
+          unit="scenarios"
           locked={c.completed === 0}
         />
       ))}
       {!!offLevelCompleted && (
-        <Text style={styles.offLevelNote}>Also practiced (other level): {offLevelCompleted}</Text>
+        <Text style={styles.offLevelNote}>Also practiced (other level): {offLevelCompleted} scenarios</Text>
       )}
     </View>
   );
@@ -70,7 +71,7 @@ export function GrammarCoverageCard({ coverage }: { coverage: GrammarDrillCovera
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Grammar Coverage</Text>
-      <CoverageBar label="Drill sets attempted" completed={attemptedCount} total={onLevel.length} />
+      <CoverageBar label="Drill sets attempted" completed={attemptedCount} total={onLevel.length} unit="drill sets" />
       {onLevel.map(d => (
         <View key={d.drillId} style={styles.grammarRow}>
           <Text style={styles.grammarLabel} numberOfLines={1}>{d.title}</Text>
@@ -100,7 +101,7 @@ export function DemoDrillCoverageCard({ coverage }: { coverage: DemoDrillCoverag
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Demo Drills</Text>
-      <CoverageBar label="Drills attempted" completed={attemptedCount} total={coverage.length} />
+      <CoverageBar label="Drills attempted" completed={attemptedCount} total={coverage.length} unit="drills" />
       {coverage.map(d => (
         <View key={d.drillType} style={styles.grammarRow}>
           <Text style={styles.grammarLabel} numberOfLines={1}>{DEMO_DRILL_LABELS[d.drillType] ?? d.drillType}</Text>
@@ -117,9 +118,9 @@ export function MockCoverageCard({ coverage, offLevelCompleted }: { coverage: Mo
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Mock Exam Coverage</Text>
-      <CoverageBar label="Mocks attempted" completed={coverage.completed} total={coverage.total} />
+      <CoverageBar label="Mocks attempted" completed={coverage.completed} total={coverage.total} unit="mocks" />
       {!!offLevelCompleted && (
-        <Text style={styles.offLevelNote}>Also practiced (other level): {offLevelCompleted}</Text>
+        <Text style={styles.offLevelNote}>Also practiced (other level): {offLevelCompleted} mocks</Text>
       )}
     </View>
   );
