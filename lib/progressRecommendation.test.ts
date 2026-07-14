@@ -47,6 +47,23 @@ describe('getRecommendation', () => {
     expect(rec?.route).toBe('/roleplay/complaint-1');
   });
 
+  it('never recommends a scenario the student has already completed individually', () => {
+    const input: RecommendationInput = {
+      coverage: makeCoverage({
+        scenarios: [{ type: 'complaint', completed: 1, total: 2 }],
+        completedScenarioIds: ['complaint-1'],
+      }),
+      studyPlan: null,
+      scenarios: SCENARIOS,
+      decks: DECKS,
+      drills: DRILLS,
+      isPremium: true,
+    };
+    const rec = getRecommendation(input);
+    expect(rec?.kind).toBe('scenario');
+    expect(rec?.route).toBe('/roleplay/complaint-2');
+  });
+
   it('skips locked scenarios for free users and falls through to vocab', () => {
     const input: RecommendationInput = {
       coverage: makeCoverage({
@@ -128,7 +145,7 @@ describe('getWeakestAreas', () => {
     };
     const items = getWeakestAreas(input);
     expect(items).toHaveLength(3);
-    expect(items[0].detail).toBe('0/6');
+    expect(items[0].detail).toBe('0/6 scenarios completed');
   });
 
   it('never surfaces an off-level vocab deck as a weakest area', () => {

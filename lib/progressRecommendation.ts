@@ -3,6 +3,7 @@
 // so it's directly unit-testable — callers pass in already-fetched data.
 
 import { canAccessScenario, canAccessDeck, canAccessGrammarDrillSet } from './premiumGating';
+import { trendDirection } from './trend';
 import type { AssignmentTypeCoverage, CoverageSummary, DeckCoverage, GrammarDrillCoverage } from './progressCoverage';
 import type { StudyPlanData } from './today';
 import type { ScenarioMeta } from './scenarios/catalog';
@@ -10,8 +11,8 @@ import type { DeckMeta } from './vocab/decks';
 import type { DrillMeta } from './grammar/drills';
 import type { RubricCriterion } from '@/types';
 
-/** Matches components/progress/CriterionTrend.tsx's CriterionKey — kept as a
- *  separate alias here so this pure lib doesn't import from components/. */
+/** Alias matching the tab's own criterion-key shape, kept separate so this
+ *  pure lib doesn't import from components/. */
 type CriterionKey = RubricCriterion;
 
 const ASSIGNMENT_TYPE_LABELS: Record<string, string> = {
@@ -55,15 +56,16 @@ function weakestIncompleteType(coverage: AssignmentTypeCoverage[]): AssignmentTy
 export function getRecommendation(input: RecommendationInput): Recommendation | null {
   const { coverage, studyPlan, scenarios, decks, drills, isPremium } = input;
 
-  // 1. Weakest scenario-coverage type with an accessible, uncompleted scenario.
+  // 1. Weakest scenario-coverage type with an accessible, NOT-yet-completed
+  // scenario. coverage.completedScenarioIds (built two passes ago) lets this
+  // exclude scenarios the student has already done individually — without
+  // it, a type with room left (completed < total) could still recommend one
+  // specific scenario that's already mastered, just because a catalog-order
+  // pick didn't check per-scenario completion.
+  const completedScenarioIds = new Set(coverage.completedScenarioIds);
   for (const type of weakestIncompleteType(coverage.scenarios)) {
     const candidates = scenarios
-      .filter(s => s.assignmentType === type.type && canAccessScenario(s, isPremium));
-    // "Completed" scenarios for this type aren't individually known here — the
-    // coverage summary only has counts — so prefer scenarios not present in
-    // studyPlan's completed signal isn't available either; fall back to
-    // catalog order and let the roleplay screen itself be a no-op re-run if
-    // already completed (still valid, useful practice).
+      .filter(s => s.assignmentType === type.type && canAccessScenario(s, isPremium) && !completedScenarioIds.has(s.id));
     const pick = candidates[0];
     if (pick) {
       return {
@@ -139,13 +141,9 @@ export type WeakestAreasInput = {
 type Candidate = { label: string; detail: string; route: string; badness: number };
 
 function trendingDown(series: Record<CriterionKey, number>[] | undefined, key: CriterionKey): boolean {
-  if (!series || series.length < 6) return false;
+  if (!series) return false;
   const vals = series.map(s => s[key]).filter(v => v > 0);
-  if (vals.length < 6) return false;
-  const recent = vals.slice(-3);
-  const prior = vals.slice(-6, -3);
-  const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
-  return avg(recent) < avg(prior);
+  return trendDirection(vals) === 'down';
 }
 
 export function getWeakestAreas(input: WeakestAreasInput): WeakAreaItem[] {
@@ -156,7 +154,7 @@ export function getWeakestAreas(input: WeakestAreasInput): WeakAreaItem[] {
     if (c.completed >= c.total) continue;
     candidates.push({
       label: ASSIGNMENT_TYPE_LABELS[c.type] ?? c.type,
-      detail: `${c.completed}/${c.total}`,
+      detail: `${c.completed}/${c.total} scenarios completed`,
       route: '/(tabs)/practice',
       badness: 100 - (c.completed / c.total) * 100,
     });

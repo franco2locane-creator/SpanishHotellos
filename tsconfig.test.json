@@ -24,6 +24,7 @@
     "lib/formatBest.ts",
     "lib/asyncGuard.ts",
     "lib/spanishNumbers.ts",
+    "lib/trend.ts",
     "types/**/*.ts",
     "expo-env.d.ts"
   ]

@@ -266,9 +266,10 @@ export async function getCoverageSummary(userId: string, level: CourseLevel, isP
     onLevelVocab.reduce((s, d) => s + d.learned, 0),
     onLevelVocab.reduce((s, d) => s + d.total, 0),
   );
-  const demoDrillPct = pct(demoDrills.filter(d => d.attempted).length, demoDrills.length);
-
-  const overallPct = (scenarioPct + mockPct + grammarPct + vocabPct + demoDrillPct) / 5;
+  // demoDrills are intentionally excluded here — they no longer have their own
+  // Progress section, but getDemoDrillCoverage/demoDrills stay computed below
+  // so getRecommendation/getWeakestAreas can still surface a weak signal.
+  const overallPct = (scenarioPct + mockPct + grammarPct + vocabPct) / 4;
 
   return {
     scenarios: scenarioResult.coverage,

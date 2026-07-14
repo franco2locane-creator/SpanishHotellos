@@ -9,10 +9,13 @@ type Props = {
    *  convention: `@sp4h_progress_section_<name>`. */
   storageKey: string;
   defaultExpanded?: boolean;
+  /** Optional one-line labeled summary shown next to the title, e.g.
+   *  "3 of 6 scenarios completed" — used by Course Material's nested rows. */
+  summary?: string;
   children: ReactNode;
 };
 
-export default function CollapsibleSection({ title, storageKey, defaultExpanded = false, children }: Props) {
+export default function CollapsibleSection({ title, storageKey, defaultExpanded = false, summary, children }: Props) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
@@ -35,9 +38,12 @@ export default function CollapsibleSection({ title, storageKey, defaultExpanded 
         style={styles.header}
         onPress={toggle}
         accessibilityRole="button"
-        accessibilityLabel={`${title} section, ${expanded ? 'expanded' : 'collapsed'}`}
+        accessibilityLabel={`${title} section, ${summary ? summary + ', ' : ''}${expanded ? 'expanded' : 'collapsed'}`}
       >
-        <Text style={styles.title}>{title}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{title}</Text>
+          {summary && <Text style={styles.summary}>{summary}</Text>}
+        </View>
         <Text style={styles.chevron}>{expanded ? '▾' : '▸'}</Text>
       </TouchableOpacity>
       {expanded && <View style={styles.body}>{children}</View>}
@@ -51,10 +57,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingVertical: Spacing.sm,
   },
+  titleRow: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.sm, flex: 1 },
   title: {
     fontSize: 11, fontWeight: '700', color: Colors.textMuted,
     textTransform: 'uppercase', letterSpacing: 1,
   },
+  summary: { fontSize: Typography.caption, color: Colors.textSecondary, fontWeight: '500' },
   chevron: { fontSize: Typography.body, color: Colors.textMuted, fontWeight: '700' },
   body: { marginTop: Spacing.xs },
 });
